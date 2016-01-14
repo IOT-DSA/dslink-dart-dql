@@ -5,8 +5,8 @@ import "package:quiver/pattern.dart";
 final RegExp PATTERN_MODIFIER = new RegExp(r"(\*|\?)");
 final RegExp PATTERN_PIPE = new RegExp(r"(\s?)\|(\s?)");
 final RegExp PATTERN_FILTER = new RegExp(r"""
-((?:\@|\$)[A-Za-z0-9]+)\=((?:(?:\"|\')(.*)(?:\"|\'))|(true|false)|[0-9\.]+)
-""");
+((?:\@|\$)[A-Za-z0-9]+)(?:\=((?:(?:\"|\')(.*)(?:\"|\'))|(?:true|false)|(?:[0-9\.]+)))?
+""".trim());
 
 class SubscribeUpdate {
   final RemoteNode node;
@@ -74,11 +74,15 @@ ExpressionParseResult parseExpressionInput(String input) {
   return new ExpressionParseResult(topmost, new RegExp(ptrn));
 }
 
+final Object _EXISTS = new Object();
+
 Function parseFilterInput(String input) {
   List<Match> matches = PATTERN_FILTER.allMatches(input).toList();
   Map<String, dynamic> tests = {};
   for (Match match in matches) {
-    if (match.groupCount == 3) {
+    if (match.groupCount == 1) {
+      tests[match.group(1)] = _EXISTS;
+    } else if (match.groupCount == 3) {
       tests[match.group(1)] = match.group(3);
     } else {
       tests[match.group(1)] = match.group(2);
@@ -86,11 +90,22 @@ Function parseFilterInput(String input) {
   }
 
   return (RemoteNode node) {
+    if (tests.isEmpty) {
+      return true;
+    }
+
     for (String key in tests.keys) {
-      if (node.get(key) != tests[key]) {
+      if (tests[key] == _EXISTS) {
+        if (!(node.configs.containsKey(key) ||
+          node.attributes.containsKey(key))) {
+          return false;
+        }
+      } else if (node.get(key) != tests[key]) {
         return false;
       }
     }
+
+    return true;
   };
 }
 
@@ -137,7 +152,6 @@ class QueryManager {
             }
             controller.add(update);
           }, onDone: () {
-            print(path);
             if (uid != null) {
               uids.remove(uid);
             }
@@ -210,7 +224,6 @@ class QueryManager {
   Stream<SubscribeUpdate> querySubscribe(String expression, {bool filter(RemoteNode node)}) {
     ExpressionParseResult parse = parseExpressionInput(expression);
     return recursiveSubscribe(parse.topmost, filter: (RemoteNode node) {
-      print(parse.pattern.pattern);
       if (!parse.pattern.hasMatch(node.remotePath)) {
         return false;
       }
@@ -275,7 +288,7 @@ List<QueryParsedPart> parseQueryInput(String input) {
     String argument;
     if (idx != -1) {
       cmd = part.substring(0, idx);
-      argument = part.substring(idx);
+      argument = part.substring(idx + 1);
     } else {
       cmd = part;
     }
@@ -352,7 +365,10 @@ main(List<String> args) async {
     isRequester: true
   );
 
-  (link.provider as SimpleNodeProvider).setNode("/query", new QueryNode("/query"));
+  (link.provider as SimpleNodeProvider).setNode(
+    "/query",
+    new QueryNode("/query")
+  );
 
   link.connect();
   await link.onRequesterReady;
