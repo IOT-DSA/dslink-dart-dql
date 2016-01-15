@@ -47,10 +47,6 @@ ExpressionParseResult parseExpressionInput(String input) {
   }
   List<String> parts = input.split(PATTERN_MODIFIER);
   String ptrn = input.splitMapJoin(PATTERN_MODIFIER, onMatch: (Match match) {
-    if (match.group(0) != input) {
-      return "";
-    }
-
     String mod = match.group(1);
     if (mod == "?") {
       return r"[^\/]+";
