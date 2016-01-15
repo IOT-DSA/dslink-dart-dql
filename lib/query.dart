@@ -223,7 +223,15 @@ class QueryManager {
   Stream<SubscribeUpdate> querySubscribe(String expression, {bool filter(RemoteNode node)}) {
     ExpressionParseResult parse = parseExpressionInput(expression);
     return recursiveSubscribe(parse.topmost, filter: (RemoteNode node) {
-      if (!parse.pattern.hasMatch(node.remotePath)) {
+      List<Match> matches = parse.pattern.allMatches(node.remotePath);
+
+      if (matches.isEmpty) {
+        return false;
+      }
+
+      Match match = matches.first;
+
+      if (match.group(0) != node.remotePath) {
         return false;
       }
 
