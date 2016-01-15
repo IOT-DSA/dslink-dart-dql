@@ -155,6 +155,8 @@ class QueryManager {
               uids.remove(uid);
             }
 
+            RemoteNode node = requester.nodeCache.getRemoteNode(path);
+            controller.add(new RequesterListUpdate(node, const ["?gone"], "closed"));
             subs.remove(path);
           });
         }
@@ -257,8 +259,65 @@ class QueryManager {
       pipes[2].command == "subscribe") {
       String filterString = pipes[1].argument;
 
-      return querySubscribe(pipes[0].argument, filter: parseFilterInput(filterString)).map((s) {
+      return querySubscribe(
+        pipes[0].argument, filter: parseFilterInput(filterString)).map((s) {
         return s.toMap();
+      });
+    } else if (pipes.length == 2 &&
+      pipes[0].command == "list" &&
+      pipes[1].command == "filter") {
+      ExpressionParseResult parse = parseExpressionInput(pipes[0].argument);
+      Function filter = parseFilterInput(pipes[1].argument);
+
+      return recursiveList(parse.topmost).where((update) {
+        RemoteNode node = update.node;
+        List<Match> matches = parse.pattern.allMatches(node.remotePath);
+
+        if (matches.isEmpty) {
+          return false;
+        }
+
+        Match match = matches.first;
+
+        if (match.group(0) != node.remotePath) {
+          return false;
+        }
+
+        if (!filter(node)) {
+          return false;
+        }
+
+        return true;
+      }).map((update) {
+        return {
+          "path": update.node.remotePath,
+          "change": update.changes.contains("?gone") ? "-" : "+"
+        };
+      });
+    } else if (pipes.length == 1 &&
+      pipes[0].command == "list") {
+      ExpressionParseResult parse = parseExpressionInput(pipes[0].argument);
+
+      return recursiveList(parse.topmost).where((update) {
+        RemoteNode node = update.node;
+        List<Match> matches = parse.pattern.allMatches(node.remotePath);
+
+        if (matches.isEmpty) {
+          return false;
+        }
+
+        Match match = matches.first;
+
+        if (match.group(0) != node.remotePath) {
+          return false;
+        }
+
+        return true;
+      }).map((update) {
+        return {
+          "path": update.node.remotePath,
+          "change": update.changes.contains("?gone") ? "-" : "+"
+        };
       });
     } else {
       throw new QueryException("Unsupported Query: ${pipes}");
