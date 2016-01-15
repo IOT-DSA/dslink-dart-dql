@@ -1,4 +1,4 @@
-import "../bin/run.dart" show parseExpressionInput, ExpressionParseResult;
+import "package:dslink_dql/query.dart";
 
 main() async {
   test("*");
