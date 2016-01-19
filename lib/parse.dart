@@ -6,7 +6,7 @@ import "package:quiver/pattern.dart";
 final RegExp PATTERN_MODIFIER = new RegExp(r"(\*|\?)");
 final RegExp PATTERN_PIPE = new RegExp(r"(\s?)\|(\s?)");
 final RegExp PATTERN_FILTER = new RegExp(r"""
-([\@\$A-Za-z0-9]+)(?:(\=|\!\=|\=\=|\<\=|\>\=|\<|\>)((?:(?:\"|\')(.*)(?:\"|\'))|(?:true|false)|(?:[0-9\.]+)))?
+([\@\.\$A-Za-z0-9]+)(?:(\=|\!\=|\=\=|\<\=|\>\=|\<|\>)((?:(?:\"|\')(.*)(?:\"|\'))|(?:true|false)|(?:[0-9\.]+)))?
 """.trim());
 
 final Object _EXISTS = new Object();
