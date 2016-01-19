@@ -71,7 +71,7 @@ NodeFilter parseFilterInput(String input) {
       tests[k] = _EXISTS;
     }
   }
-  
+
   return (RemoteNode node) {
     if (tests.isEmpty) {
       return true;
