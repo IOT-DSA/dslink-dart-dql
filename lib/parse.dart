@@ -6,7 +6,7 @@ import "package:quiver/pattern.dart";
 final RegExp PATTERN_MODIFIER = new RegExp(r"(\*|\?)");
 final RegExp PATTERN_PIPE = new RegExp(r"(\s?)\|(\s?)");
 final RegExp PATTERN_FILTER = new RegExp(r"""
-((?:\@|\$)[A-Za-z0-9]+)(?:\=((?:(?:\"|\')(.*)(?:\"|\'))|(?:true|false)|(?:[0-9\.]+)))?
+((?:\@|\$)[A-Za-z0-9]+)(?:(\=|\!\=|\=\=)((?:(?:\"|\')(.*)(?:\"|\'))|(?:true|false)|(?:[0-9\.]+)))?
 """.trim());
 
 final Object _EXISTS = new Object();
@@ -54,22 +54,55 @@ class QueryStatement {
   }
 }
 
-NodeFilter parseFilterInput(String input) {
-  List<Match> matches = PATTERN_FILTER.allMatches(input).toList();
-  Map<String, dynamic> tests = {};
-  for (Match match in matches) {
-    String k = match.group(1);
-    if (match.groupCount == 1) {
-      tests[k] = _EXISTS;
-    } else if (match.groupCount == 3) {
-      tests[k] = match.group(3);
-    } else {
-      tests[k] = match.group(2);
+class QueryFilterTest {
+  final String key;
+  final String operator;
+  final dynamic value;
+
+  QueryFilterTest(this.key, {this.operator, this.value});
+
+  bool matches(Map m) {
+    bool result = false;
+    var v = m[key];
+
+    if (value == _EXISTS) {
+      result = m.containsKey(key);
+    } else if (operator == "=" || operator == "==") {
+      result = v == value;
+    } else if (operator == "!=") {
+      result = v != value;
     }
 
-    if (tests[k] == null) {
-      tests[k] = _EXISTS;
+    return result;
+  }
+}
+
+NodeFilter parseFilterInput(String input) {
+  List<Match> matches = PATTERN_FILTER.allMatches(input).toList();
+  List<QueryFilterTest> tests = [];
+  for (Match match in matches) {
+    String k = match.group(1);
+    dynamic value;
+    String op = "=";
+    if (match.groupCount == 1) {
+      value = _EXISTS;
+    } else if (match.groupCount == 3) {
+      value = match.group(3);
+      op = match.group(2);
+    } else {
+      value = match.group(4);
+      op = match.group(2);
     }
+
+    if (value == null) {
+      value = _EXISTS;
+    }
+
+    tests.add(new QueryFilterTest(
+      k,
+      value: value,
+      operator: op
+    ));
   }
 
   return (RemoteNode node) {
@@ -77,13 +110,10 @@ NodeFilter parseFilterInput(String input) {
       return true;
     }
 
-    for (String key in tests.keys) {
-      if (tests[key] == _EXISTS) {
-        if (!(node.configs.containsKey(key) ||
-          node.attributes.containsKey(key))) {
-          return false;
-        }
-      } else if (node.get(key) != tests[key]) {
+    Map m = createRealMap(node.save());
+
+    for (QueryFilterTest test in tests) {
+      if (!test.matches(m)) {
         return false;
       }
     }
@@ -143,4 +173,16 @@ List<QueryStatement> parseQueryInput(String input) {
   }
 
   return parts;
+}
+
+Map createRealMap(Map m) {
+  if (m.containsKey("?value")) {
+    m["value"] = m.remove("?value");
+  }
+
+  if (m.containsKey("?value_timestamp")) {
+    m["value.timestamp"] = m.remove("?value_timestamp");
+  }
+
+  return m;
 }
