@@ -1,4 +1,4 @@
-import "package:dslink_dql/query.dart";
+import "package:dslink_dql/query_old.dart";
 
 main() async {
   test("*");

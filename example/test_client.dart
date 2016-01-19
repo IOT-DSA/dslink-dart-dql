@@ -13,7 +13,7 @@ main(List<String> args) async {
   link.connect();
   Requester r = await link.onRequesterReady;
   var sub = r.invoke("/downstream/DQL/query", {
-    "query": r"list /downstream/* | filter $type='string' | subscribe"
+    "query": r"list /downstream/* | subscribe"
   }).listen((RequesterInvokeUpdate update) {
     print(update.rows);
   });

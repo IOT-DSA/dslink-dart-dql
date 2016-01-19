@@ -2,10 +2,35 @@ import "dart:async";
 import "package:dslink/dslink.dart";
 
 import "package:dslink_dql/query.dart";
+import "package:dslink_dql/process.dart";
+import "package:dslink_dql/parse.dart";
+
+class BasicQueryContext extends QueryContext {
+  @override
+  Requester get requester => link.requester;
+
+  @override
+  Stream<QueryUpdate> query(String input) {
+    List<QueryStatement> statements = parseQueryInput(input);
+    List<QueryProcessor> processors = statements.map((QueryStatement statement) {
+      if (!QUERY_COMMANDS.containsKey(statement.command)) {
+        throw new QueryException(
+          "Failed to parse query: unknown command '${statement.command}'"
+        );
+      }
+
+      QueryProcessor processor = QUERY_COMMANDS[statement.command](this);
+      processor.init(statement);
+      return processor;
+    }).toList();
+
+    return processQuery(processors);
+  }
+}
+
+BasicQueryContext context;
 
 class QueryNode extends SimpleNode {
-  static QueryManager query;
-
   QueryNode(String path) : super(path) {
     configs.addAll({
       r"$name": "Query",
@@ -25,35 +50,43 @@ class QueryNode extends SimpleNode {
   onInvoke(Map params) {
     Completer<LiveTable> c = new Completer();
     String input = params["query"];
-    bool isFirst = true;
     LiveTable table;
     Map<String, LiveTableRow> rows = {};
+
     StreamSubscription sub;
-    sub = query.query(input).listen((Map map) {
-      if (isFirst) {
-        table = new LiveTable(map.keys.map((x) {
-          return new TableColumn(x, "dynamic");
+
+    sub = context.query(input).listen((QueryUpdate update) {
+      if (table == null) {
+        table = new LiveTable(update.values.keys.map((String key) {
+          return new TableColumn(key, "dynamic");
         }));
 
-        c.complete(table);
-
         table.doOnClose(() {
-          sub.cancel();
+          if (sub != null) {
+            sub.cancel();
+          }
         });
 
-        isFirst = false;
+        c.complete(table);
       }
 
-      String path = map["path"];
-      if (!rows.containsKey(path)) {
-        rows[path] = table.createRow(map.values.toList());
-      } else {
-        List<dynamic> vals = map.values.toList();
-        for (var i = 0; i < vals.length; i++) {
-          rows[path].values[i] = vals[i];
-        }
+      String path = update.values["path"];
 
-        table.onRowUpdate(rows[path]);
+      if (!rows.containsKey(path)) {
+        if (!update.remove) {
+          rows[path] = table.createRow(update.values.values.toList());
+        }
+      } else {
+        if (update.remove) {
+          rows.remove(path).delete();
+        } else {
+          List<dynamic> vals = update.values.values.toList();
+          LiveTableRow row = rows[path];
+          for (var i = 0; i < vals.length; i++) {
+            row.values[i] = vals[i];
+          }
+          table.onRowUpdate(row);
+        }
       }
     });
 
@@ -61,8 +94,10 @@ class QueryNode extends SimpleNode {
   }
 }
 
+LinkProvider link;
+
 main(List<String> args) async {
-  LinkProvider link = new LinkProvider(
+  link = new LinkProvider(
     args,
     "DQL-",
     isResponder: true,
@@ -76,6 +111,6 @@ main(List<String> args) async {
 
   link.connect();
   await link.onRequesterReady;
-  QueryNode.query = new QueryManager(link.requester);
+  context = new BasicQueryContext();
 }
 
