@@ -76,6 +76,16 @@ class ChildQueryProcessor extends QueryProcessor {
           controller.add(update.cloneAndMerge(holders[path].values));
         }
       });
+    }, onCancel: () {
+      for (ChildQueryHolder holder in holders.values) {
+        holder.cancel();
+      }
+
+      holders.clear();
+
+      if (sub != null) {
+        sub.cancel();
+      }
     });
 
     return controller.stream;

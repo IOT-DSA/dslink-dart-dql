@@ -52,6 +52,14 @@ class QueryUpdate {
     return c;
   }
 
+  QueryUpdate cloneAndDrop(List<String> keys) {
+    QueryUpdate c = clone();
+    for (String key in keys) {
+      c.values.remove(key);
+    }
+    return c;
+  }
+
   QueryUpdate cloneAndStub(List<String> keys) {
     QueryUpdate c = clone();
     for (String key in keys) {
