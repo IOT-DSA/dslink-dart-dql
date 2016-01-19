@@ -58,15 +58,20 @@ NodeFilter parseFilterInput(String input) {
   List<Match> matches = PATTERN_FILTER.allMatches(input).toList();
   Map<String, dynamic> tests = {};
   for (Match match in matches) {
+    String k = match.group(1);
     if (match.groupCount == 1) {
-      tests[match.group(1)] = _EXISTS;
+      tests[k] = _EXISTS;
     } else if (match.groupCount == 3) {
-      tests[match.group(1)] = match.group(3);
+      tests[k] = match.group(3);
     } else {
-      tests[match.group(1)] = match.group(2);
+      tests[k] = match.group(2);
+    }
+
+    if (tests[k] == null) {
+      tests[k] = _EXISTS;
     }
   }
-
+  
   return (RemoteNode node) {
     if (tests.isEmpty) {
       return true;
@@ -126,7 +131,7 @@ List<QueryStatement> parseQueryInput(String input) {
   for (String part in cmds) {
     int idx = part.indexOf(" ");
     String cmd;
-    String argument;
+    String argument = "";
     if (idx != -1) {
       cmd = part.substring(0, idx);
       argument = part.substring(idx + 1);

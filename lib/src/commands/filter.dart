@@ -21,11 +21,11 @@ class FilterQueryProcessor extends QueryProcessor {
 
       if (!update.hasAttribute("node")) {
         return false;
+      } else {
+        RemoteNode node = update.getAttribute("node");
+
+        return filter(node);
       }
-
-      RemoteNode node = update.getAttribute("node");
-
-      return filter(node);
     });
   }
 }
