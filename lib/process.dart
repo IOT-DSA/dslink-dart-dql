@@ -12,7 +12,11 @@ class QueryUpdate {
   final Map values;
   final bool remove;
 
-  QueryUpdate(this.values, {this.remove: false, this.attributes});
+  QueryUpdate(this.values, {this.remove: false, this.attributes}) {
+    if (attributes == null) {
+      attributes = {};
+    }
+  }
 
   Map<String, dynamic> attributes = {};
 
@@ -30,6 +34,30 @@ class QueryUpdate {
 
   dynamic removeAttribute(String key) {
     return attributes.remove(key);
+  }
+
+  QueryUpdate clone() {
+    QueryUpdate update = new QueryUpdate(
+      new Map.from(values),
+      remove: remove,
+      attributes: new Map.from(attributes)
+    );
+
+    return update;
+  }
+
+  QueryUpdate cloneAndMerge(Map<String, dynamic> m) {
+    QueryUpdate c = clone();
+    c.values.addAll(m);
+    return c;
+  }
+
+  QueryUpdate cloneAndStub(List<String> keys) {
+    QueryUpdate c = clone();
+    for (String key in keys) {
+      c.values[key] = null;
+    }
+    return c;
   }
 }
 
