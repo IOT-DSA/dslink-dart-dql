@@ -60,12 +60,25 @@ class ChildQueryProcessor extends QueryProcessor {
           holder.lastUpdate = update;
 
           for (String n in childs) {
-            String cp = "${path}/${n}";
+            String cp = path;
+            if (!n.startsWith("/")) {
+              cp += "/";
+            }
+            cp += n;
             out.values[n] = holder.values[n] = null;
-            holder.subs[cp] = context.requester.subscribe(cp, (ValueUpdate update) {
-              holder.values[n] = update.value;
-              controller.add(holder.build());
-            });
+            if (n.startsWith("@") || n.startsWith(r"$")) {
+              holder.subs[n] = context.requester.list(path).listen((RequesterListUpdate update) {
+                if (holder.values[n] != update.node.get(n)) {
+                  holder.values[n] = update.node.get(n);
+                  controller.add(holder.build());
+                }
+              });
+            } else {
+              holder.subs[n] = context.requester.subscribe(cp, (ValueUpdate update) {
+                holder.values[n] = update.value;
+                controller.add(holder.build());
+              });
+            }
           }
 
           controller.add(update.cloneAndStub(childs));
