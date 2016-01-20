@@ -113,6 +113,9 @@ class QueryFilterTest {
 
 List<String> parseInputParameters(String input) {
   return PATTERN_STRING.allMatches(input).map((Match match) {
+    if (match.group(1) == null) {
+      return match.group(2);
+    }
     return match.group(1);
   }).toList();
 }
