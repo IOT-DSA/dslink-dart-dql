@@ -4,7 +4,10 @@ import "package:dslink/requester.dart";
 import "package:quiver/pattern.dart";
 
 final RegExp PATTERN_MODIFIER = new RegExp(r"(\*|\?)");
-final RegExp PATTERN_PIPE = new RegExp(r"(\s?)\|(\s?)");
+final RegExp PATTERN_PIPE = new RegExp(r"""
+(?:\s?)(?:\|)(?:\s?)(?=(?:[^"]*"[^"]*")*[^"]*$)
+""".trim());
+
 final RegExp PATTERN_FILTER = new RegExp(r"""
 ([\@\.\$A-Za-z0-9]+)(?:(\=|\!\=|\=\=|\<\=|\>\=|\<|\>)((?:(?:\"|\')(.*)(?:\"|\'))|(?:true|false)|(?:[0-9\.]+)))?
 """.trim());
@@ -50,7 +53,7 @@ class QueryStatement {
   String toString() {
     String out = command;
 
-    if (argument != null) {
+    if (argument != null && argument.isNotEmpty) {
       out += " ${argument}";
     }
 
