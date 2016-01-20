@@ -51,5 +51,5 @@ list * | subscribe $name
 #### Subscribe to all values in a DSLink, and create a table of the name and the value
 
 ```
-list /downstream/MyLink/* | filter $type | subscribe $name value
+list /downstream/System/* | filter $type | subscribe $name value
 ```
