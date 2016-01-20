@@ -38,10 +38,12 @@ class ListNodeQueryProcessor extends QueryProcessor {
 
               dones.remove(path);
 
-              QueryUpdate update = new QueryUpdate({
-                "path": path
-              }, remove: true);
-              controller.add(update);
+              if (expression.matches(path)) {
+                QueryUpdate update = new QueryUpdate({
+                  "path": path
+                }, remove: true);
+                controller.add(update);
+              }
             }
           };
 
@@ -83,13 +85,14 @@ class ListNodeQueryProcessor extends QueryProcessor {
               handle(child.remotePath);
             }
 
-            QueryUpdate event = new QueryUpdate({
-              "path": path
-            }, attributes: {
-              "node": update.node
-            });
-
-            controller.add(event);
+            if (expression.matches(path)) {
+              QueryUpdate event = new QueryUpdate({
+                "path": path
+              }, attributes: {
+                "node": update.node
+              });
+              controller.add(event);
+            }
           }, onDone: () {
             if (dones.containsKey(path)) {
               dones[path]();
