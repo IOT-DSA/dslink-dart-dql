@@ -5,6 +5,8 @@ import "package:quiver/pattern.dart";
 
 import "package:dslink/dslink.dart";
 
+import "process.dart";
+
 final RegExp PATTERN_MODIFIER = new RegExp(r"(\*|\?)");
 final RegExp PATTERN_PIPE = new RegExp(r"""
 (?:\s?)(?:\|)(?:\s?)(?=(?:[^"]*"[^"]*")*[^"]*$)
@@ -24,12 +26,11 @@ final RegExp PATTERN_STRING_SINGLE = new RegExp(r"""
 
 final Object _EXISTS = new Object();
 
-typedef bool NodeFilter(RemoteNode node);
+typedef bool NodeFilter(RemoteNode node, QueryUpdate update);
 
 class PathExpression {
   final String topmost;
   final RegExp pattern;
-  final bool isDirectDescendants;
 
   bool hasAnyMods = false;
 
@@ -85,7 +86,7 @@ class QueryFilterTest {
   final String operator;
   final dynamic value;
 
-  QueryFilterTest(this.key, {this.operator, this.value});
+  QueryFilterTest(this.key, {this.operator: "=", this.value});
 
   bool matches(Map m) {
     bool result = false;
@@ -109,6 +110,9 @@ class QueryFilterTest {
 
     return result;
   }
+
+  @override
+  String toString() => "${key}${operator}${value}";
 }
 
 List<String> parseInputParameters(String input) {
@@ -152,16 +156,18 @@ NodeFilter parseFilterInput(String input) {
     tests.add(new QueryFilterTest(
       k,
       value: value,
-      operator: op
+      operator: op == null ? "=" : op
     ));
   }
 
-  return (RemoteNode node) {
+  return (RemoteNode node, QueryUpdate update) {
     if (tests.isEmpty) {
       return true;
     }
 
     Map m = createRealMap(node.save());
+
+    m.addAll(update.values);
 
     for (QueryFilterTest test in tests) {
       if (!test.matches(m)) {

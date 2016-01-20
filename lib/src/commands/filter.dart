@@ -15,6 +15,10 @@ class FilterQueryProcessor extends QueryProcessor {
   @override
   Stream<QueryUpdate> bind(Stream<QueryUpdate> stream) {
     return stream.where((QueryUpdate update) {
+      if (update == null) {
+        return false;
+      }
+
       if (update.remove) {
         return true;
       }
@@ -24,7 +28,7 @@ class FilterQueryProcessor extends QueryProcessor {
       } else {
         RemoteNode node = update.getAttribute("node");
 
-        return filter(node);
+        return filter(node, update);
       }
     });
   }

@@ -61,7 +61,20 @@ class QueryNode extends SimpleNode {
 
     StreamSubscription sub;
 
+    String lastColumnString = "";
+
     sub = context.query(input).listen((QueryUpdate update) {
+      String myColumnString = update.values.keys.join(" ");
+      var forceRefresh = false;
+      if (myColumnString != lastColumnString && table != null) {
+        table.columns.clear();
+        table.columns.addAll(update.values.keys.map((String key) {
+          return new TableColumn(key, "dynamic");
+        }));
+        forceRefresh = true;
+      }
+      lastColumnString = myColumnString;
+
       if (table == null) {
         table = new LiveTable(update.values.keys.map((String key) {
           return new TableColumn(key, "dynamic");
@@ -93,6 +106,10 @@ class QueryNode extends SimpleNode {
           }
           table.onRowUpdate(row);
         }
+      }
+
+      if (forceRefresh) {
+        table.refresh();
       }
     });
 

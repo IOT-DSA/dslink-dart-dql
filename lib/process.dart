@@ -7,6 +7,8 @@ import "package:dslink/requester.dart";
 import "parse.dart";
 import "package:dslink/utils.dart";
 
+final bool DEBUG = false;
+
 final List<String> POSSIBLE_IDS = [
   "id",
   "path"
@@ -111,7 +113,17 @@ abstract class QueryContext {
 Stream<QueryUpdate> processQuery(List<QueryProcessor> processors) {
   Stream<QueryUpdate> stream = new Stream<QueryUpdate>.empty();
   for (QueryProcessor processor in processors) {
-    stream = processor.bind(stream);
+    stream = processor.bind(stream).map((QueryUpdate update) {
+      update.setAttribute("lastProcessor", processor);
+      return update;
+    });
+
+    if (DEBUG) {
+      stream = stream.map((QueryUpdate u) {
+        print("Result from ${processor}: ${u.values}");
+        return u;
+      });
+    }
   }
   return stream;
 }
