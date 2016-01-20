@@ -15,6 +15,7 @@ part "src/commands/filter.dart";
 part "src/commands/path.dart";
 part "src/commands/drop.dart";
 part "src/commands/expression.dart";
+part "src/commands/rename.dart";
 
 final Map<String, QueryProcessorFactory> QUERY_COMMANDS = {
   "list": (QueryContext context) => new ListNodeQueryProcessor(context),
@@ -23,5 +24,6 @@ final Map<String, QueryProcessorFactory> QUERY_COMMANDS = {
   "child": (QueryContext context) => new SubscribeQueryProcessor(context),
   "path": (QueryContext context) => new SinglePathQueryProcessor(context),
   "drop": (QueryContext context) => new DropQueryProcessor(context),
-  "expression": (QueryContext context) => new ExpressionQueryProcessor(context)
+  "expression": (QueryContext context) => new ExpressionQueryProcessor(context),
+  "rename": (QueryContext context) => new RenameQueryProcessor(context)
 };
