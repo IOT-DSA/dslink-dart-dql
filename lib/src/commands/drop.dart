@@ -15,7 +15,11 @@ class DropQueryProcessor extends QueryProcessor {
   @override
   Stream<QueryUpdate> bind(Stream<QueryUpdate> stream) {
     return stream.map((QueryUpdate update) {
-      return update.cloneAndDrop(columns);
+      var result = update.cloneAndDrop(columns);
+      if (columns.contains("path") && update.values.containsKey("path")) {
+        result.setAttribute("id", update.values["path"]);
+      }
+      return result;
     });
   }
 }

@@ -4,6 +4,12 @@ import "package:dslink/dslink.dart";
 import "package:dslink_dql/query.dart";
 import "package:dslink_dql/process.dart";
 import "package:dslink_dql/parse.dart";
+import "package:dslink/utils.dart";
+
+final List<String> POSSIBLE_IDS = [
+  "id",
+  "path"
+];
 
 class BasicQueryContext extends QueryContext {
   @override
@@ -59,7 +65,7 @@ class QueryNode extends SimpleNode {
       if (table == null) {
         table = new LiveTable(update.values.keys.map((String key) {
           return new TableColumn(key, "dynamic");
-        }));
+        }).toList());
 
         table.doOnClose(() {
           if (sub != null) {
@@ -70,7 +76,7 @@ class QueryNode extends SimpleNode {
         c.complete(table);
       }
 
-      String path = update.values["path"];
+      String path = update.id;
 
       if (!rows.containsKey(path)) {
         if (!update.remove) {

@@ -21,6 +21,11 @@ class RenameQueryProcessor extends QueryProcessor {
         var val = r.values.remove(key);
         r.values[t] = val;
       }
+
+      if (update.values.containsKey("path") && !r.values.containsKey("path")) {
+        r.setAttribute("id", update.values["path"]);
+      }
+
       return r;
     });
   }

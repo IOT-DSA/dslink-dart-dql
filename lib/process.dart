@@ -5,12 +5,38 @@ import "dart:async";
 import "package:dslink/requester.dart";
 
 import "parse.dart";
+import "package:dslink/utils.dart";
+
+final List<String> POSSIBLE_IDS = [
+  "id",
+  "path"
+];
 
 typedef QueryProcessor QueryProcessorFactory(QueryContext context);
 
 class QueryUpdate {
   final Map values;
   final bool remove;
+
+  String get id {
+    for (String mik in POSSIBLE_IDS) {
+      if (values[mik] is String) {
+        return values[mik];
+      }
+    }
+
+    if (hasAttribute("id")) {
+      return getAttribute("id");
+    }
+
+    if (_id == null) {
+      _id = generateBasicId();
+    }
+
+    return _id;
+  }
+
+  String _id;
 
   QueryUpdate(this.values, {this.remove: false, this.attributes}) {
     if (attributes == null) {
@@ -42,6 +68,10 @@ class QueryUpdate {
       remove: remove,
       attributes: new Map.from(attributes)
     );
+
+    if (_id != null) {
+      update._id = _id;
+    }
 
     return update;
   }

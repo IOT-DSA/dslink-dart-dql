@@ -39,14 +39,14 @@ class PathExpression {
     if (!hasAnyMods && topmost == input) {
       return true;
     }
-    
+
     Path p = new Path(input);
 
     if (p.parentPath == topmost && !hasAnyMods) {
       return true;
     }
-    
-    List<Match> matches = pattern.allMatches(input);
+
+    List<Match> matches = pattern.allMatches(input).toList();
 
     if (matches.isEmpty) {
       return false;
@@ -199,7 +199,7 @@ PathExpression parseExpressionInput(String input) {
   if (count == 0) {
     topmost = input;
   }
-  
+
   if (topmost.endsWith("/")) {
     topmost = topmost.substring(0, topmost.length - 1);
   }
