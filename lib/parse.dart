@@ -16,6 +16,10 @@ final RegExp PATTERN_STRING = new RegExp(r"""
 (?:\'|\")([^\"]*)(?:\'|\")|([^\s\,]+)
 """.trim());
 
+final RegExp PATTERN_STRING_SINGLE = new RegExp(r"""
+([\@\.\$A-Za-z0-9]+)=(?:\'|\")([^\"]*)(?:\'|\")
+""".trim());
+
 final Object _EXISTS = new Object();
 
 typedef bool NodeFilter(RemoteNode node);
@@ -96,6 +100,14 @@ List<String> parseInputParameters(String input) {
   return PATTERN_STRING.allMatches(input).map((Match match) {
     return match.group(1);
   }).toList();
+}
+
+Map<String, String> parseStringMapInput(String input) {
+  var map = <String, String>{};
+  for (Match match in PATTERN_STRING_SINGLE.allMatches(input)) {
+    map[match.group(1)] = match.group(2);
+  }
+  return map;
 }
 
 NodeFilter parseFilterInput(String input) {
