@@ -9,9 +9,7 @@ class DropQueryProcessor extends QueryProcessor {
 
   @override
   void init(QueryStatement statement) {
-    columns = statement.argument.split(" ").map((x) => x.trim()).where((String n) {
-      return n.isNotEmpty;
-    }).toList();
+    columns = parseInputParameters(statement.argument);
   }
 
   @override

@@ -9,6 +9,10 @@ final RegExp PATTERN_FILTER = new RegExp(r"""
 ([\@\.\$A-Za-z0-9]+)(?:(\=|\!\=|\=\=|\<\=|\>\=|\<|\>)((?:(?:\"|\')(.*)(?:\"|\'))|(?:true|false)|(?:[0-9\.]+)))?
 """.trim());
 
+final RegExp PATTERN_STRING = new RegExp(r"""
+(?:\'|\")([^\"]*)(?:\'|\")|([^\s\,]+)
+""".trim());
+
 final Object _EXISTS = new Object();
 
 typedef bool NodeFilter(RemoteNode node);
@@ -83,6 +87,12 @@ class QueryFilterTest {
 
     return result;
   }
+}
+
+List<String> parseInputParameters(String input) {
+  return PATTERN_STRING.allMatches(input).map((Match match) {
+    return match.group(1);
+  }).toList();
 }
 
 NodeFilter parseFilterInput(String input) {
