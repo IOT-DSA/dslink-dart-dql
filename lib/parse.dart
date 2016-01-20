@@ -9,7 +9,7 @@ final RegExp PATTERN_PIPE = new RegExp(r"""
 """.trim());
 
 final RegExp PATTERN_FILTER = new RegExp(r"""
-([\@\.\$A-Za-z0-9]+)(?:(\=|\!\=|\=\=|\<\=|\>\=|\<|\>)((?:(?:\"|\')(.*)(?:\"|\'))|(?:true|false)|(?:[0-9\.]+)))?
+([\@\.\$A-Za-z0-9]+)(?:\s*)(?:(\=|\!\=|\=\=|\<\=|\>\=|\<|\>)(?:\s*)((?:(?:\"|\')(.*)(?:\"|\'))|(?:true|false)|(?:[0-9\.]+)))?
 """.trim());
 
 final RegExp PATTERN_STRING = new RegExp(r"""
