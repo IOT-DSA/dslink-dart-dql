@@ -13,7 +13,7 @@ class ListNodeQueryProcessor extends QueryProcessor {
   }
 
   @override
-  Stream<QueryUpdate> bind(Stream<QueryUpdate> stream) {
+  Stream<QueryUpdate> process(Stream<QueryUpdate> stream) {
     var subs = <String, StreamSubscription>{};
     var dones = <String, Function>{};
     Set<String> uids = new Set<String>();

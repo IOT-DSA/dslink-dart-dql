@@ -13,7 +13,7 @@ class FilterQueryProcessor extends QueryProcessor {
   }
 
   @override
-  Stream<QueryUpdate> bind(Stream<QueryUpdate> stream) {
+  Stream<QueryUpdate> process(Stream<QueryUpdate> stream) {
     return stream.where((QueryUpdate update) {
       if (update == null) {
         return false;

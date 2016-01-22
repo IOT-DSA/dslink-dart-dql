@@ -103,6 +103,17 @@ class QueryUpdate {
 
 abstract class QueryProcessor implements StreamTransformer<QueryUpdate, QueryUpdate> {
   void init(QueryStatement statement);
+  Stream<QueryUpdate> process(Stream<QueryUpdate> stream);
+
+  @override
+  Stream<QueryUpdate> bind(Stream<QueryUpdate> stream) {
+    var result = process(stream);
+    if (result == null) {
+      return stream;
+    } else {
+      return result;
+    }
+  }
 }
 
 abstract class QueryContext {

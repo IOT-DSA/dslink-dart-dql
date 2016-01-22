@@ -13,7 +13,7 @@ class SinglePathQueryProcessor extends QueryProcessor {
   }
 
   @override
-  Stream<QueryUpdate> bind(Stream<QueryUpdate> stream) {
+  Stream<QueryUpdate> process(Stream<QueryUpdate> stream) {
     return new Stream.fromIterable([
       new QueryUpdate({
         "path": path

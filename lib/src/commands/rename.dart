@@ -13,7 +13,7 @@ class RenameQueryProcessor extends QueryProcessor {
   }
 
   @override
-  Stream<QueryUpdate> bind(Stream<QueryUpdate> stream) {
+  Stream<QueryUpdate> process(Stream<QueryUpdate> stream) {
     return stream.map((QueryUpdate update) {
       QueryUpdate r = update.clone();
       for (String key in columns.keys) {

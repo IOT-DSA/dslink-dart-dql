@@ -40,7 +40,7 @@ class SubscribeQueryProcessor extends QueryProcessor {
   }
 
   @override
-  Stream<QueryUpdate> bind(Stream<QueryUpdate> stream) {
+  Stream<QueryUpdate> process(Stream<QueryUpdate> stream) {
     Map<String, SubscribeQueryHolder> holders = {};
     StreamController<QueryUpdate> controller;
     StreamSubscription sub;
