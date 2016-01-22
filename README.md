@@ -60,7 +60,7 @@ list /downstream/System/* | filter $type | subscribe $name value
 list /downstream/System/* | filter $type @unit!="%" | subscribe
 ```
 
-#### Subscribe to all numbers in a DSLink, and add a column that multiplies the value by 2
+#### Subscribe to all numbers in the network, and add a column that multiplies the value by 2
 
 ```
 list * | filter $type="number" | subscribe | expression double="val * 2"
