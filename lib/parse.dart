@@ -21,7 +21,7 @@ final RegExp PATTERN_STRING = new RegExp(r"""
 """.trim());
 
 final RegExp PATTERN_STRING_SINGLE = new RegExp(r"""
-([\@\.\$A-Za-z0-9]+)=(?:\'|\")([^\"]*)(?:\'|\")
+([\@\/\.\$A-Za-z0-9]+)=(?:\'|\")([^\"]*)(?:\'|\")
 """.trim());
 
 final Object _EXISTS = new Object();
