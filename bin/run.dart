@@ -64,18 +64,20 @@ class QueryNode extends SimpleNode {
     String lastColumnString = "";
 
     sub = context.query(input).listen((QueryUpdate update) {
-      List<String> keys = update.values.keys.toList();
-      keys.sort();
-      String myColumnString = keys.join(" ");
       var forceRefresh = false;
-      if (myColumnString != lastColumnString && table != null) {
-        table.columns.clear();
-        table.columns.addAll(update.values.keys.map((String key) {
-          return new TableColumn(key, "dynamic");
-        }));
-        forceRefresh = true;
+      if (!update.remove) {
+        List<String> keys = update.values.keys.toList();
+        keys.sort();
+        String myColumnString = keys.join(" ");
+        if (myColumnString != lastColumnString && table != null) {
+          table.columns.clear();
+          table.columns.addAll(update.values.keys.map((String key) {
+            return new TableColumn(key, "dynamic");
+          }));
+          forceRefresh = true;
+        }
+        lastColumnString = myColumnString;
       }
-      lastColumnString = myColumnString;
 
       if (table == null) {
         table = new LiveTable(update.values.keys.map((String key) {
