@@ -64,7 +64,9 @@ class QueryNode extends SimpleNode {
     String lastColumnString = "";
 
     sub = context.query(input).listen((QueryUpdate update) {
-      String myColumnString = update.values.keys.join(" ");
+      List<String> keys = update.values.keys.toList();
+      keys.sort();
+      String myColumnString = keys.join(" ");
       var forceRefresh = false;
       if (myColumnString != lastColumnString && table != null) {
         table.columns.clear();
