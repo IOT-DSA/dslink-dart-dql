@@ -6,7 +6,7 @@ DQL acts upon the connected broker and it's network.
 
 ## Query Examples
 
-#### List all nodes
+#### List all nodes in the network
 
 ```
 list *
@@ -64,4 +64,16 @@ list /downstream/System/* | filter $type @unit!="%" | subscribe
 
 ```
 list * | filter $type="number" | subscribe | expression double="val * 2"
+```
+
+#### Subscribe to the 'of' (Open Files) child of each database in etsdb
+
+```
+list /downstream/etsdb/? | subscribe of
+```
+
+#### Build a table of all values in the network and what types they are
+
+```
+list * | filter $type | subscribe $type
 ```
