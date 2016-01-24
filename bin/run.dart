@@ -4,7 +4,6 @@ import "package:dslink/dslink.dart";
 import "package:dslink_dql/query.dart";
 import "package:dslink_dql/process.dart";
 import "package:dslink_dql/parse.dart";
-import "package:dslink/utils.dart";
 
 final List<String> POSSIBLE_IDS = [
   "id",

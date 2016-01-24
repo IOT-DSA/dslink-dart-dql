@@ -95,7 +95,9 @@ class QueryUpdate {
   QueryUpdate cloneAndStub(List<String> keys) {
     QueryUpdate c = clone();
     for (String key in keys) {
-      c.values[key] = null;
+      if (!c.values.containsKey(key)) {
+        c.values[key] = null;
+      }
     }
     return c;
   }
