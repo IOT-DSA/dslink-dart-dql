@@ -2,7 +2,6 @@
 
 if [ -f ${HOME}/.dglogik/jenkins_info ]
 then
-  mv lib/script.dart lib/script.dart.bak
   wget --auth-no-challenge \
     --http-user="${JENKINS_USERNAME}" \
     --http-password="${JENKINS_PASSWORD}" \
