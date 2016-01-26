@@ -27,7 +27,12 @@ class ExpressionQueryProcessor extends QueryProcessor {
       for (String key in expressions.keys) {
         var ex = expressions[key];
         if (ex is String) {
-          result.values[key] = doExecuteScript(ex, update.values);
+          var v = doExecuteScript(ex, result.values);
+          if (v != null) {
+            result.values[key] = v;
+          } else if (!result.values.containsKey(key)) {
+            result.values[key] = null;
+          }
         }
       }
 
