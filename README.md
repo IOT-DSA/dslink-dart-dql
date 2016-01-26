@@ -63,7 +63,7 @@ list /downstream/System/* | filter $type @unit!="%" | subscribe
 #### Subscribe to all numbers in the network, and add a column that multiplies the value by 2
 
 ```
-list * | filter $type="number" | subscribe | expression double="val * 2"
+list * | filter $type="number" | subscribe | expression double="row.value * 2"
 ```
 
 #### Subscribe to the 'of' (Open Files) child of each database in etsdb
@@ -76,4 +76,16 @@ list /downstream/etsdb/? | subscribe of
 
 ```
 list * | filter $type | subscribe $type
+```
+
+#### Concatenate a string with each value in the network
+
+```
+list * | filter $type | subscribe | expression msg="'Value: ' + row.value"
+```
+
+### Calculate the minimum of 50 and the number values in the network
+
+```
+list * | filter $type="number"  | subscribe | expression min="Math.min(50, row.value)"
 ```
