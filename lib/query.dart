@@ -4,7 +4,7 @@ import "dart:async";
 
 import "package:dslink/dslink.dart";
 
-import "package:math_expressions/math_expressions.dart" as MathExpressions;
+import "package:dslink_dql/script.dart";
 
 import "process.dart";
 import "parse.dart";
