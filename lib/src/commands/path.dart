@@ -14,10 +14,14 @@ class SinglePathQueryProcessor extends QueryProcessor {
 
   @override
   Stream<QueryUpdate> process(Stream<QueryUpdate> stream) {
-    return new Stream.fromIterable([
-      new QueryUpdate({
+    Future<QueryUpdate> get() async {
+      var node = await context.requester.getRemoteNode(path);
+      return new QueryUpdate({
         "path": path
-      })
-    ]);
+      }, attributes: {
+        "node": node
+      });
+    }
+    return new Stream.fromFuture(get());
   }
 }
