@@ -89,3 +89,9 @@ list * | filter $type | subscribe | expression msg="'Value: ' + row.value"
 ```
 list * | filter $type="number"  | subscribe | expression min="Math.min(50, row.value)"
 ```
+
+### Subscribe to children on a single path
+
+```
+path /downstream/System | subscribe Memory_Usage
+```
