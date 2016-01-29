@@ -13,7 +13,7 @@ final RegExp PATTERN_PIPE = new RegExp(r"""
 """.trim());
 
 final RegExp PATTERN_FILTER = new RegExp(r"""
-([\@\.\$A-Za-z0-9]+)(?:\s*)(?:(\=|\!\=|\=\=|\<\=|\>\=|\<|\>)(?:\s*)((?:(?:\"|\')(.*)(?:\"|\'))|(?:true|false)|(?:[0-9\.]+)))?
+([\@\.\$A-Za-z0-9\:]+)(?:\s*)(?:(\=|\!\=|\=\=|\<\=|\>\=|\<|\>)(?:\s*)((?:(?:\"|\')(.*)(?:\"|\'))|(?:true|false)|(?:[0-9\.]+)))?
 """.trim());
 
 final RegExp PATTERN_STRING = new RegExp(r"""
@@ -166,9 +166,12 @@ NodeFilter parseFilterInput(String input) {
     }
 
     Map m = createRealMap(node.save());
-
     m.addAll(update.values);
 
+    if (m[r"$type"] == null && m[r"$invokable"] == null) {
+      m[":node"] = true;
+    }
+    
     for (QueryFilterTest test in tests) {
       if (!test.matches(m)) {
         return false;
