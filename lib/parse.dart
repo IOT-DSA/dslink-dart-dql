@@ -168,10 +168,6 @@ NodeFilter parseFilterInput(String input) {
     Map m = createRealMap(node.save());
     m.addAll(update.values);
 
-    if (m[r"$type"] == null && m[r"$invokable"] == null) {
-      m[":node"] = true;
-    }
-
     for (QueryFilterTest test in tests) {
       if (!test.matches(m)) {
         return false;
@@ -253,6 +249,16 @@ Map createRealMap(Map m) {
 
   if (m.containsKey("?value_timestamp")) {
     m["value.timestamp"] = m.remove("?value_timestamp");
+  }
+
+
+  if (m[r"$type"] == null && m[r"$invokable"] == null) {
+    m[":node"] = true;
+  }
+
+
+  if (m[r"$type"] is String) {
+    m[":metric"] = true;
   }
 
   return m;
