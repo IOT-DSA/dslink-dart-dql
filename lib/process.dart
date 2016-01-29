@@ -123,9 +123,16 @@ abstract class QueryContext {
   Stream<QueryUpdate> query(String input);
 }
 
+int _seqId = 0;
+
 Stream<QueryUpdate> processQuery(List<QueryProcessor> processors) {
   Stream<QueryUpdate> stream = new Stream<QueryUpdate>.empty();
+
+  _seqId++;
+
+  int pid = 0;
   for (QueryProcessor processor in processors) {
+    var id = ++pid;
     stream = processor.bind(stream).map((QueryUpdate update) {
       update.setAttribute("lastProcessor", processor);
       return update;
@@ -133,7 +140,7 @@ Stream<QueryUpdate> processQuery(List<QueryProcessor> processors) {
 
     if (DEBUG) {
       stream = stream.map((QueryUpdate u) {
-        print("Result from ${processor}: ${u.values}");
+        print("[${_seqId} ${id}] ${processor.runtimeType} => ${u.values}");
         return u;
       });
     }
