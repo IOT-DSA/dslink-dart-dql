@@ -171,7 +171,7 @@ NodeFilter parseFilterInput(String input) {
     if (m[r"$type"] == null && m[r"$invokable"] == null) {
       m[":node"] = true;
     }
-    
+
     for (QueryFilterTest test in tests) {
       if (!test.matches(m)) {
         return false;

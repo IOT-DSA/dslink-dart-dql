@@ -45,6 +45,7 @@ class QueryNode extends SimpleNode {
         {
           "name": "query",
           "type": "string",
+          "editor": "textarea",
           "placeholder": "list * | subscribe"
         }
       ]
