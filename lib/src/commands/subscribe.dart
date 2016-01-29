@@ -110,8 +110,16 @@ class SubscribeQueryProcessor extends QueryProcessor {
                 }
               });
             } else {
+              String rk = n;
+              bool ts = false;
+              if (rk.endsWith(".timestamp")) {
+                String rn = rk.substring(0, rk.length - 10);
+                cp = cp.replaceAll("/${rk}", "/${rn}");
+                ts = true;
+              }
+
               holder.subs[n] = context.requester.subscribe(cp, (ValueUpdate update) {
-                holder.values[n] = update.value;
+                holder.values[n] = ts ? update.ts : update.value;
                 controller.add(holder.build());
               });
             }
