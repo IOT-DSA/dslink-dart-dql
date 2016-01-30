@@ -13,7 +13,7 @@ final RegExp PATTERN_PIPE = new RegExp(r"""
 """.trim());
 
 final RegExp PATTERN_FILTER = new RegExp(r"""
-(?:(?:\`(.+)\`)|([\@\.\$A-Za-z0-9\:]+))(?:\s*)(?:(\=|\!\=|\=\=|\<\=|\>\=|\<|\>)(?:\s*)((?:(?:\"|\')(.*)(?:\"|\'))|(?:true|false)|(?:[0-9\.]+)))?
+(?:(?:\`(.+)\`)|([\@\.\$A-Za-z0-9\:]+))(?:\s*)(?:(\=|\!\=|\=\=|\<\=|\>\=|\<|\>)(?:\s*)((?:(?:\"|\')(.*)(?:\"|\'))|(?:true|false|null)|(?:[0-9\.]+)))?
 """.trim());
 
 final RegExp PATTERN_STRING = new RegExp(r"""
@@ -148,7 +148,7 @@ NodeFilter parseFilterInput(String input) {
     if (list[1] != null) {
       list[2] = list[1];
     }
-    
+
     String k = list[2];
     dynamic value;
     String op = "=";
@@ -164,6 +164,18 @@ NodeFilter parseFilterInput(String input) {
 
     if (value == null) {
       value = _EXISTS;
+    }
+
+    try {
+      value = num.parse(value);
+    } catch (e) {}
+
+    if (value == "false" || value == "true") {
+      value = value == "true";
+    }
+
+    if (value == "null") {
+      value = null;
     }
 
     tests.add(new QueryFilterTest(
