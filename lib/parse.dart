@@ -13,7 +13,7 @@ final RegExp PATTERN_PIPE = new RegExp(r"""
 """.trim());
 
 final RegExp PATTERN_FILTER = new RegExp(r"""
-(?:(?:\`(.+)\`)|([\@\.\$A-Za-z0-9\:]+))(?:\s*)(?:(\=|\!\=|\=\=|\<\=|\>\=|\<|\>)(?:\s*)((?:(?:\"|\')(.*)(?:\"|\'))|(?:true|false|null)|(?:[0-9\.]+)))?
+(?:(?:\`(.+)\`)|([\@\.\$A-Za-z0-9\:]+))(?:\s*)(?:(\=|\!\=|\=\=|\<\=|\>\=|\<|\>)(?:\s*)((?:(?:\"|\')(.*)(?:\"|\'))|(?:true|false|null|nil)|(?:[0-9\.]+)))?
 """.trim());
 
 final RegExp PATTERN_STRING = new RegExp(r"""
@@ -154,7 +154,7 @@ NodeFilter parseFilterInput(String input) {
     String op = "=";
     if (match.groupCount == 1 || match.groupCount == 2 || list[3] == null) {
       value = _EXISTS;
-    } else if (match.groupCount == 3) {
+    } else if (list[5] == null) {
       value = list[4];
       op = list[3];
     } else {
@@ -174,7 +174,7 @@ NodeFilter parseFilterInput(String input) {
       value = value == "true";
     }
 
-    if (value == "null") {
+    if (value == "null" || value == "nil") {
       value = null;
     }
 
@@ -191,9 +191,9 @@ NodeFilter parseFilterInput(String input) {
     }
 
     Map m = {};
-    m.addAll(update.values);
     m.addAll(update.attributes);
     m.addAll(node.save(includeValue: true));
+    m.addAll(update.values);
     m = createRealMap(m);
 
     for (QueryFilterTest test in tests) {

@@ -3,7 +3,7 @@ import "package:dslink_dql/parse.dart";
 main() {
   test('"hi"="bye"');
   test('hi="bye"');
-  test('my=1');
+  test('latitude!=nil');
 }
 
 test(String filter) {
