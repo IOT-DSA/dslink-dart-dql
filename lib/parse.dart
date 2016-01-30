@@ -13,7 +13,7 @@ final RegExp PATTERN_PIPE = new RegExp(r"""
 """.trim());
 
 final RegExp PATTERN_FILTER = new RegExp(r"""
-([\@\.\$A-Za-z0-9\:]+)(?:\s*)(?:(\=|\!\=|\=\=|\<\=|\>\=|\<|\>)(?:\s*)((?:(?:\"|\')(.*)(?:\"|\'))|(?:true|false)|(?:[0-9\.]+)))?
+(?:(?:\`(.+)\`)|([\@\.\$A-Za-z0-9\:]+))(?:\s*)(?:(\=|\!\=|\=\=|\<\=|\>\=|\<|\>)(?:\s*)((?:(?:\"|\')(.*)(?:\"|\'))|(?:true|false)|(?:[0-9\.]+)))?
 """.trim());
 
 final RegExp PATTERN_STRING = new RegExp(r"""
@@ -136,17 +136,30 @@ NodeFilter parseFilterInput(String input) {
   List<Match> matches = PATTERN_FILTER.allMatches(input).toList();
   List<QueryFilterTest> tests = [];
   for (Match match in matches) {
-    String k = match.group(1);
+    List<String> list = match.groups(const [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ]);
+
+    if (list[1] != null) {
+      list[2] = list[1];
+    }
+    
+    String k = list[2];
     dynamic value;
     String op = "=";
-    if (match.groupCount == 1) {
+    if (match.groupCount == 1 || match.groupCount == 2 || list[3] == null) {
       value = _EXISTS;
     } else if (match.groupCount == 3) {
-      value = match.group(3);
-      op = match.group(2);
+      value = list[4];
+      op = list[3];
     } else {
-      value = match.group(4);
-      op = match.group(2);
+      value = list[5];
+      op = list[3];
     }
 
     if (value == null) {
@@ -165,8 +178,11 @@ NodeFilter parseFilterInput(String input) {
       return true;
     }
 
-    Map m = createRealMap(node.save());
+    Map m = {};
     m.addAll(update.values);
+    m.addAll(update.attributes);
+    m.addAll(node.save(includeValue: true));
+    m = createRealMap(m);
 
     for (QueryFilterTest test in tests) {
       if (!test.matches(m)) {
