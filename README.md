@@ -84,13 +84,13 @@ list * | filter $type | subscribe $type
 list * | filter $type | subscribe | expression msg="'Value: ' + row.value"
 ```
 
-### Calculate the minimum of 50 and the number values in the network
+#### Calculate the minimum of 50 and the number values in the network
 
 ```
 list * | filter $type="number"  | subscribe | expression min="Math.min(50, row.value)"
 ```
 
-### Subscribe to children on a single path
+#### Subscribe to children on a single path
 
 ```
 path /downstream/System | subscribe Memory_Usage
