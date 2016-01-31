@@ -54,10 +54,10 @@ class FilterGrammarDefinition extends GrammarDefinition {
   @override
   Parser start() => ref(expressions).end();
 
-  expressions() => ref(expression).separatedBy(
+  expressions() => (whitespace().star() & ref(expression).separatedBy(
     whitespace().plus(),
     includeSeparators: false
-  );
+  ) & whitespace().star()).pick(1);
 
   expression() => ref(compare);
 

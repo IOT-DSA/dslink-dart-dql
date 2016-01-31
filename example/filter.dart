@@ -4,7 +4,7 @@ main() {
   test('"hi"="bye"');
   test('hi="bye"');
   test('latitude!=nil');
-  test('@assetType="Spare Part               " @assetApplicable="VOR DME                           "');
+  test('@assetApplicable @assetType="Engine Core Stand        "');
 }
 
 test(String filter) {
