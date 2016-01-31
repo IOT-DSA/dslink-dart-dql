@@ -78,52 +78,6 @@ class QueryStatement {
   }
 }
 
-class QueryFilterTest {
-  final String key;
-  final String operator;
-  final dynamic value;
-
-  QueryFilterTest(this.key, {this.operator: "=", this.value}) {
-    if (operator == "~") {
-      _regex = new RegExp(value.toString());
-    }
-  }
-
-  RegExp _regex;
-
-  bool matches(Map m) {
-    bool result = false;
-    var v = m[key];
-
-    if (value is bool && v is String) {
-      v = v.toString().toLowerCase() == "true";
-    }
-
-    if (value == _EXISTS) {
-      result = m.containsKey(key);
-    } else if (operator == "=" || operator == "==") {
-      result = v == value;
-    } else if (operator == "!=") {
-      result = v != value;
-    } else if (operator == ">") {
-      result = v > value;
-    } else if (operator == "<") {
-      result = v < value;
-    } else if (operator == "<=") {
-      result = v <= value;
-    } else if (operator == ">=") {
-      result = v = value;
-    } else if (operator == "~") {
-      result = _regex.hasMatch(v.toString());
-    }
-
-    return result;
-  }
-
-  @override
-  String toString() => "${key}${operator}${value}";
-}
-
 List<String> parseInputParameters(String input) {
   return PATTERN_STRING.allMatches(input).map((Match match) {
     if (match.group(1) == null) {
@@ -141,8 +95,12 @@ Map<String, String> parseStringMapInput(String input) {
   return map;
 }
 
+List<FilterTest> parseFilterTests(String input) {
+  return FilterParser.doParse(input);
+}
+
 NodeFilter parseFilterInput(String input) {
-  List<QueryFilterTest> tests = FilterParser.doParse(input);
+  List<FilterTest> tests = parseFilterTests(input);
 
   return (RemoteNode node, QueryUpdate update) {
     if (tests.isEmpty) {
@@ -155,7 +113,7 @@ NodeFilter parseFilterInput(String input) {
     m.addAll(update.values);
     m = createRealMap(m);
 
-    for (QueryFilterTest test in tests) {
+    for (FilterTest test in tests) {
       if (!test.matches(m)) {
         return false;
       }
@@ -246,11 +204,9 @@ Map createRealMap(Map m) {
     m["value.timestamp"] = m.remove("?value_timestamp");
   }
 
-
   if (m[r"$type"] == null && m[r"$invokable"] == null) {
     m[":node"] = true;
   }
-
 
   if (m[r"$type"] is String) {
     m[":metric"] = true;

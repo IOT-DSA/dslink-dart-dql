@@ -2,14 +2,57 @@ library dsa.query.parse.filter;
 
 import "package:petitparser/petitparser.dart";
 
-final Object EXISTS = new Object();
+final Existent EXISTS = Existent.EXISTS;
 
-class QueryFilterTest {
+abstract class FilterTest {
+  bool matches(Map m);
+}
+
+class Existent {
+  static const Existent EXISTS = const Existent();
+
+  const Existent();
+
+  @override
+  String toString() => "[EXISTS]";
+}
+
+class FilterLogicalTest extends FilterTest {
+  final FilterTest left;
+  final FilterTest right;
+  final String op;
+
+  FilterLogicalTest(this.left, this.right, this.op);
+
+  @override
+  bool matches(Map m) {
+    if (op == "||" || op == "or") {
+      bool a = left.matches(m);
+      if (a) {
+        return true;
+      }
+      return right.matches(m);
+    } else if (op == "&&" || op == "and") {
+      bool a = left.matches(m);
+      if (!a) {
+        return false;
+      }
+      return right.matches(m);
+    } else {
+      return false;
+    }
+  }
+
+  @override
+  String toString() => "Logical(${left} ${op} ${right})";
+}
+
+class FilterCompareTest extends FilterTest {
   final String key;
   final String operator;
   final dynamic value;
 
-  QueryFilterTest(this.key, {this.operator: "=", this.value}) {
+  FilterCompareTest(this.key, {this.operator: "=", this.value}) {
     if (operator == "~") {
       _regex = new RegExp(value.toString());
     }
@@ -47,7 +90,7 @@ class QueryFilterTest {
   }
 
   @override
-  String toString() => "${key}${operator}${value}";
+  String toString() => "Compare(${key}${operator}${value})";
 }
 
 class FilterGrammarDefinition extends GrammarDefinition {
@@ -59,7 +102,21 @@ class FilterGrammarDefinition extends GrammarDefinition {
     includeSeparators: false
   ) & whitespace().star()).pick(1);
 
-  expression() => ref(compare);
+  expression() => ref(logical) |
+    ref(compare);
+
+  logical() => ref(compare) &
+    (
+      whitespace().star() &
+      ref(logicalOp) &
+      whitespace().star()
+    ).pick(1) &
+    ref(compare);
+
+  logicalOp() => string("||") |
+    string("or") |
+    string("&&") |
+    string("and");
 
   compare() => (
     ref(identifier) | ref(stringLiteral)
@@ -125,7 +182,16 @@ class FilterParserDefinition extends FilterGrammarDefinition {
       val = second[1];
     }
 
-    return new QueryFilterTest(key, operator: op, value: val);
+    return new FilterCompareTest(key, operator: op, value: val);
+  });
+
+  @override
+  logical() => super.logical().map((m) {
+    var a = m[0];
+    var b = m[1];
+    var c = m[2];
+
+    return new FilterLogicalTest(a, c, b);
   });
 
   @override

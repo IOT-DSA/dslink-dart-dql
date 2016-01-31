@@ -5,6 +5,8 @@ main() {
   test('hi="bye"');
   test('latitude!=nil');
   test('@assetApplicable @assetType="Engine Core Stand        "');
+  test('@assetApplicable or @assetType');
+  test('@name="name" or @fi="bye"');
 }
 
 test(String filter) {
