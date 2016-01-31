@@ -49,6 +49,8 @@ test(String filter, [Map m]) {
     var result = test.matches(m);
     print("Result: ${result}");
   } else {
+    Set<String> keys = FilterTestKeyCollector.collect(test);
+    print("Keys: ${keys}");
     print("Parsed: ${test}");
   }
 }

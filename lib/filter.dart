@@ -4,6 +4,58 @@ import "package:petitparser/petitparser.dart";
 
 const Existent EXISTS = Existent.EXISTS;
 
+abstract class FilterTestVisitor {
+  void visit(FilterTest test) {
+    if (test is FilterTestCollection) {
+      visitTestCollection(test);
+    } else if (test is FilterCompareTest) {
+      visitCompare(test);
+    } else if (test is FilterLogicalTest) {
+      visitLogical(test);
+    } else if (test is FilterParenthesesTest) {
+      visitParentheses(test);
+    }
+  }
+
+  void visitParentheses(FilterParenthesesTest test) {
+    test.visit(this);
+  }
+
+  void visitTestCollection(FilterTestCollection collection) {
+    collection.visit(this);
+  }
+
+  void visitCompare(FilterCompareTest test) {
+    test.visit(this);
+  }
+
+  void visitLogical(FilterLogicalTest test) {
+    test.visit(this);
+  }
+}
+
+class FilterTestKeyCollector extends FilterTestVisitor {
+  static Set<String> collect(FilterTest test) {
+    var collector = new FilterTestKeyCollector();
+    collector.visit(test);
+    return collector.keys;
+  }
+
+  final Set<String> keys;
+
+  factory FilterTestKeyCollector() {
+    var set = new Set<String>();
+    return new FilterTestKeyCollector.forSet(set);
+  }
+
+  FilterTestKeyCollector.forSet(this.keys);
+
+  @override
+  void visitCompare(FilterCompareTest test) {
+    keys.add(test.key);
+  }
+}
+
 class Existent {
   static const Existent EXISTS = const Existent();
 
@@ -15,6 +67,7 @@ class Existent {
 
 abstract class FilterTest {
   bool matches(Map m);
+  void visit(FilterTestVisitor visitor);
 }
 
 class FilterParenthesesTest extends FilterTest {
@@ -29,6 +82,11 @@ class FilterParenthesesTest extends FilterTest {
 
   @override
   String toString() => "Parentheses(${expression})";
+
+  @override
+  void visit(FilterTestVisitor visitor) {
+    visitor.visit(expression);
+  }
 }
 
 class FilterLogicalTest extends FilterTest {
@@ -69,6 +127,12 @@ class FilterLogicalTest extends FilterTest {
 
   @override
   String toString() => "Logical(${left} ${op} ${right})";
+
+  @override
+  void visit(FilterTestVisitor visitor) {
+    visitor.visit(left);
+    visitor.visit(right);
+  }
 }
 
 class FilterTestCollection extends FilterTest {
@@ -96,6 +160,13 @@ class FilterTestCollection extends FilterTest {
     }
     buff.writeln(")");
     return buff.toString().trim();
+  }
+
+  @override
+  void visit(FilterTestVisitor visitor) {
+    for (FilterTest test in tests) {
+      visitor.visit(test);
+    }
   }
 }
 
@@ -159,6 +230,10 @@ class FilterCompareTest extends FilterTest {
 
   @override
   String toString() => "Compare(${key} ${operator} ${value})";
+
+  @override
+  void visit(FilterTestVisitor visitor) {
+  }
 }
 
 class FilterGrammarDefinition extends GrammarDefinition {
