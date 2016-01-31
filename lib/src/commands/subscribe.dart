@@ -147,4 +147,24 @@ class SubscribeQueryProcessor extends QueryProcessor {
 
     return controller.stream;
   }
+
+  @override
+  void calculateColumnSet(Set<String> columns) {
+    columns.addAll(childs);
+  }
+
+  @override
+  void handleLeftHandProcessors(List<QueryProcessor> processors) {
+    for (QueryProcessor processor in processors) {
+      if (processor is SubscribeQueryProcessor) {
+        childs.removeWhere((x) => processor.childs.contains(x));
+      }
+    }
+  }
+
+  @override
+  String toString() {
+    String children = childs == null ? "none" : childs.join(" ");
+    return "Subscribe ${children}";
+  }
 }

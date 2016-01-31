@@ -118,6 +118,15 @@ class QueryUpdate {
 
 abstract class QueryProcessor implements StreamTransformer<QueryUpdate, QueryUpdate> {
   void init(QueryStatement statement);
+
+  void calculateColumnSet(Set<String> columns);
+  void handleColumnSet(Set<String> columns) {}
+  void handleLeftHandProcessors(List<QueryProcessor> processors) {}
+
+  QueryProcessor createDependencyProcessor() {
+    return null;
+  }
+
   Stream<QueryUpdate> process(Stream<QueryUpdate> stream);
 
   @override
@@ -139,13 +148,43 @@ abstract class QueryContext {
 int _seqId = 0;
 
 Stream<QueryUpdate> processQuery(List<QueryProcessor> processors) {
+  logger.fine("Process Query: ${processors}");
+
+  Set<String> columns = new Set<String>();
+  List<QueryProcessor> stage = new List<QueryProcessor>.from(processors);
+
+  for (QueryProcessor processor in processors) {
+    processor.handleColumnSet(columns);
+    processor.calculateColumnSet(columns);
+  }
+
+  int pidx = 0;
+  for (QueryProcessor processor in processors) {
+    List<QueryProcessor> leftHand = processors.sublist(0, pidx);
+    processor.handleLeftHandProcessors(leftHand);
+    QueryProcessor p = processor.createDependencyProcessor();
+    if (p != null) {
+      stage.insert(stage.indexOf(processor), p);
+    }
+    pidx++;
+  }
+
+  if (stage.length != processors.length) {
+    return processQuery(stage);
+  }
+
+  processors.clear();
+  processors = stage;
+
+  logger.fine("Process Final Query: ${processors}");
+
   Stream<QueryUpdate> stream = new Stream<QueryUpdate>.empty();
-
   _seqId++;
-
   int pid = 0;
+
   for (QueryProcessor processor in processors) {
     var id = ++pid;
+    processor.calculateColumnSet(columns);
     stream = processor.bind(stream).map((QueryUpdate update) {
       update.setAttribute("lastProcessor", processor);
       return update;

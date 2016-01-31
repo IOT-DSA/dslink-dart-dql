@@ -153,13 +153,7 @@ class FilterTestCollection extends FilterTest {
 
   @override
   String toString() {
-    var buff = new StringBuffer();
-    buff.writeln("TestCollection(");
-    for (FilterTest test in tests) {
-      buff.writeln("  ${test}");
-    }
-    buff.writeln(")");
-    return buff.toString().trim();
+    return "TestCollection(${tests})";
   }
 
   @override
@@ -278,7 +272,7 @@ class FilterGrammarDefinition extends GrammarDefinition {
     ref(value)
   ).optional();
 
-  identifier() => pattern("A-Za-z0-9\$@_").plus().flatten();
+  identifier() => pattern("A-Za-z0-9\$@_:").plus().flatten();
 
   value() => ref(stringLiteral) |
     ref(nil) |

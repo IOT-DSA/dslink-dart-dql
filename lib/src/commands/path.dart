@@ -24,4 +24,14 @@ class SinglePathQueryProcessor extends QueryProcessor {
     }
     return new Stream.fromFuture(get());
   }
+
+  @override
+  void calculateColumnSet(Set<String> columns) {
+    columns.add("path");
+  }
+
+  @override
+  String toString() {
+    return "Path ${path == null ? 'none' : path}";
+  }
 }

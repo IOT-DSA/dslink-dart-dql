@@ -1,5 +1,7 @@
 import "dart:async";
+
 import "package:dslink/dslink.dart";
+import "package:dslink/utils.dart";
 
 import "package:dslink_dql/query.dart";
 import "package:dslink_dql/process.dart";
@@ -16,7 +18,12 @@ class BasicQueryContext extends QueryContext {
 
   @override
   Stream<QueryUpdate> query(String input) {
+    logger.fine("Run Query: ${input}");
+
     List<QueryStatement> statements = parseQueryInput(input);
+
+    logger.fine("Parse Query: ${statements}");
+
     List<QueryProcessor> processors = statements.map((QueryStatement statement) {
       if (!QUERY_COMMANDS.containsKey(statement.command)) {
         throw new QueryException(

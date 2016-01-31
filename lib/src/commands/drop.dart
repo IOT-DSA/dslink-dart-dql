@@ -22,4 +22,16 @@ class DropQueryProcessor extends QueryProcessor {
       return result;
     });
   }
+
+  @override
+  void calculateColumnSet(Set<String> set) {
+    set.removeAll(columns);
+  }
+
+  @override
+  String toString() {
+    String col = columns == null ? "" : columns.join(", ");
+
+    return "Drop columns ${col}";
+  }
 }

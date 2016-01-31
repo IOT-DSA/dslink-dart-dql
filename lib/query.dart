@@ -8,6 +8,7 @@ import "package:dslink_dql/script.dart";
 
 import "process.dart";
 import "parse.dart";
+import "filter.dart";
 
 part "src/commands/list.dart";
 part "src/commands/subscribe.dart";

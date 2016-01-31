@@ -39,4 +39,14 @@ class ExpressionQueryProcessor extends QueryProcessor {
       return result;
     });
   }
+
+  @override
+  void calculateColumnSet(Set<String> columns) {
+    columns.addAll(expressions.keys);
+  }
+
+  @override
+  String toString() {
+    return "Expressions ${expressions}";
+  }
 }

@@ -29,4 +29,15 @@ class RenameQueryProcessor extends QueryProcessor {
       return r;
     });
   }
+
+  @override
+  void calculateColumnSet(Set<String> set) {
+    set.removeAll(columns.keys);
+    set.addAll(columns.values);
+  }
+
+  @override
+  String toString() {
+    return "Rename ${columns == null ? 'none' : columns}";
+  }
 }

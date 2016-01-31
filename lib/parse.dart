@@ -58,6 +58,9 @@ class PathExpression {
 
     return true;
   }
+
+  @override
+  String toString() => "${pattern.pattern}";
 }
 
 class QueryStatement {
@@ -99,9 +102,7 @@ FilterTestCollection parseFilterTests(String input) {
   return FilterParser.doParse(input);
 }
 
-NodeFilter parseNodeFilter(String input) {
-  FilterTestCollection test = parseFilterTests(input);
-
+NodeFilter createNodeFilter(FilterTestCollection test) {
   return (RemoteNode node, QueryUpdate update) {
     if (test.tests.isEmpty) {
       return true;

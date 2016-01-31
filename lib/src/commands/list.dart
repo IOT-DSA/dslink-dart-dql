@@ -119,4 +119,14 @@ class ListNodeQueryProcessor extends QueryProcessor {
 
     return controller.stream;
   }
+
+  @override
+  void calculateColumnSet(Set<String> columns) {
+    columns.add("path");
+  }
+
+  @override
+  String toString() {
+    return "List ${expression == null ? 'none' : expression}";
+  }
 }
