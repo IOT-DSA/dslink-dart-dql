@@ -4,7 +4,7 @@ main() {
   test('"hi"="bye"');
   test('hi="bye"');
   test('latitude!=nil');
-  test('@assetApplicable @assetType="Engine Core Stand        "');
+  test('@assetApplicable @assetType="Engine Core Stand"');
   test('@assetApplicable or @assetType');
   test('@name="name" or @fi="bye"');
   test('@assetApplicable and @assetType');
@@ -22,10 +22,33 @@ main() {
   test('@car is true and @truck is false');
   test('@name="name" or @fi="bye" or @peace or @not or @n');
   test('@car is true and @track is false or @name is true');
-  test('(@car is true) and (@truck is false or @truck is true)');
+  test('(@car is true) and (@truck is false or @always is true)');
+
+  test('@names contains "Alex"', {
+    "@names": [
+      "Alex",
+      "Dennis",
+      "Sam",
+      "Rick",
+      "Logan",
+      "Mike"
+    ]
+  });
+
+  test('@name in ["Alex", "Emily"]', {
+    "@name": "Emily"
+  });
 }
 
-test(String filter) {
-  var p = new FilterParser();
-  print(p.parse(filter).value);
+test(String filter, [Map m]) {
+  print("===========================================");
+  print("Input: ${filter}");
+  FilterTestCollection test = FilterParser.doParse(filter);
+  if (m != null) {
+    print("Against: ${m}");
+    var result = test.matches(m);
+    print("Result: ${result}");
+  } else {
+    print("Parsed: ${test}");
+  }
 }

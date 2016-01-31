@@ -117,10 +117,6 @@ class FilterCompareTest extends FilterTest {
     bool result = false;
     var v = m[key];
 
-    if (value is bool && v is String) {
-      v = v.toString().toLowerCase() == "true";
-    }
-
     if (value == EXISTS) {
       result = m.containsKey(key);
     } else if (operator == "=" ||
@@ -140,6 +136,22 @@ class FilterCompareTest extends FilterTest {
       result = v = value;
     } else if (operator == "~" || operator == "like") {
       result = _regex.hasMatch(v.toString());
+    } else if (operator == "contains") {
+      if (v is List) {
+        result = v.contains(value);
+      } else if (v is String) {
+        result = v.contains(value);
+      } else {
+        result = false;
+      }
+    } else if (operator == "in") {
+      if (value is List) {
+        result = value.contains(v);
+      } else if (value is String) {
+        result = value.contains(v.toString());
+      } else {
+        result = false;
+      }
     }
 
     return result;
@@ -192,10 +204,12 @@ class FilterGrammarDefinition extends GrammarDefinition {
   ).optional();
 
   identifier() => pattern("A-Za-z0-9\$@_").plus().flatten();
+
   value() => ref(stringLiteral) |
     ref(nil) |
     ref(number) |
-    ref(boolean);
+    ref(boolean) |
+    ref(valueList);
 
   parens() => (
     char("(") &
@@ -232,8 +246,23 @@ class FilterGrammarDefinition extends GrammarDefinition {
     char("<") |
     string("equals") |
     string("is") |
-    string("like")
+    string("like") |
+    string("contains") |
+    string("in")
   ).flatten();
+
+  valueList() => (
+    char("[") &
+    whitespace().star() &
+    ref(value).separatedBy(
+      whitespace().star() &
+      char(",") &
+      whitespace().star(),
+      includeSeparators: false
+    ) &
+    whitespace().star() &
+    char("]")
+  ).pick(2);
 
   quote() => char('"') |
     char("'") |
@@ -294,6 +323,11 @@ class FilterParserDefinition extends FilterGrammarDefinition {
   @override
   parens() => super.parens().map((v) {
     return new FilterParenthesesTest(v);
+  });
+
+  @override
+  valueList() => super.valueList().map((v) {
+    return v;
   });
 }
 
