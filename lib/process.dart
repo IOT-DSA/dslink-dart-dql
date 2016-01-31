@@ -1,6 +1,7 @@
 library dslink.dql.query.process;
 
 import "dart:async";
+import "dart:convert";
 
 import "package:dslink/requester.dart";
 
@@ -10,8 +11,8 @@ import "package:dslink/utils.dart";
 final bool DEBUG = false;
 
 final List<String> POSSIBLE_IDS = [
-  "id",
-  "path"
+  "path",
+  "id"
 ];
 
 typedef QueryProcessor QueryProcessorFactory(QueryContext context);
@@ -21,14 +22,14 @@ class QueryUpdate {
   final bool remove;
 
   String get id {
+    if (hasAttribute("id")) {
+      return getAttribute("id");
+    }
+
     for (String mik in POSSIBLE_IDS) {
       if (values[mik] is String) {
         return values[mik];
       }
-    }
-
-    if (hasAttribute("id")) {
-      return getAttribute("id");
     }
 
     if (_id == null) {
@@ -100,6 +101,18 @@ class QueryUpdate {
       }
     }
     return c;
+  }
+
+  Map toJSON() {
+    return {
+      "values": values,
+      "remove": remove
+    };
+  }
+
+  @override
+  String toString() {
+    return const JsonEncoder().convert(toJSON());
   }
 }
 

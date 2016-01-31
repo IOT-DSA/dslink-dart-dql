@@ -6,14 +6,11 @@ import "package:quiver/pattern.dart";
 import "package:dslink/dslink.dart";
 
 import "process.dart";
+import "filter.dart";
 
 final RegExp PATTERN_MODIFIER = new RegExp(r"(\*|\?)");
 final RegExp PATTERN_PIPE = new RegExp(r"""
 (?:\s?)(?:\|)(?:\s?)(?=(?:[^"]*"[^"]*")*[^"]*$)
-""".trim());
-
-final RegExp PATTERN_FILTER = new RegExp(r"""
-(?:(?:\`(.+)\`)|([\@\.\$A-Za-z0-9\:]+))(?:\s*)(?:(\=|\!\=|\=\=|\<\=|\>\=|\<|\>)(?:\s*)((?:(?:\"|\')(.*)(?:\"|\'))|(?:true|false|null|nil)|(?:[0-9\.]+)))?
 """.trim());
 
 final RegExp PATTERN_STRING = new RegExp(r"""
@@ -86,11 +83,21 @@ class QueryFilterTest {
   final String operator;
   final dynamic value;
 
-  QueryFilterTest(this.key, {this.operator: "=", this.value});
+  QueryFilterTest(this.key, {this.operator: "=", this.value}) {
+    if (operator == "~") {
+      _regex = new RegExp(value.toString());
+    }
+  }
+
+  RegExp _regex;
 
   bool matches(Map m) {
     bool result = false;
     var v = m[key];
+
+    if (value is bool && v is String) {
+      v = v.toString().toLowerCase() == "true";
+    }
 
     if (value == _EXISTS) {
       result = m.containsKey(key);
@@ -106,6 +113,8 @@ class QueryFilterTest {
       result = v <= value;
     } else if (operator == ">=") {
       result = v = value;
+    } else if (operator == "~") {
+      result = _regex.hasMatch(v.toString());
     }
 
     return result;
@@ -133,57 +142,7 @@ Map<String, String> parseStringMapInput(String input) {
 }
 
 NodeFilter parseFilterInput(String input) {
-  List<Match> matches = PATTERN_FILTER.allMatches(input).toList();
-  List<QueryFilterTest> tests = [];
-  for (Match match in matches) {
-    List<String> list = match.groups(const [
-      0,
-      1,
-      2,
-      3,
-      4,
-      5
-    ]);
-
-    if (list[1] != null) {
-      list[2] = list[1];
-    }
-
-    String k = list[2];
-    dynamic value;
-    String op = "=";
-    if (match.groupCount == 1 || match.groupCount == 2 || list[3] == null) {
-      value = _EXISTS;
-    } else if (list[5] == null) {
-      value = list[4];
-      op = list[3];
-    } else {
-      value = list[5];
-      op = list[3];
-    }
-
-    if (value == null) {
-      value = _EXISTS;
-    }
-
-    try {
-      value = num.parse(value);
-    } catch (e) {}
-
-    if (value == "false" || value == "true") {
-      value = value == "true";
-    }
-
-    if (value == "null" || value == "nil") {
-      value = null;
-    }
-
-    tests.add(new QueryFilterTest(
-      k,
-      value: value,
-      operator: op == null ? "=" : op
-    ));
-  }
+  List<QueryFilterTest> tests = FilterParser.doParse(input);
 
   return (RemoteNode node, QueryUpdate update) {
     if (tests.isEmpty) {
@@ -246,6 +205,14 @@ PathExpression parseExpressionInput(String input) {
     e.hasAnyMods = true;
   }
   return e;
+}
+
+RegExp parseSimpleRegEx(String input) {
+  return new RegExp(input.splitMapJoin("*", onMatch: (Match m) {
+    return ".*";
+  }, onNonMatch: (String m) {
+    return escapeRegex(m);
+  }));
 }
 
 List<QueryStatement> parseQueryInput(String input) {

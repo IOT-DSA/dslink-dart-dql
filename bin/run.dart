@@ -101,7 +101,10 @@ class QueryNode extends SimpleNode {
         }
       } else {
         if (update.remove) {
-          rows.remove(path).delete();
+          LiveTableRow r = rows.remove(path);
+          if (r != null) {
+            r.delete();
+          }
         } else {
           List<dynamic> vals = update.values.values.toList();
           LiveTableRow row = rows[path];

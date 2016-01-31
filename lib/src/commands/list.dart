@@ -38,7 +38,7 @@ class ListNodeQueryProcessor extends QueryProcessor {
 
               dones.remove(path);
 
-              if (expression.matches(path)) {
+              if (!isUidSame && expression.matches(path)) {
                 QueryUpdate update = new QueryUpdate({
                   "path": path
                 }, remove: true);
@@ -68,6 +68,7 @@ class ListNodeQueryProcessor extends QueryProcessor {
                 cp += change;
                 if (dones.containsKey(cp)) {
                   dones[cp]();
+                  continue;
                 }
               }
             }
