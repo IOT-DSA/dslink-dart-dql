@@ -9,7 +9,7 @@ class FilterQueryProcessor extends QueryProcessor {
 
   @override
   void init(QueryStatement statement) {
-    filter = parseFilterInput(statement.argument);
+    filter = parseNodeFilter(statement.argument);
   }
 
   @override

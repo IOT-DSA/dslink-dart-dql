@@ -2,11 +2,7 @@ library dsa.query.parse.filter;
 
 import "package:petitparser/petitparser.dart";
 
-final Existent EXISTS = Existent.EXISTS;
-
-abstract class FilterTest {
-  bool matches(Map m);
-}
+const Existent EXISTS = Existent.EXISTS;
 
 class Existent {
   static const Existent EXISTS = const Existent();
@@ -15,6 +11,24 @@ class Existent {
 
   @override
   String toString() => "[EXISTS]";
+}
+
+abstract class FilterTest {
+  bool matches(Map m);
+}
+
+class FilterParenthesesTest extends FilterTest {
+  final FilterParenthesesTest expression;
+
+  FilterParenthesesTest(this.expression);
+
+  @override
+  bool matches(Map m) {
+    return expression.matches(m);
+  }
+
+  @override
+  String toString() => "Parentheses(${expression})";
 }
 
 class FilterLogicalTest extends FilterTest {
@@ -38,6 +52,16 @@ class FilterLogicalTest extends FilterTest {
         return false;
       }
       return right.matches(m);
+    } else if (op == "^" || op == "xor") {
+      bool a = left.matches(m);
+      bool b = right.matches(m);
+
+      if (a == true && b == false) {
+        return true;
+      } else if (a == false && b == true) {
+        return true;
+      }
+      return false;
     } else {
       return false;
     }
@@ -45,6 +69,34 @@ class FilterLogicalTest extends FilterTest {
 
   @override
   String toString() => "Logical(${left} ${op} ${right})";
+}
+
+class FilterTestCollection extends FilterTest {
+  final List<FilterTest> tests;
+
+  FilterTestCollection(this.tests);
+
+  @override
+  bool matches(Map m) {
+    for (FilterTest test in tests) {
+      if (!test.matches(m)) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  @override
+  String toString() {
+    var buff = new StringBuffer();
+    buff.writeln("TestCollection(");
+    for (FilterTest test in tests) {
+      buff.writeln("  ${test}");
+    }
+    buff.writeln(")");
+    return buff.toString().trim();
+  }
 }
 
 class FilterCompareTest extends FilterTest {
@@ -60,6 +112,7 @@ class FilterCompareTest extends FilterTest {
 
   RegExp _regex;
 
+  @override
   bool matches(Map m) {
     bool result = false;
     var v = m[key];
@@ -70,7 +123,10 @@ class FilterCompareTest extends FilterTest {
 
     if (value == EXISTS) {
       result = m.containsKey(key);
-    } else if (operator == "=" || operator == "==") {
+    } else if (operator == "=" ||
+      operator == "==" ||
+      operator == "equals" ||
+      operator == "is") {
       result = v == value;
     } else if (operator == "!=") {
       result = v != value;
@@ -82,7 +138,7 @@ class FilterCompareTest extends FilterTest {
       result = v <= value;
     } else if (operator == ">=") {
       result = v = value;
-    } else if (operator == "~") {
+    } else if (operator == "~" || operator == "like") {
       result = _regex.hasMatch(v.toString());
     }
 
@@ -90,7 +146,7 @@ class FilterCompareTest extends FilterTest {
   }
 
   @override
-  String toString() => "Compare(${key}${operator}${value})";
+  String toString() => "Compare(${key} ${operator} ${value})";
 }
 
 class FilterGrammarDefinition extends GrammarDefinition {
@@ -103,20 +159,26 @@ class FilterGrammarDefinition extends GrammarDefinition {
   ) & whitespace().star()).pick(1);
 
   expression() => ref(logical) |
-    ref(compare);
+    ref(compare) |
+    ref(parens);
 
-  logical() => ref(compare) &
+  leftHandLogical() => ref(compare) |
+    ref(parens);
+
+  logical() => ref(leftHandLogical) &
     (
       whitespace().star() &
       ref(logicalOp) &
       whitespace().star()
     ).pick(1) &
-    ref(compare);
+    ref(expression);
 
   logicalOp() => string("||") |
     string("or") |
     string("&&") |
-    string("and");
+    string("and") |
+    char("^") |
+    string("xor");
 
   compare() => (
     ref(identifier) | ref(stringLiteral)
@@ -129,8 +191,17 @@ class FilterGrammarDefinition extends GrammarDefinition {
     ref(value)
   ).optional();
 
-  identifier() => pattern("A-Za-z0-9\$@").plus().flatten();
-  value() => ref(stringLiteral) | ref(nil) | ref(number);
+  identifier() => pattern("A-Za-z0-9\$@_").plus().flatten();
+  value() => ref(stringLiteral) |
+    ref(nil) |
+    ref(number) |
+    ref(boolean);
+
+  parens() => (
+    char("(") &
+    ref(expression) &
+    char(")")
+  ).pick(1);
 
   stringLiteral() => (
     ref(quote) &
@@ -158,9 +229,15 @@ class FilterGrammarDefinition extends GrammarDefinition {
     string("<=") |
     string(">=") |
     char(">") |
-    char("<")
+    char("<") |
+    string("equals") |
+    string("is") |
+    string("like")
   ).flatten();
-  quote() => char('"') | char("'") | char('`');
+
+  quote() => char('"') |
+    char("'") |
+    char('`');
 }
 
 class FilterGrammar extends GrammarParser {
@@ -168,6 +245,11 @@ class FilterGrammar extends GrammarParser {
 }
 
 class FilterParserDefinition extends FilterGrammarDefinition {
+  @override
+  expressions() => super.expressions().map((v) {
+    return new FilterTestCollection(v);
+  });
+
   @override
   compare() => super.compare().map((m) {
     String key = m[0];
@@ -208,12 +290,17 @@ class FilterParserDefinition extends FilterGrammarDefinition {
   number() => super.number().map((v) {
     return num.parse(v);
   });
+
+  @override
+  parens() => super.parens().map((v) {
+    return new FilterParenthesesTest(v);
+  });
 }
 
 class FilterParser extends GrammarParser {
   static final FilterParser INSTANCE = new FilterParser();
 
-  static dynamic doParse(String input) {
+  static FilterTestCollection doParse(String input) {
     return INSTANCE.parse(input).value;
   }
 

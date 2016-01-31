@@ -95,15 +95,15 @@ Map<String, String> parseStringMapInput(String input) {
   return map;
 }
 
-List<FilterTest> parseFilterTests(String input) {
+FilterTestCollection parseFilterTests(String input) {
   return FilterParser.doParse(input);
 }
 
-NodeFilter parseFilterInput(String input) {
-  List<FilterTest> tests = parseFilterTests(input);
+NodeFilter parseNodeFilter(String input) {
+  FilterTestCollection test = parseFilterTests(input);
 
   return (RemoteNode node, QueryUpdate update) {
-    if (tests.isEmpty) {
+    if (test.tests.isEmpty) {
       return true;
     }
 
@@ -113,13 +113,7 @@ NodeFilter parseFilterInput(String input) {
     m.addAll(update.values);
     m = createRealMap(m);
 
-    for (FilterTest test in tests) {
-      if (!test.matches(m)) {
-        return false;
-      }
-    }
-
-    return true;
+    return test.matches(m);
   };
 }
 
