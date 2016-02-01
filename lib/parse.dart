@@ -161,11 +161,11 @@ PathExpression parseExpressionInput(String input) {
 }
 
 RegExp parseSimpleRegEx(String input) {
-  return new RegExp(input.splitMapJoin("*", onMatch: (Match m) {
+  return new RegExp("^" + input.splitMapJoin("*", onMatch: (Match m) {
     return ".*";
   }, onNonMatch: (String m) {
     return escapeRegex(m);
-  }));
+  }) + r"$");
 }
 
 List<QueryStatement> parseQueryInput(String input) {
