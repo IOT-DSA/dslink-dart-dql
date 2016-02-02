@@ -150,6 +150,8 @@ abstract class QueryContext {
 
   StreamSubscription subscribe(String path, callback(ValueUpdate update));
   Stream<RequesterListUpdate> list(String path);
+
+  Future<RemoteNode> getRemoteNode(String path);
 }
 
 int _seqId = 0;

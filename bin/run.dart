@@ -45,6 +45,11 @@ class BasicQueryContext extends QueryContext {
   StreamSubscription subscribe(String path, callback(ValueUpdate update)) {
     return link.requester.subscribe(path, callback);
   }
+
+  @override
+  Future<RemoteNode> getRemoteNode(String path) {
+    return link.requester.getRemoteNode(path);
+  }
 }
 
 BasicQueryContext context;

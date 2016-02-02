@@ -15,7 +15,7 @@ class SinglePathQueryProcessor extends QueryProcessor {
   @override
   Stream<QueryUpdate> process(Stream<QueryUpdate> stream) {
     Future<QueryUpdate> get() async {
-      var node = await context.requester.getRemoteNode(path);
+      var node = await context.getRemoteNode(path);
       return new QueryUpdate({
         "path": path
       }, attributes: {
