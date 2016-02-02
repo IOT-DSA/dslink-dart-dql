@@ -87,7 +87,7 @@ class ListNodeQueryProcessor extends QueryProcessor {
             }
 
             if (expression.matches(path)) {
-              String displayName = update.node.configs[r"$displayName"];
+              String displayName = update.node.configs[r"$name"];
               if (displayName == null) {
                 displayName = update.node.name;
               }

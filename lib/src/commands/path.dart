@@ -16,10 +16,17 @@ class SinglePathQueryProcessor extends QueryProcessor {
   Stream<QueryUpdate> process(Stream<QueryUpdate> stream) {
     Future<QueryUpdate> get() async {
       var node = await context.getRemoteNode(path);
+      String displayName = node.configs[r"$name"];
+      if (displayName == null) {
+        displayName = node.name;
+      }
+
       return new QueryUpdate({
         "path": path
       }, attributes: {
-        "node": node
+        "node": node,
+        ":name": node.name,
+        ":displayName": displayName
       });
     }
     return new Stream.fromFuture(get());
