@@ -5,10 +5,12 @@ import "dart:async";
 import "package:dslink/dslink.dart";
 
 import "package:dslink_dql/script.dart";
+import "package:dslink/utils.dart" show logger;
 
 import "process.dart";
 import "parse.dart";
 import "filter.dart";
+import "subscribe.dart";
 
 part "src/commands/list.dart";
 part "src/commands/subscribe.dart";
@@ -26,5 +28,6 @@ final Map<String, QueryProcessorFactory> QUERY_COMMANDS = {
   "path": (QueryContext context) => new SinglePathQueryProcessor(context),
   "drop": (QueryContext context) => new DropQueryProcessor(context),
   "expression": (QueryContext context) => new ExpressionQueryProcessor(context),
-  "rename": (QueryContext context) => new RenameQueryProcessor(context)
+  "rename": (QueryContext context) => new RenameQueryProcessor(context),
+  "where": (QueryContext context) => new FilterQueryProcessor(context)
 };

@@ -48,7 +48,7 @@ class FilterQueryProcessor extends QueryProcessor {
         return update;
       }
     }).where((QueryUpdate update) {
-      return update == null;
+      return update != null;
     });
   }
 

@@ -27,15 +27,17 @@ class SubscribeQueryHolder {
 class SubscribeQueryProcessor extends QueryProcessor {
   final QueryContext context;
 
-  List<String> childs;
+  Map<String, String> childs;
 
   SubscribeQueryProcessor(this.context);
 
   @override
   void init(QueryStatement statement) {
-    childs = parseInputParameters(statement.argument);
+    childs = QuerySubscribeParser.doParse(statement.argument);
     if (childs.isEmpty) {
-      childs = ["value"];
+      childs = {
+        "value": "value"
+      };
     }
   }
 
@@ -60,41 +62,43 @@ class SubscribeQueryProcessor extends QueryProcessor {
           var holder = new SubscribeQueryHolder();
           holder.lastUpdate = update;
 
-          for (String n in childs) {
+          for (String n in childs.keys) {
+            String rkey = childs[n];
+
             String cp = path;
             if (!n.startsWith("/")) {
               cp += "/";
             }
             cp += n;
-            out.values[n] = holder.values[n] = null;
+            out.values[rkey] = holder.values[rkey] = null;
             if (n.startsWith("@") || n.startsWith(r"$")) {
-              holder.subs[n] = context.list(path).listen((
+              holder.subs[rkey] = context.list(path).listen((
                 RequesterListUpdate update) {
-                if (holder.values[n] != update.node.get(n)) {
-                  holder.values[n] = update.node.get(n);
+                if (holder.values[rkey] != update.node.get(n)) {
+                  holder.values[rkey] = update.node.get(n);
                   controller.add(holder.build());
                 }
               });
             } else if (n == "value") {
-              holder.subs[n] =
+              holder.subs[rkey] =
                 context.subscribe(path, (ValueUpdate update) {
-                  holder.values[n] = update.value;
+                  holder.values[rkey] = update.value;
                   controller.add(holder.build());
                 });
             } else if (n == "value.timestamp") {
-              holder.subs[n] = context.subscribe(path, (ValueUpdate update) {
-                holder.values[n] = update.ts;
+              holder.subs[rkey] = context.subscribe(path, (ValueUpdate update) {
+                holder.values[rkey] = update.ts;
                 controller.add(holder.build());
               });
             } else if (n == ":name") {
-              holder.subs[n] = new Stream.fromIterable([
+              holder.subs[rkey] = new Stream.fromIterable([
                 path
               ]).listen((a) {
-                holder.values[n] = new Path(a).name;
+                holder.values[rkey] = new Path(a).name;
                 controller.add(holder.build());
               });
             } else if (n == ":displayName") {
-              holder.subs[n] = context.list(path).listen(
+              holder.subs[rkey] = context.list(path).listen(
                 (RequesterListUpdate update) {
                 String name;
                 if (update.node.configs[r"$name"] is String) {
@@ -103,8 +107,8 @@ class SubscribeQueryProcessor extends QueryProcessor {
                   name = new Path(path).name;
                 }
 
-                if (name != holder.values[n]) {
-                  holder.values[n] = name;
+                if (name != holder.values[rkey]) {
+                  holder.values[rkey] = name;
                   controller.add(holder.build());
                 }
               });
@@ -117,14 +121,14 @@ class SubscribeQueryProcessor extends QueryProcessor {
                 ts = true;
               }
 
-              holder.subs[n] = context.subscribe(cp, (ValueUpdate update) {
-                holder.values[n] = ts ? update.ts : update.value;
+              holder.subs[rkey] = context.subscribe(cp, (ValueUpdate update) {
+                holder.values[rkey] = ts ? update.ts : update.value;
                 controller.add(holder.build());
               });
             }
           }
 
-          controller.add(update.cloneAndStub(childs));
+          controller.add(update.cloneAndStub(childs.values.toList()));
 
           holders[path] = holder;
         } else {
@@ -149,21 +153,26 @@ class SubscribeQueryProcessor extends QueryProcessor {
 
   @override
   void calculateColumnSet(Set<String> columns) {
-    columns.addAll(childs);
+    columns.addAll(childs.values);
   }
 
   @override
   void handleLeftHandProcessors(List<QueryProcessor> processors) {
     for (QueryProcessor processor in processors) {
       if (processor is SubscribeQueryProcessor) {
-        childs.removeWhere((x) => processor.childs.contains(x));
+        childs.keys.where(
+          (String k) => processor.childs[k] == childs[k]
+        ).toList().forEach((k) {
+          logger.fine("Subscribe: Drop ${k} (duplicate subscribe found)");
+          childs.remove(k);
+        });
       }
     }
   }
 
   @override
   String toString() {
-    String children = childs == null ? "none" : childs.join(" ");
+    String children = childs == null ? "none" : childs.toString();
     return "Subscribe ${children}";
   }
 }
