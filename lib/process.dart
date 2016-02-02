@@ -3,10 +3,11 @@ library dslink.dql.query.process;
 import "dart:async";
 import "dart:convert";
 
+import "package:dslink/common.dart" show ValueUpdate;
 import "package:dslink/requester.dart";
+import "package:dslink/utils.dart";
 
 import "parse.dart";
-import "package:dslink/utils.dart";
 
 final bool DEBUG = false;
 
@@ -65,7 +66,11 @@ class QueryUpdate {
     return attributes.remove(key);
   }
 
-  QueryUpdate clone() {
+  QueryUpdate clone({bool remove}) {
+    if (remove == null) {
+      remove = this.remove;
+    }
+
     QueryUpdate update = new QueryUpdate(
       new Map.from(values),
       remove: remove,
@@ -141,8 +146,10 @@ abstract class QueryProcessor implements StreamTransformer<QueryUpdate, QueryUpd
 }
 
 abstract class QueryContext {
-  Requester get requester;
   Stream<QueryUpdate> query(String input);
+
+  StreamSubscription subscribe(String path, callback(ValueUpdate update));
+  Stream<RequesterListUpdate> list(String path);
 }
 
 int _seqId = 0;

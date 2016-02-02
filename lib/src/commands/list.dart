@@ -49,7 +49,7 @@ class ListNodeQueryProcessor extends QueryProcessor {
 
           dones[path] = onDone;
 
-          subs[path] = context.requester.list(path).listen((RequesterListUpdate update) {
+          subs[path] = context.list(path).listen((RequesterListUpdate update) {
             if (p.parentPath.endsWith("/upstream") && update.node.configs[r"$uid"] == null) {
               onDone();
               return;

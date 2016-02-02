@@ -14,9 +14,6 @@ final List<String> POSSIBLE_IDS = [
 
 class BasicQueryContext extends QueryContext {
   @override
-  Requester get requester => link.requester;
-
-  @override
   Stream<QueryUpdate> query(String input) {
     logger.fine("Run Query: ${input}");
 
@@ -37,6 +34,16 @@ class BasicQueryContext extends QueryContext {
     }).toList();
 
     return processQuery(processors);
+  }
+
+  @override
+  Stream<RequesterListUpdate> list(String path) {
+    return link.requester.list(path);
+  }
+
+  @override
+  StreamSubscription subscribe(String path, callback(ValueUpdate update)) {
+    return link.requester.subscribe(path, callback);
   }
 }
 

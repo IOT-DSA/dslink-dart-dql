@@ -18,22 +18,37 @@ class FilterQueryProcessor extends QueryProcessor {
 
   @override
   Stream<QueryUpdate> process(Stream<QueryUpdate> stream) {
-    return stream.where((QueryUpdate update) {
+    Set<String> visited = new Set<String>();
+
+    return stream.map((QueryUpdate update) {
       if (update == null) {
-        return false;
+        return null;
       }
 
       if (update.remove) {
-        return true;
+        return update;
       }
 
       if (!update.hasAttribute("node")) {
-        return false;
+        return null;
       } else {
         RemoteNode node = update.getAttribute("node");
 
-        return filter(node, update);
+        bool matches = filter(node, update);
+        if (matches) {
+          if (!visited.contains(update.id)) {
+            visited.add(update.id);
+          }
+        } else if (visited.contains(update.id)) {
+          visited.remove(update.id);
+          QueryUpdate u = update.clone(remove: true);
+          return u;
+        }
+
+        return update;
       }
+    }).where((QueryUpdate update) {
+      return update == null;
     });
   }
 

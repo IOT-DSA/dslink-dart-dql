@@ -5,6 +5,8 @@ import "package:quiver/pattern.dart";
 
 import "package:dslink/dslink.dart";
 
+import "package:petitparser/petitparser.dart";
+
 import "process.dart";
 import "filter.dart";
 
@@ -169,25 +171,7 @@ RegExp parseSimpleRegEx(String input) {
 }
 
 List<QueryStatement> parseQueryInput(String input) {
-  input = input.trim();
-  List<String> cmds = input.split(PATTERN_PIPE);
-  List<QueryStatement> parts = [];
-
-  for (String part in cmds) {
-    int idx = part.indexOf(" ");
-    String cmd;
-    String argument = "";
-    if (idx != -1) {
-      cmd = part.substring(0, idx);
-      argument = part.substring(idx + 1);
-    } else {
-      cmd = part;
-    }
-
-    parts.add(new QueryStatement(cmd, argument));
-  }
-
-  return parts;
+  return QueryStatementParser.doParse(input);
 }
 
 Map createRealMap(Map m) {
@@ -208,4 +192,98 @@ Map createRealMap(Map m) {
   }
 
   return m;
+}
+
+class QueryStatementGrammarDefinition extends GrammarDefinition {
+  @override
+  start() => ref(statements).end();
+
+  statements() => (
+    whitespace().star() &
+    ref(statement).separatedBy(
+      ref(separator),
+      includeSeparators: false
+    ) &
+    whitespace().star()
+  ).pick(1);
+
+  separator() => (whitespace().star() & (
+    char("|")
+  ) & whitespace().star()).pick(1);
+
+  statement() => ref(command) & (
+    whitespace().plus() &
+    ref(argument)
+  ).pick(1);
+
+  command() => pattern("A-Za-z").plus().flatten();
+  argument() => (
+    (
+      string("||") |
+      anyOf("|").neg()
+    ).plus()
+  ).flatten();
+}
+
+class QueryStatementGrammar extends GrammarParser {
+  QueryStatementGrammar() : super(new QueryStatementGrammarDefinition());
+}
+
+class QueryStatementParserDefinition extends QueryStatementGrammarDefinition {
+  @override
+  statement() => super.statement().map((v) {
+    String cmd = v[0];
+    String arg = v[1].toString().trim();
+    QueryStatement statement = new QueryStatement(
+      cmd,
+      arg
+    );
+
+    return statement;
+  });
+}
+
+class QueryStatementParser extends GrammarParser {
+  static final QueryStatementParser INSTANCE = new QueryStatementParser();
+
+  static List<QueryStatement> doParse(String input) {
+    Result result = INSTANCE.parse(input);
+    if (result.isFailure) {
+      result = new PowerParseError(result);
+    }
+    return result.value;
+  }
+
+  QueryStatementParser() : super(new QueryStatementParserDefinition());
+}
+
+class PowerParseError extends Failure {
+  PowerParseError(Failure f) : super(f.buffer, f.position, f.message);
+
+  @override
+  String toPositionString() {
+    String x = super.toPositionString();
+
+    try {
+      String nears = buffer.toString();
+      int a = position - 30;
+      int b = position + 30;
+
+      if (a < 0) {
+        a = 0;
+      }
+
+      if (b >= nears.length) {
+        b = nears.length;
+      }
+
+      nears = nears.substring(a, b);
+      int idx = position - a;
+
+      x += "\n${nears}\n${' ' * idx}^";
+    } catch (e) {
+    }
+
+    return x;
+  }
 }

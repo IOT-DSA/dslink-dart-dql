@@ -68,7 +68,7 @@ class SubscribeQueryProcessor extends QueryProcessor {
             cp += n;
             out.values[n] = holder.values[n] = null;
             if (n.startsWith("@") || n.startsWith(r"$")) {
-              holder.subs[n] = context.requester.list(path).listen((
+              holder.subs[n] = context.list(path).listen((
                 RequesterListUpdate update) {
                 if (holder.values[n] != update.node.get(n)) {
                   holder.values[n] = update.node.get(n);
@@ -77,16 +77,15 @@ class SubscribeQueryProcessor extends QueryProcessor {
               });
             } else if (n == "value") {
               holder.subs[n] =
-                context.requester.subscribe(path, (ValueUpdate update) {
+                context.subscribe(path, (ValueUpdate update) {
                   holder.values[n] = update.value;
                   controller.add(holder.build());
                 });
             } else if (n == "value.timestamp") {
-              holder.subs[n] =
-                  context.requester.subscribe(path, (ValueUpdate update) {
-                    holder.values[n] = update.ts;
-                    controller.add(holder.build());
-                  });
+              holder.subs[n] = context.subscribe(path, (ValueUpdate update) {
+                holder.values[n] = update.ts;
+                controller.add(holder.build());
+              });
             } else if (n == ":name") {
               holder.subs[n] = new Stream.fromIterable([
                 path
@@ -95,8 +94,8 @@ class SubscribeQueryProcessor extends QueryProcessor {
                 controller.add(holder.build());
               });
             } else if (n == ":displayName") {
-              holder.subs[n] = context.requester.list(path).listen((
-                  RequesterListUpdate update) {
+              holder.subs[n] = context.list(path).listen(
+                (RequesterListUpdate update) {
                 String name;
                 if (update.node.configs[r"$name"] is String) {
                   name = update.node.configs[r"$name"];
@@ -118,7 +117,7 @@ class SubscribeQueryProcessor extends QueryProcessor {
                 ts = true;
               }
 
-              holder.subs[n] = context.requester.subscribe(cp, (ValueUpdate update) {
+              holder.subs[n] = context.subscribe(cp, (ValueUpdate update) {
                 holder.values[n] = ts ? update.ts : update.value;
                 controller.add(holder.build());
               });
