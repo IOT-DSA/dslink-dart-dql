@@ -2,6 +2,8 @@ library dsa.query.parse.filter;
 
 import "package:petitparser/petitparser.dart";
 
+import "parse.dart";
+
 const Existent EXISTS = Existent.EXISTS;
 
 abstract class FilterTestVisitor {
@@ -404,7 +406,11 @@ class FilterParser extends GrammarParser {
   static final FilterParser INSTANCE = new FilterParser();
 
   static FilterTestCollection doParse(String input) {
-    return INSTANCE.parse(input).value;
+    Result result = INSTANCE.parse(input);
+    if (result.isFailure) {
+      result = new PowerParseError(result);
+    }
+    return result.value;
   }
 
   FilterParser() : super(new FilterParserDefinition());

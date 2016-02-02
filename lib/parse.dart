@@ -11,10 +11,6 @@ import "process.dart";
 import "filter.dart";
 
 final RegExp PATTERN_MODIFIER = new RegExp(r"(\*|\?)");
-final RegExp PATTERN_PIPE = new RegExp(r"""
-(?:\s?)(?:\|)(?:\s?)(?=(?:[^"]*"[^"]*")*[^"]*$)
-""".trim());
-
 final RegExp PATTERN_STRING = new RegExp(r"""
 (?:\'|\")([^\"]*)(?:\'|\")|([^\s\,]+)
 """.trim());
