@@ -13,9 +13,13 @@ main(List<String> args) async {
   link.connect();
   Requester r = await link.onRequesterReady;
   var sub = r.invoke("/downstream/DQL/query", {
-    "query": r"list /downstream/* | subscribe"
+    "query": r"list /sys/links | subscribe path as fi"
   }).listen((RequesterInvokeUpdate update) {
     print(update.rows);
+
+    if (update.error != null) {
+      print(update.error.getMessage());
+    }
   });
 
   new Future.delayed(const Duration(seconds: 5), () {

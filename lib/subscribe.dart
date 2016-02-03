@@ -5,7 +5,7 @@ import "package:dslink_dql/parse.dart";
 
 class QuerySubscribeGrammarDefinition extends GrammarDefinition {
   @override
-  start() => ref(expressions).end();
+  start() => ref(expressions).optional().end();
 
   expressions() => ref(expression).separatedBy(
     (
@@ -49,11 +49,19 @@ class QuerySubscribeGrammar extends GrammarParser {
 class QuerySubscribeParserDefinition extends QuerySubscribeGrammarDefinition {
   @override
   start() => super.start().map((v) {
+    if (v == null) {
+      return {};
+    }
+
     Map<String, String> m = <String, String>{};
 
     for (List list in v) {
       String target = list[0];
       String name = list[1] == null ? target : list[1][1];
+
+      if (target == null) {
+        continue;
+      }
 
       m[target] = name;
     }

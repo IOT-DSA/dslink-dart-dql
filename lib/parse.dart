@@ -208,17 +208,18 @@ class QueryStatementGrammarDefinition extends GrammarDefinition {
   ) & whitespace().star()).pick(1);
 
   statement() => ref(command) & (
-    whitespace().plus() &
     ref(argument)
-  ).pick(1);
+  );
 
   command() => pattern("A-Za-z").plus().flatten();
   argument() => (
+    whitespace().star() &
     (
       string("||") |
       anyOf("|").neg()
-    ).plus()
-  ).flatten();
+    ).plus() &
+    whitespace().star()
+  ).pick(1).flatten().optional("");
 }
 
 class QueryStatementGrammar extends GrammarParser {

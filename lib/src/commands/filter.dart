@@ -43,6 +43,8 @@ class FilterQueryProcessor extends QueryProcessor {
           visited.remove(update.id);
           QueryUpdate u = update.clone(remove: true);
           return u;
+        } else {
+          return null;
         }
 
         return update;

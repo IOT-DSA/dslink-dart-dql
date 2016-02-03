@@ -37,6 +37,13 @@ main() {
     ['subscribe', ':displayName state path']
   ]);
 
+  test([
+    'list * | subscribe path as test'
+  ], [
+    ['list', '*'],
+    ['subscribe', 'path as test']
+  ]);
+
   if (hasAnyError) {
     exit(1);
   }
