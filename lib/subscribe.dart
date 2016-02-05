@@ -25,7 +25,7 @@ class QuerySubscribeGrammarDefinition extends GrammarDefinition {
 
   mstring() => ref(identifier) | ref(stringLiteral);
 
-  identifier() => pattern("A-Za-z0-9\$@_:").plus().flatten();
+  identifier() => pattern("A-Za-z0-9\$@_:.").plus().flatten();
 
   stringLiteral() => (
     ref(quote) &

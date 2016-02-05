@@ -36,7 +36,7 @@ main() {
     ['rename', 'path="origPath"'],
     ['subscribe', ':displayName state path']
   ]);
-
+  
   test([
     'list * | subscribe path as test'
   ], [
