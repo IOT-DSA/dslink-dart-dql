@@ -36,7 +36,11 @@ main() {
     ['rename', 'path="origPath"'],
     ['subscribe', ':displayName state path']
   ]);
-  
+
+  test([
+    'list /data/Rockwell/*/Movers/? | subscribe CommandPosition FeedBack_Axis_ActualPosition FeedBack_Axis_ActualPosition.timestamp CommandVelocity'
+  ]);
+
   test([
     'list * | subscribe path as test'
   ], [

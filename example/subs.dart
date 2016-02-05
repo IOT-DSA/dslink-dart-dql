@@ -3,8 +3,9 @@ import "dart:io";
 import "package:dslink_dql/subscribe.dart";
 
 main() {
-  test("level as BatteryLevel, estimate as TimeEstimate");
-  test("level name test :hi name as Hello name is goodbye");
+  test('level as BatteryLevel, estimate as TimeEstimate');
+  test('level name test :hi name as Hello name is goodbye');
+  test('CommandPosition FeedBack_Axis_ActualPosition FeedBack_Axis_ActualPosition.timestamp CommandVelocity');
 
   if (hasAnyError) {
     exit(1);
