@@ -48,6 +48,15 @@ main() {
     ['subscribe', 'path as test']
   ]);
 
+  test([
+    r'list * | filter $type="number"  | subscribe | expression min="Math.min(50, row.value)"'
+  ], [
+    ['list', '*'],
+    ['filter', r'$type="number"'],
+    ['subscribe'],
+    ['expression', 'min="Math.min(50, row.value)"']
+  ]);
+
   if (hasAnyError) {
     exit(1);
   }
@@ -73,7 +82,7 @@ test(input, [List<List<String>> checks]) {
     int i = 0;
     for (List<String> check in checks) {
       String cmd = check[0];
-      String arg = check.length == 1 ? null : check[1];
+      String arg = check.length == 1 ? "" : check[1];
       QueryStatement s = statements[i];
 
       if (cmd != s.command) {
