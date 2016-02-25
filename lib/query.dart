@@ -5,13 +5,13 @@ import "dart:async";
 import "package:dslink/common.dart";
 import "package:dslink/requester.dart";
 
-import "package:dslink_dql/script.dart";
 import "package:dslink/utils.dart" show logger;
 
 import "process.dart";
 import "parse.dart";
 import "filter.dart";
 import "subscribe.dart";
+import "script.dart";
 
 part "src/commands/list.dart";
 part "src/commands/subscribe.dart";

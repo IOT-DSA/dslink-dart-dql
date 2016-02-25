@@ -2,8 +2,8 @@ import "dart:async";
 
 import "package:dslink/dslink.dart";
 
-import "package:dslink_dql/query.dart";
-import "package:dslink_dql/process.dart";
+import "package:dql/query.dart";
+import "package:dql/process.dart";
 
 final List<String> POSSIBLE_IDS = [
   "id",

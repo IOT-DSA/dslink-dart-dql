@@ -1,9 +1,8 @@
-name: dslink_dql
+name: dql
 description: DQL DSLink
 dependencies:
   dslink:
     git: https://github.com/IOT-DSA/sdk-dslink-dart.git
-#    path: /Users/alex/DSA/DartSDK
   quiver: "^0.21.4"
   math_expressions: "^0.2.0+1"
   petitparser: "^1.5.1"
