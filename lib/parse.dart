@@ -1,9 +1,9 @@
 library dslink.dql.query.parse;
 
-import "package:dslink/requester.dart";
 import "package:quiver/pattern.dart";
 
-import "package:dslink/dslink.dart";
+import "package:dslink/requester.dart";
+import "package:dslink/common.dart";
 
 import "package:petitparser/petitparser.dart";
 

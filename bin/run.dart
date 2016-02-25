@@ -1,56 +1,14 @@
 import "dart:async";
 
 import "package:dslink/dslink.dart";
-import "package:dslink/utils.dart";
 
 import "package:dslink_dql/query.dart";
 import "package:dslink_dql/process.dart";
-import "package:dslink_dql/parse.dart";
 
 final List<String> POSSIBLE_IDS = [
   "id",
   "path"
 ];
-
-class BasicQueryContext extends QueryContext {
-  @override
-  Stream<QueryUpdate> query(String input) {
-    logger.fine("Run Query: ${input}");
-
-    List<QueryStatement> statements = parseQueryInput(input);
-
-    logger.fine("Parse Query: ${statements}");
-
-    List<QueryProcessor> processors = statements.map((QueryStatement statement) {
-      if (!QUERY_COMMANDS.containsKey(statement.command)) {
-        throw new QueryException(
-          "Failed to parse query: unknown command '${statement.command}'"
-        );
-      }
-
-      QueryProcessor processor = QUERY_COMMANDS[statement.command](this);
-      processor.init(statement);
-      return processor;
-    }).toList();
-
-    return processQuery(processors);
-  }
-
-  @override
-  Stream<RequesterListUpdate> list(String path) {
-    return link.requester.list(path);
-  }
-
-  @override
-  StreamSubscription subscribe(String path, callback(ValueUpdate update)) {
-    return link.requester.subscribe(path, callback);
-  }
-
-  @override
-  Future<RemoteNode> getRemoteNode(String path) {
-    return link.requester.getRemoteNode(path);
-  }
-}
 
 BasicQueryContext context;
 
@@ -160,6 +118,6 @@ main(List<String> args) async {
 
   link.connect();
   await link.onRequesterReady;
-  context = new BasicQueryContext();
+  context = new BasicQueryContext(link.requester);
 }
 
