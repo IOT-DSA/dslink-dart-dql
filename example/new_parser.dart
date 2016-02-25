@@ -57,6 +57,9 @@ main() {
     ['expression', 'min="Math.min(50, row.value)"']
   ]);
 
+  test(r'list /conns/BACnet/BacnetIP/Manglerud_360_001/*_A*'
+    r' | filter $type="number"  | subscribe  objectName value');
+
   if (hasAnyError) {
     exit(1);
   }
