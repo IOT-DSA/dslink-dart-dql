@@ -207,7 +207,7 @@ class QueryStatementGrammarDefinition extends GrammarDefinition {
     char("|")
   ) & whitespace().star()).pick(1);
 
-  statement() => ref(command) & (
+  statement() => ref(command).trim() & (
     ref(argument)
   );
 
@@ -219,7 +219,7 @@ class QueryStatementGrammarDefinition extends GrammarDefinition {
       anyOf("|").neg()
     ).plus() &
     whitespace().star()
-  ).pick(1).flatten().optional("");
+  ).pick(1).flatten().optional("").map((out) => out.toString().trim());
 }
 
 class QueryStatementGrammar extends GrammarParser {

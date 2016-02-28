@@ -1,6 +1,6 @@
 import "dart:io";
 
-import "package:dslink_dql/parse.dart";
+import "package:dql/parse.dart";
 
 main() {
   test([
@@ -29,7 +29,9 @@ main() {
   ]);
 
   test([
-    'list /sys/links/? | filter :node :name!="DQL" :name!="System" :name!="dataflow" | rename path="origPath" | subscribe :displayName state path'
+    'list /sys/links/? | filter :node :name!="DQL" :name!="System"'
+      ':name!="dataflow" | rename path="origPath" | subscribe'
+      ':displayName state path'
   ], [
     ['list', '/sys/links/?'],
     ['filter', ':node :name!="DQL" :name!="System" :name!="dataflow"'],
@@ -38,7 +40,9 @@ main() {
   ]);
 
   test([
-    'list /data/Rockwell/*/Movers/? | subscribe CommandPosition FeedBack_Axis_ActualPosition FeedBack_Axis_ActualPosition.timestamp CommandVelocity'
+    'list /data/Rockwell/*/Movers/? | subscribe'
+      ' CommandPosition FeedBack_Axis_ActualPosition'
+      ' FeedBack_Axis_ActualPosition.timestamp CommandVelocity'
   ]);
 
   test([
@@ -49,7 +53,8 @@ main() {
   ]);
 
   test([
-    r'list * | filter $type="number"  | subscribe | expression min="Math.min(50, row.value)"'
+    r'list * | filter $type="number"  | subscribe |'
+      ' expression min="Math.min(50, row.value)"'
   ], [
     ['list', '*'],
     ['filter', r'$type="number"'],

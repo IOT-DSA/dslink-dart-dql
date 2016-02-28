@@ -1,0 +1,8 @@
+"list /":
+  - [list, /]
+"list / | subscribe value":
+  - [list, /]
+  - [subscribe, value]
+"list /downstream/System/? | subscribe value value.timestamp":
+  - [list, /downstream/System/?]
+  - [subscribe, value value.timestamp]
