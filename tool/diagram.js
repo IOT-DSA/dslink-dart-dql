@@ -62,7 +62,9 @@ Diagram(
                     'is',
                     '==',
                     '!=',
-                    'equals'
+                    'equals',
+                    'contains',
+                    'like'
                   ),
                   'value'
                 )
