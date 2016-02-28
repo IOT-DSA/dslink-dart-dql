@@ -96,7 +96,12 @@ Diagram(
           Sequence(
             'column name',
             '=',
-            '"script content"'
+            Choice(
+              0,
+              "row.value * 2",
+              "Math.random()",
+              "Math.pow(2 * Math.PI * row.value, 2)"
+            )
           )
         )
       )

@@ -40,6 +40,11 @@ class BasicQueryContext extends QueryContext {
 
   @override
   Stream<QueryUpdate> query(String input) {
+    var processors = parse(input);
+    return processQuery(processors);
+  }
+
+  List<QueryProcessor> parse(String input) {
     logger.fine("Run Query: ${input}");
 
     List<QueryStatement> statements = parseQueryInput(input);
@@ -58,7 +63,7 @@ class BasicQueryContext extends QueryContext {
       return processor;
     }).toList();
 
-    return processQuery(processors);
+    return processors;
   }
 
   @override
