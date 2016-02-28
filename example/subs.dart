@@ -1,6 +1,6 @@
 import "dart:io";
 
-import "package:dslink_dql/subscribe.dart";
+import "package:dql/subscribe.dart";
 
 main() {
   test('level as BatteryLevel, estimate as TimeEstimate');

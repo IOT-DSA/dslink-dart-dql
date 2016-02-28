@@ -1,0 +1,104 @@
+Diagram(
+  OneOrMore(
+    Choice(
+      0,
+      Sequence(
+        'list',
+        OptionalSequence(
+          '*',
+          '?',
+          'path fragment'
+        )
+      ),
+      Sequence(
+        'path',
+        'target path'
+      ),
+      Sequence(
+        'subscribe',
+        OneOrMore(
+          Sequence(
+            Choice(
+              0,
+              'attribute',
+              'column',
+              'value',
+              'value.timestamp',
+              ':name',
+              ':displayName'
+            ),
+            Optional(
+              Sequence(
+                'as',
+                'column name'
+              )
+            )
+          ),
+          Optional(',')
+        )
+      ),
+      Sequence(
+        'filter',
+        Sequence(
+          Optional('('),
+          Sequence(
+            'identifier',
+            Optional(
+              Choice(
+                0,
+                Sequence(
+                  Choice(
+                    0,
+                    'or',
+                    '||',
+                    'and',
+                    '&&'
+                  ),
+                  'filter expression'
+                ),
+                Sequence(
+                  Choice(
+                    0,
+                    'is',
+                    '==',
+                    '!=',
+                    'equals'
+                  ),
+                  'value'
+                )
+              )
+            )
+          ),
+          Optional(')')
+        )
+      ),
+      Sequence(
+        'drop',
+        OneOrMore(
+          'column'
+        )
+      ),
+      Sequence(
+        'rename',
+        OneOrMore(
+          Sequence(
+            'old name',
+            '=',
+            'new name'
+          )
+        )
+      ),
+      Sequence(
+        'expression',
+        OneOrMore(
+          Sequence(
+            'column name',
+            '=',
+            '"script content"'
+          )
+        )
+      )
+    ),
+    '|'
+  )
+);

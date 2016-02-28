@@ -1,4 +1,4 @@
-import "package:dslink_dql/filter.dart";
+import "package:dql/filter.dart";
 
 main() {
   test('"hi"="bye"');

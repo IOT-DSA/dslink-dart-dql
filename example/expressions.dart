@@ -1,4 +1,4 @@
-import "package:dslink_dql/parse.dart";
+import "package:dql/parse.dart";
 
 main() async {
   test("*");
@@ -17,14 +17,14 @@ test(String input, [List<String> tests]) {
   print("Input: ${input}");
   print("Topmost: ${result.topmost}");
   print("Pattern: ${result.pattern.pattern}");
-  
+
   if (tests != null) {
     for (String t in tests) {
       bool isFalse = t.startsWith("-");
       if (t.startsWith("-")) {
         t = t.substring(1);
       }
-      
+
       if (result.matches(t)) {
         if (isFalse) {
           throw new Exception("${t} should not match ${input}");

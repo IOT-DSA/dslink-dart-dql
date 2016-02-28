@@ -1,4 +1,4 @@
-import "package:dslink_dql/parse.dart";
+import "package:dql/parse.dart";
 
 main() {
   test("*Hello*", [
