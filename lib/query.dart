@@ -5,6 +5,8 @@ import "dart:async";
 import "package:dslink/common.dart";
 import "package:dslink/requester.dart";
 
+import "package:path/path.dart" as pathlib;
+
 import "package:dslink/utils.dart" show logger;
 
 import "process.dart";

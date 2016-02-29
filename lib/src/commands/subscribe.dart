@@ -62,42 +62,51 @@ class SubscribeQueryProcessor extends QueryProcessor {
           var holder = new SubscribeQueryHolder();
           holder.lastUpdate = update;
 
-          for (String n in childs.keys) {
-            String rkey = childs[n];
+          for (String target in childs.keys) {
+            String rkey = childs[target];
 
-            String cp = path;
-            if (!n.startsWith("/")) {
-              cp += "/";
+            String targetPath = path;
+
+            if (target.startsWith("../")) {
+              targetPath = pathlib.normalize(
+                pathlib.join(path, target)
+              );
+            } else {
+              if (!target.startsWith("/")) {
+                targetPath += "/";
+              }
+              targetPath += target;
             }
-            cp += n;
+
             out.values[rkey] = holder.values[rkey] = null;
-            if (n.startsWith("@") || n.startsWith(r"$")) {
-              holder.subs[rkey] = context.list(path).listen((
-                RequesterListUpdate update) {
-                if (holder.values[rkey] != update.node.get(n)) {
-                  holder.values[rkey] = update.node.get(n);
+            if (target.startsWith("@") || target.startsWith(r"$")) {
+              holder.subs[rkey] = context.list(path).listen(
+                (RequesterListUpdate update) {
+                if (holder.values[rkey] != update.node.get(target)) {
+                  holder.values[rkey] = update.node.get(target);
                   controller.add(holder.build());
                 }
               });
-            } else if (n == "value") {
+            } else if (target == "value") {
               holder.subs[rkey] =
                 context.subscribe(path, (ValueUpdate update) {
                   holder.values[rkey] = update.value;
                   controller.add(holder.build());
                 });
-            } else if (n == "value.timestamp") {
-              holder.subs[rkey] = context.subscribe(path, (ValueUpdate update) {
+            } else if (target == "value.timestamp") {
+              holder.subs[rkey] = context.subscribe(path,
+                (ValueUpdate update) {
                 holder.values[rkey] = update.ts;
                 controller.add(holder.build());
               });
-            } else if (n == ":name") {
+            } else if (target == ":name") {
               holder.subs[rkey] = new Stream.fromIterable([
                 path
               ]).listen((a) {
                 holder.values[rkey] = new Path(a).name;
                 controller.add(holder.build());
               });
-            } else if (n == ":displayName") {
+            } else if (target == ":displayName") {
               holder.subs[rkey] = context.list(path).listen(
                 (RequesterListUpdate update) {
                 String name;
@@ -113,15 +122,16 @@ class SubscribeQueryProcessor extends QueryProcessor {
                 }
               });
             } else {
-              String rk = n;
+              String rk = target;
               bool ts = false;
               if (rk.endsWith(".timestamp")) {
                 String rn = rk.substring(0, rk.length - 10);
-                cp = cp.replaceAll("/${rk}", "/${rn}");
+                targetPath = targetPath.replaceAll("/${rk}", "/${rn}");
                 ts = true;
               }
 
-              holder.subs[rkey] = context.subscribe(cp, (ValueUpdate update) {
+              holder.subs[rkey] = context.subscribe(targetPath,
+                (ValueUpdate update) {
                 holder.values[rkey] = ts ? update.ts : update.value;
                 controller.add(holder.build());
               });

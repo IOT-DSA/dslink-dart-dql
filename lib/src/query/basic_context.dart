@@ -7,18 +7,19 @@ class BasicQueryContext extends QueryContext {
 
   @override
   Stream<QueryUpdate> query(String input) {
+    logger.fine("Run Query: ${input}");
+
     var processors = parse(input);
     return processQuery(processors);
   }
 
   List<QueryProcessor> parse(String input) {
-    logger.fine("Run Query: ${input}");
-
     List<QueryStatement> statements = parseQueryInput(input);
 
     logger.fine("Parse Query: ${statements}");
 
-    List<QueryProcessor> processors = statements.map((QueryStatement statement) {
+    List<QueryProcessor> processors = statements.map(
+      (QueryStatement statement) {
       if (!QUERY_COMMANDS.containsKey(statement.command)) {
         throw new QueryException(
           "Failed to parse query: unknown command '${statement.command}'"
