@@ -4,6 +4,10 @@ This is a DSLink-based mockup of what DQL (Distributed Query Language) should be
 
 DQL acts upon the connected broker and it's network.
 
+## Syntax
+
+![Syntax Tree](https://raw.githubusercontent.com/IOT-DSA/dslink-dart-dql/master/tool/diagram.png)
+
 ## Query Examples
 
 #### List all nodes in the network
