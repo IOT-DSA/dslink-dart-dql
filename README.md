@@ -5,9 +5,8 @@ This is a DSLink-based mockup of what DQL (Distributed Query Language) should be
 DQL acts upon the connected broker and it's network.
 
 ## Syntax
-![Image of Yaktocat](https://octodex.github.com/images/yaktocat.png)
 
-(https://raw.githubusercontent.com/IOT-DSA/dslink-dart-dql/master/tool/diagram.png)
+![Syntax Tree](https://raw.githubusercontent.com/IOT-DSA/dslink-dart-dql/master/tool/diagram.png)
 
 ## Query Examples
 
