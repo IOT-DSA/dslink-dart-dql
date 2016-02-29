@@ -6,7 +6,7 @@ DQL acts upon the connected broker and it's network.
 
 ## Syntax
 
-(https://github.com/IOT-DSA/dslink-dart-dql/blob/master/tool/diagram.png)
+(https://raw.githubusercontent.com/IOT-DSA/dslink-dart-dql/master/tool/diagram.png)
 
 ## Query Examples
 
