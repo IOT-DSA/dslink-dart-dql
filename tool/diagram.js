@@ -25,7 +25,10 @@ Diagram(
               'value',
               'value.timestamp',
               ':name',
-              ':displayName'
+              ':displayName',
+              '../../metric',
+              '../../@attribute',
+              '../../:displayName'
             ),
             Optional(
               Sequence(
