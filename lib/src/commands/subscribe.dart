@@ -110,15 +110,29 @@ class SubscribeQueryProcessor extends QueryProcessor {
                 holder.values[rkey] = update.ts;
                 controller.add(holder.build());
               });
-            } else if (target == ":name") {
+            } else if (parts.last == ":name") {
+              var trp = pathlib.normalize(
+                pathlib.join(
+                  path,
+                  parts.sublist(0, parts.length - 1).join("/")
+                )
+              );
+
               holder.subs[rkey] = new Stream.fromIterable([
-                path
+                trp
               ]).listen((a) {
                 holder.values[rkey] = new Path(a).name;
                 controller.add(holder.build());
               });
-            } else if (target == ":displayName") {
-              holder.subs[rkey] = context.list(path).listen(
+            } else if (parts.last == ":displayName") {
+              var trp = pathlib.normalize(
+                pathlib.join(
+                  path,
+                  parts.sublist(0, parts.length - 1).join("/")
+                )
+              );
+              
+              holder.subs[rkey] = context.list(trp).listen(
                 (RequesterListUpdate update) {
                 String name;
                 if (update.node.configs[r"$name"] is String) {
