@@ -49,13 +49,13 @@ list * | filter @mytag | subscribe
 #### Create a table all nodes to their names
 
 ```
-list * | subscribe $name
+list * | subscribe :name
 ```
 
 #### Subscribe to all values in a DSLink, and create a table of the name and the value
 
 ```
-list /downstream/System/* | filter $type | subscribe $name value
+list /downstream/System/* | filter $type | subscribe :name value
 ```
 
 #### Subscribe to all values in a DSLink, where @unit is not equal to "%"
@@ -91,7 +91,7 @@ list * | filter $type | subscribe | expression msg="'Value: ' + row.value"
 #### Calculate the minimum of 50 and the number values in the network
 
 ```
-list * | filter $type="number"  | subscribe | expression min="Math.min(50, row.value)"
+list * | filter $type="number" | subscribe | expression min="Math.min(50, row.value)"
 ```
 
 #### Subscribe to children on a single path
