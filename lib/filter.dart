@@ -274,7 +274,7 @@ class FilterGrammarDefinition extends GrammarDefinition {
     ref(value)
   ).optional();
 
-  identifier() => pattern("A-Za-z0-9\$@_:").plus().flatten();
+  identifier() => pattern("A-Za-z0-9\$@_:./").plus().flatten();
 
   value() => ref(stringLiteral) |
     ref(nil) |

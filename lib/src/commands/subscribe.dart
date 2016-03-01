@@ -79,11 +79,22 @@ class SubscribeQueryProcessor extends QueryProcessor {
             }
 
             out.values[rkey] = holder.values[rkey] = null;
-            if (target.startsWith("@") || target.startsWith(r"$")) {
-              holder.subs[rkey] = context.list(path).listen(
+            var parts = pathlib.split(target);
+
+            if (parts.last.startsWith("@") || parts.last.startsWith(r"$")) {
+              var trp = pathlib.normalize(
+                pathlib.join(
+                  path,
+                  parts.sublist(0, parts.length - 1).join("/")
+                )
+              );
+
+              String tra = parts.last;
+
+              holder.subs[rkey] = context.list(trp).listen(
                 (RequesterListUpdate update) {
-                if (holder.values[rkey] != update.node.get(target)) {
-                  holder.values[rkey] = update.node.get(target);
+                if (holder.values[rkey] != update.node.get(tra)) {
+                  holder.values[rkey] = update.node.get(tra);
                   controller.add(holder.build());
                 }
               });

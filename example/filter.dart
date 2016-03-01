@@ -24,6 +24,12 @@ main() {
   test('@car is true and @track is false or @name is true');
   test('(@car is true) and (@truck is false or @always is true)');
 
+  test('(../@car is true) and (../../@truck is false or @always is true)', {
+    "../@car": true,
+    "../../@truck": true,
+    "@always": true
+  });
+
   test('@names contains "Alex"', {
     "@names": [
       "Alex",
