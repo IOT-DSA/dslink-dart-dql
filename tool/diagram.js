@@ -1,4 +1,4 @@
-Diagram(
+_diagram = Diagram(
   OneOrMore(
     Choice(
       0,
@@ -13,32 +13,6 @@ Diagram(
       Sequence(
         'path',
         'target path'
-      ),
-      Sequence(
-        'subscribe',
-        OneOrMore(
-          Sequence(
-            Choice(
-              0,
-              'attribute',
-              'column',
-              'value',
-              'value.timestamp',
-              ':name',
-              ':displayName',
-              '../../metric',
-              '../../@attribute',
-              '../../:displayName'
-            ),
-            Optional(
-              Sequence(
-                'as',
-                'column name'
-              )
-            )
-          ),
-          Optional(',')
-        )
       ),
       Sequence(
         'filter',
@@ -78,6 +52,47 @@ Diagram(
         )
       ),
       Sequence(
+        'subscribe',
+        OneOrMore(
+          Sequence(
+            Choice(
+              0,
+              'attribute',
+              'column',
+              'value',
+              'value.timestamp',
+              ':name',
+              ':displayName',
+              '../../metric',
+              '../../@attribute',
+              '../../:displayName'
+            ),
+            Optional(
+              Sequence(
+                'as',
+                'column name'
+              )
+            )
+          ),
+          Optional(',')
+        )
+      ),
+      Sequence(
+        'expression',
+        OneOrMore(
+          Sequence(
+            'column name',
+            '=',
+            Choice(
+              0,
+              "row.columnname * 2",
+              "Math.random()",
+              '""'
+            )
+          )
+        )
+      ),
+      Sequence(
         'drop',
         OneOrMore(
           'column'
@@ -90,21 +105,6 @@ Diagram(
             'old name',
             '=',
             'new name'
-          )
-        )
-      ),
-      Sequence(
-        'expression',
-        OneOrMore(
-          Sequence(
-            'column name',
-            '=',
-            Choice(
-              0,
-              "row.value * 2",
-              "Math.random()",
-              "Math.pow(2 * Math.PI * row.value, 2)"
-            )
           )
         )
       )
