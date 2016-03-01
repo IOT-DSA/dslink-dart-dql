@@ -22,6 +22,7 @@ part "src/commands/path.dart";
 part "src/commands/drop.dart";
 part "src/commands/expression.dart";
 part "src/commands/rename.dart";
+part "src/commands/invoke.dart";
 
 part "src/query/basic_context.dart";
 

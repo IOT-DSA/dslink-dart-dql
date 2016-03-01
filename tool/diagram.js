@@ -87,7 +87,7 @@ _diagram = Diagram(
               0,
               "row.columnname * 2",
               "Math.random()",
-              '""'
+              '"CPU Usage: " + row.columnname'
             )
           )
         )
