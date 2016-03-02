@@ -4,8 +4,9 @@ import "package:dql/subscribe.dart";
 
 main() {
   test('level as BatteryLevel, estimate as TimeEstimate');
-  test('level name test :hi name as Hello name is goodbye');
+  test('level test :hi name as Hello, value as goodbye');
   test('CommandPosition FeedBack_Axis_ActualPosition FeedBack_Axis_ActualPosition.timestamp CommandVelocity');
+  test('../../child as FavoriteChild');
 
   if (hasAnyError) {
     exit(1);

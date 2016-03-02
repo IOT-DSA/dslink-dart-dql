@@ -1,9 +1,10 @@
 part of dslink.dql.query;
 
 class BasicQueryContext extends QueryContext {
+  final Map<String, QueryProcessorFactory> processors;
   final Requester requester;
 
-  BasicQueryContext(this.requester);
+  BasicQueryContext(this.requester, this.processors);
 
   @override
   Stream<QueryUpdate> query(String input) {
@@ -18,20 +19,20 @@ class BasicQueryContext extends QueryContext {
 
     logger.fine("Parse Query: ${statements}");
 
-    List<QueryProcessor> processors = statements.map(
+    List<QueryProcessor> proc = statements.map(
       (QueryStatement statement) {
-      if (!QUERY_COMMANDS.containsKey(statement.command)) {
+      if (!processors.containsKey(statement.command)) {
         throw new QueryException(
           "Failed to parse query: unknown command '${statement.command}'"
         );
       }
 
-      QueryProcessor processor = QUERY_COMMANDS[statement.command](this);
+      QueryProcessor processor = processors[statement.command](this);
       processor.init(statement);
       return processor;
     }).toList();
 
-    return processors;
+    return proc;
   }
 
   @override
