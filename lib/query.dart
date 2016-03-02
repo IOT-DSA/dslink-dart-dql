@@ -14,6 +14,7 @@ import "parse.dart";
 import "filter.dart";
 import "subscribe.dart";
 import "script.dart";
+import "invoke.dart";
 
 part "src/commands/list.dart";
 part "src/commands/subscribe.dart";
@@ -35,5 +36,6 @@ final Map<String, QueryProcessorFactory> QUERY_COMMANDS = {
   "drop": (QueryContext context) => new DropQueryProcessor(context),
   "expression": (QueryContext context) => new ExpressionQueryProcessor(context),
   "rename": (QueryContext context) => new RenameQueryProcessor(context),
-  "where": (QueryContext context) => new FilterQueryProcessor(context)
+  "where": (QueryContext context) => new FilterQueryProcessor(context),
+  "invoke": (QueryContext context) => new InvokeQueryProcessor(context)
 };

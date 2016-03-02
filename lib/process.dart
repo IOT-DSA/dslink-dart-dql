@@ -152,6 +152,8 @@ abstract class QueryContext {
   Stream<RequesterListUpdate> list(String path);
 
   Future<RemoteNode> getRemoteNode(String path);
+
+  Stream<RequesterInvokeUpdate> invoke(String actionPath, Map params);
 }
 
 int _seqId = 0;

@@ -37,6 +37,7 @@ _diagram = Diagram(
                   Choice(
                     0,
                     'is',
+                    '=',
                     '==',
                     '!=',
                     'equals',
@@ -105,6 +106,35 @@ _diagram = Diagram(
             'old name',
             '=',
             'new name'
+          )
+        )
+      ),
+      Sequence(
+        'invoke',
+        Sequence(
+          Choice(
+            0,
+            'actionName',
+            '/path/to/action'
+          ),
+          '(',
+          OneOrMore(
+            Sequence(
+              'paramName',
+              '=',
+              Choice(
+                0,
+                '"String"',
+                '123',
+                '1.23',
+                'false',
+                'true',
+                'null',
+                'nil',
+                '%columname'
+              )
+            ),
+            ','
           )
         )
       )

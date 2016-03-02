@@ -50,4 +50,9 @@ class BasicQueryContext extends QueryContext {
   Future<RemoteNode> getRemoteNode(String path) {
     return requester.getRemoteNode(path);
   }
+
+  @override
+  Stream<RequesterInvokeUpdate> invoke(String actionPath, Map params) {
+    return requester.invoke(actionPath, params);
+  }
 }

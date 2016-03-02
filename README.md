@@ -99,3 +99,9 @@ list * | filter $type="number" | subscribe | expression min="Math.min(50, row.va
 ```
 path /downstream/System | subscribe Memory_Usage
 ```
+
+### Publish multiple points to MongoDB
+
+```
+list /downstream/System | filter :metric | subscribe | invoke /downstream/MongoDB/local/SystemValues/publish(Path=%path, Value=%value)
+```
