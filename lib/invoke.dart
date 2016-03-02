@@ -113,7 +113,7 @@ class QueryInvokeGrammarDefinition extends GrammarDefinition {
     string("in")
   ).flatten();
 
-  variableReference() => (char("%") & ref(identifier)).pick(1);
+  variableReference() => (char("%").optional() & ref(identifier)).pick(1);
 
   valueList() => (
     char("[") &

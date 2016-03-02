@@ -5,6 +5,7 @@ import "package:dql/invoke.dart";
 main() {
   test('hello(param=1)');
   test('hello(param=%name)');
+  test('hello(param=name)');
 
   if (hasAnyError) {
     exit(1);
