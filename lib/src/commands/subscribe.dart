@@ -68,8 +68,8 @@ class SubscribeQueryProcessor extends QueryProcessor {
             String targetPath = path;
 
             if (target.startsWith("../")) {
-              targetPath = pathlib.normalize(
-                pathlib.join(path, target)
+              targetPath = pathlib.posix.normalize(
+                pathlib.posix.join(path, target)
               );
             } else {
               if (!target.startsWith("/")) {
@@ -79,11 +79,11 @@ class SubscribeQueryProcessor extends QueryProcessor {
             }
 
             out.values[rkey] = holder.values[rkey] = null;
-            var parts = pathlib.split(target);
+            var parts = pathlib.posix.split(target);
 
             if (parts.last.startsWith("@") || parts.last.startsWith(r"$")) {
-              var trp = pathlib.normalize(
-                pathlib.join(
+              var trp = pathlib.posix.normalize(
+                pathlib.posix.join(
                   path,
                   parts.sublist(0, parts.length - 1).join("/")
                 )
@@ -111,8 +111,8 @@ class SubscribeQueryProcessor extends QueryProcessor {
                 controller.add(holder.build());
               });
             } else if (parts.last == ":name") {
-              var trp = pathlib.normalize(
-                pathlib.join(
+              var trp = pathlib.posix.normalize(
+                pathlib.posix.join(
                   path,
                   parts.sublist(0, parts.length - 1).join("/")
                 )
@@ -125,13 +125,13 @@ class SubscribeQueryProcessor extends QueryProcessor {
                 controller.add(holder.build());
               });
             } else if (parts.last == ":displayName") {
-              var trp = pathlib.normalize(
-                pathlib.join(
+              var trp = pathlib.posix.normalize(
+                pathlib.posix.join(
                   path,
                   parts.sublist(0, parts.length - 1).join("/")
                 )
               );
-              
+
               holder.subs[rkey] = context.list(trp).listen(
                 (RequesterListUpdate update) {
                 String name;
