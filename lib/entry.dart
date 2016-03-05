@@ -14,6 +14,20 @@ final List<String> POSSIBLE_IDS = [
 
 BasicQueryContext context;
 
+class QueryTableRow {
+  final Map<String, dynamic> values;
+  int id;
+
+  QueryTableRow(this.values);
+  QueryTableRow.create() : values = {};
+
+  List<dynamic> format(List<String> keys) {
+    return keys.map((key) {
+      return values[key];
+    }).toList();
+  }
+}
+
 class QueryNode extends SimpleNode {
   QueryNode(String path) : super(path) {
     configs.addAll({
@@ -37,67 +51,86 @@ class QueryNode extends SimpleNode {
     [int maxPermission = Permission.CONFIG]) {
     new Future(() async {
       String input = params["query"];
-      LiveTable table;
-      Map<String, LiveTableRow> rows = {};
+      Map<String, QueryTableRow> rows = {};
 
       StreamSubscription sub;
 
-      String lastColumnString = "";
+      List<String> knownColumns = <String>[];
+
+      response.onClose = (_) {
+        if (sub != null) {
+          sub.cancel();
+        }
+      };
 
       sub = context.query(input).listen((QueryUpdate update) {
         var forceRefresh = false;
         if (!update.remove) {
           List<String> keys = update.values.keys.toList();
-          keys.sort();
-          String myColumnString = keys.join(" ");
-          if (myColumnString != lastColumnString && table != null) {
-            table.columns.clear();
-            table.columns.addAll(update.values.keys.map((String key) {
-              return new TableColumn(key, "dynamic");
-            }));
-            forceRefresh = true;
+          var added = keys.where((x) => !knownColumns.contains(x)).toList();
+
+          for (String key in added) {
+            knownColumns.add(key);
           }
-          lastColumnString = myColumnString;
-        }
 
-        if (table == null) {
-          table = new LiveTable(update.values.keys.map((String key) {
-            return new TableColumn(key, "dynamic");
-          }).toList());
-
-          table.doOnClose(() {
-            if (sub != null) {
-              sub.cancel();
-            }
-          });
-
-          table.sendTo(response);
+          if (added.isNotEmpty) {
+            response.updateStream(
+              [],
+              columns: knownColumns
+                .map((name) => new TableColumn(name, "dynamic"))
+                .toList()
+            );
+          }
         }
 
         String path = update.id;
 
         if (!rows.containsKey(path)) {
           if (!update.remove) {
-            rows[path] = table.createRow(update.values.values.toList());
+            var row = rows[path] = new QueryTableRow(update.values);
+            row.id = rows.length - 1;
+
+            response.updateStream(
+              [row.format(knownColumns)],
+              meta: {
+                "mode": "append"
+              }
+            );
           }
         } else {
           if (update.remove) {
-            LiveTableRow r = rows.remove(path);
-            if (r != null) {
-              r.delete();
+            QueryTableRow row = rows.remove(path);
+            for (QueryTableRow m in rows.values) {
+              if (m.id > row.id) {
+                m.id--;
+              }
             }
+
+            forceRefresh = true;
           } else {
-            List<dynamic> vals = update.values.values.toList();
-            LiveTableRow row = rows[path];
-            for (var i = 0; i < vals.length; i++) {
-              row.values[i] = vals[i];
-            }
-            table.onRowUpdate(row);
+            QueryTableRow row = rows[path];
+            row.values.addAll(update.values);
+            response.updateStream(
+              [row.format(knownColumns)],
+              meta: {
+                "modify": "replace ${row.id}-${row.id}"
+              }
+            );
           }
         }
 
         if (forceRefresh) {
-          table.refresh();
+          response.updateStream(
+            rows.values
+              .map((row) => row.format(knownColumns))
+              .toList(),
+            columns: knownColumns
+              .map((name) => new TableColumn(name, "dynamic"))
+              .toList(),
+            meta: {
+              "mode": "refresh"
+            }
+          );
         }
       });
     }).catchError((e, stack) {
