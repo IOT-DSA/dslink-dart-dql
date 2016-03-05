@@ -32,17 +32,28 @@ main(List<String> args) async {
     new QueryNode("/query")
   );
 
-  link.addNode("/currentUniqueQueryCount", {
-    r"$name": "Current Unique Query Count",
+  SimpleNode node;
+
+  node = link.addNode("/uniqueQueryCount", {
+    r"$name": "Unique Query Count",
     r"$type": "number",
     "?value": 0
   });
 
-  link.addNode("/currentTotalQueryCount", {
-    r"$name": "Current Total Query Count",
+  node.serializable = false;
+
+  node = link.addNode("/totalQueryCount", {
+    r"$name": "Total Query Count",
     r"$type": "number",
     "?value": 0
   });
+
+  node.serializable = false;
+
+  try {
+    link.removeNode("/currentUniqueQueryCount");
+    link.removeNode("/currentTotalQueryCount");
+  } catch (e) {}
 
   link.connect();
   await link.onRequesterReady;

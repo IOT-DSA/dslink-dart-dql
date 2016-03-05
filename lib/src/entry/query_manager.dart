@@ -44,10 +44,10 @@ class QueryManager {
   }
 
   void updateStats() {
-    link.updateValue("/currentUniqueQueryCount", queries.length);
+    link.updateValue("/uniqueQueryCount", queries.length);
     int total = queries.values.fold(0, (int a, OngoingQuery b) {
       return a + b.listenCount;
     });
-    link.updateValue("/currentTotalQueryCount", total);
+    link.updateValue("/totalQueryCount", total);
   }
 }
