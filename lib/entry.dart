@@ -7,11 +7,6 @@ import "package:dslink/dslink.dart";
 import "package:dql/query.dart";
 import "package:dql/process.dart";
 
-final List<String> POSSIBLE_IDS = [
-  "id",
-  "path"
-];
-
 BasicQueryContext context;
 
 class QueryTableRow {
