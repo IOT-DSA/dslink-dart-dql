@@ -12,8 +12,8 @@ main(List<String> args) async {
 
   link.connect();
   Requester r = await link.onRequesterReady;
-  r.invoke("/downstream/DQL/query", {
-    "query": r"list /sys/links | subscribe path as fi"
+  r.invoke("/downstream/DQL-dev/query", {
+    "query": r"list /downstream/System/? | filter :metric | subscribe"
   }).listen((RequesterInvokeUpdate update) {
     print(update.rows);
 
