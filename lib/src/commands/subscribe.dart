@@ -138,7 +138,7 @@ class SubscribeQueryProcessor extends QueryProcessor {
                 if (update.node.configs[r"$name"] is String) {
                   name = update.node.configs[r"$name"];
                 } else {
-                  name = new Path(path).name;
+                  name = new Path(trp).name;
                 }
 
                 if (name != holder.values[rkey]) {
