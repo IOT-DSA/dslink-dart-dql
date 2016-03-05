@@ -66,7 +66,16 @@ class OngoingQuery {
             }
           }
 
-          forceRefresh = true;
+          forEachResponse((response) {
+            response.updateStream(
+              rows.values.where((r) {
+                return r.id >= row.id;
+              }).map((row) => row.format(knownColumns)).toList(),
+              meta: {
+                "modify": "replace ${row.id}-${rows.length}"
+              }
+            );
+          });
         } else {
           QueryTableRow row = rows[path];
           row.values.addAll(update.values);

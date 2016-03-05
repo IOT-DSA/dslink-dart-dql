@@ -44,6 +44,12 @@ class ListNodeQueryProcessor extends QueryProcessor {
                 }, remove: true);
                 controller.add(update);
               }
+
+              subs.keys.where((p) => p.startsWith("${path}/")).toList().forEach((key) {
+                if (dones[key] is Function) {
+                  dones[key]();
+                }
+              });
             }
           };
 
