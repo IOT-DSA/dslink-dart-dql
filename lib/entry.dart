@@ -32,74 +32,88 @@ class QueryNode extends SimpleNode {
   }
 
   @override
-  onInvoke(Map params) {
-    Completer<LiveTable> c = new Completer();
-    String input = params["query"];
-    LiveTable table;
-    Map<String, LiveTableRow> rows = {};
+  InvokeResponse invoke(Map params, Responder responder,
+    InvokeResponse response, LocalNode parentNode,
+    [int maxPermission = Permission.CONFIG]) {
+    new Future(() async {
+      String input = params["query"];
+      LiveTable table;
+      Map<String, LiveTableRow> rows = {};
 
-    StreamSubscription sub;
+      StreamSubscription sub;
 
-    String lastColumnString = "";
+      String lastColumnString = "";
 
-    sub = context.query(input).listen((QueryUpdate update) {
-      var forceRefresh = false;
-      if (!update.remove) {
-        List<String> keys = update.values.keys.toList();
-        keys.sort();
-        String myColumnString = keys.join(" ");
-        if (myColumnString != lastColumnString && table != null) {
-          table.columns.clear();
-          table.columns.addAll(update.values.keys.map((String key) {
-            return new TableColumn(key, "dynamic");
-          }));
-          forceRefresh = true;
-        }
-        lastColumnString = myColumnString;
-      }
-
-      if (table == null) {
-        table = new LiveTable(update.values.keys.map((String key) {
-          return new TableColumn(key, "dynamic");
-        }).toList());
-
-        table.doOnClose(() {
-          if (sub != null) {
-            sub.cancel();
-          }
-        });
-
-        c.complete(table);
-      }
-
-      String path = update.id;
-
-      if (!rows.containsKey(path)) {
+      sub = context.query(input).listen((QueryUpdate update) {
+        var forceRefresh = false;
         if (!update.remove) {
-          rows[path] = table.createRow(update.values.values.toList());
+          List<String> keys = update.values.keys.toList();
+          keys.sort();
+          String myColumnString = keys.join(" ");
+          if (myColumnString != lastColumnString && table != null) {
+            table.columns.clear();
+            table.columns.addAll(update.values.keys.map((String key) {
+              return new TableColumn(key, "dynamic");
+            }));
+            forceRefresh = true;
+          }
+          lastColumnString = myColumnString;
         }
-      } else {
-        if (update.remove) {
-          LiveTableRow r = rows.remove(path);
-          if (r != null) {
-            r.delete();
+
+        if (table == null) {
+          table = new LiveTable(update.values.keys.map((String key) {
+            return new TableColumn(key, "dynamic");
+          }).toList());
+
+          table.doOnClose(() {
+            if (sub != null) {
+              sub.cancel();
+            }
+          });
+
+          table.sendTo(response);
+        }
+
+        String path = update.id;
+
+        if (!rows.containsKey(path)) {
+          if (!update.remove) {
+            rows[path] = table.createRow(update.values.values.toList());
           }
         } else {
-          List<dynamic> vals = update.values.values.toList();
-          LiveTableRow row = rows[path];
-          for (var i = 0; i < vals.length; i++) {
-            row.values[i] = vals[i];
+          if (update.remove) {
+            LiveTableRow r = rows.remove(path);
+            if (r != null) {
+              r.delete();
+            }
+          } else {
+            List<dynamic> vals = update.values.values.toList();
+            LiveTableRow row = rows[path];
+            for (var i = 0; i < vals.length; i++) {
+              row.values[i] = vals[i];
+            }
+            table.onRowUpdate(row);
           }
-          table.onRowUpdate(row);
         }
-      }
 
-      if (forceRefresh) {
-        table.refresh();
-      }
+        if (forceRefresh) {
+          table.refresh();
+        }
+      });
+    }).catchError((e, stack) {
+      var err = new DSError(
+        "invokeError",
+        msg: e.toString(),
+        detail: stack.toString()
+      );
+      response.close(err);
     });
 
-    return c.future;
+    response.updateStream([], meta: {
+      "mode": "refresh"
+    });
+
+    return response;
   }
 }
 
