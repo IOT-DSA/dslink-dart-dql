@@ -7,6 +7,8 @@ class QueryManager {
     logger.fine("Query Manager - Run Query: ${input}");
     OngoingQuery query = getOrCreateQuery(input);
     query.addResponse(response);
+
+    updateStats();
   }
 
   OngoingQuery getOrCreateQuery(String input) {
@@ -37,5 +39,15 @@ class QueryManager {
     }
 
     logger.fine("Query Manager - Query destroyed: ${input}");
+
+    updateStats();
+  }
+
+  void updateStats() {
+    link.updateValue("/currentUniqueQueryCount", queries.length);
+    int total = queries.values.fold(0, (int a, OngoingQuery b) {
+      return a + b.listenCount;
+    });
+    link.updateValue("/currentTotalQueryCount", total);
   }
 }

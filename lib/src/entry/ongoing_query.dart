@@ -159,4 +159,6 @@ class OngoingQuery {
 
   List<InvokeResponse> get responses =>
     new List<InvokeResponse>.unmodifiable(_responses);
+
+  int get listenCount => _responses.length;
 }

@@ -32,6 +32,18 @@ main(List<String> args) async {
     new QueryNode("/query")
   );
 
+  link.addNode("/currentUniqueQueryCount", {
+    r"$name": "Current Unique Query Count",
+    r"$type": "number",
+    "?value": 0
+  });
+
+  link.addNode("/currentTotalQueryCount", {
+    r"$name": "Current Total Query Count",
+    r"$type": "number",
+    "?value": 0
+  });
+
   link.connect();
   await link.onRequesterReady;
   context = new BasicQueryContext(link.requester, BASE_QUERY_COMMANDS);
