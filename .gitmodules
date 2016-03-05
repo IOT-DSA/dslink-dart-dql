@@ -1,0 +1,3 @@
+[submodule ".arc/libdglogik"]
+	path = .arc/libdglogik
+	url = git@git.dev.dglogik.com:dglogik/dgphabricator.git
