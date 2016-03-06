@@ -79,11 +79,11 @@ main(List<String> files) async {
 
     path = pathlib.relative(path, from: Directory.current.path);
     if (alwaysIgnoreFiles.contains(path)) {
-      continue;
+      severity = "disabled";
     }
 
     if (ignoreMessages.contains(name)) {
-      continue;
+      severity = "disabled";
     }
 
     print("${severity} !!${path}!!"
