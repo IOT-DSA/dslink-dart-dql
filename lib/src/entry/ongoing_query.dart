@@ -134,12 +134,16 @@ class OngoingQuery {
         dropResponse(response);
       };
     } else {
-      logger.warning("Invoke with rid ${response.rid} is already part of this ongoing query.");
+      logger.warning(
+        "Invoke with rid ${response.rid} is already part of this ongoing query."
+      );
     }
   }
 
   void dropResponse(InvokeResponse response) {
-    logger.fine("Dropping invoke with rid ${response.rid} from ongoing query.");
+    logger.fine(
+      "Dropping invoke with rid ${response.rid} from ongoing query."
+    );
     _responses.remove(response);
 
     response.close();
