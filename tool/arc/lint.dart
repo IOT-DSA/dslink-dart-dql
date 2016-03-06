@@ -3,25 +3,42 @@ import "dart:io";
 
 import "package:path/path.dart" as pathlib;
 
-const List<String> ALWAYS_IGNORE_FILES = const [
+const bool enableLintMode = true;
+
+const List<String> alwaysIgnoreFiles = const [
   "lib/script.dart"
 ];
 
-const Map<String, String> SEVERITY = const {
+const Map<String, String> friendlyMessageMap = const {
+  "Unnecessary brace in string interp": "Unnecessary brace in"
+    " string interpolation"
+};
+
+const Map<String, String> severityLevels = const {
   "WARNING": "warning",
   "INFO": "advice",
   "ERROR": "error"
 };
+
+const List<String> ignoreMessages = const [
+  "Unnecessary brace in string interpolation"
+];
 
 main(List<String> files) async {
   if (files.isEmpty) {
     return;
   }
 
-  var result = await Process.run("dartanalyzer", [
-    "--format=machine",
-  ]..addAll(files));
-  
+  var args = ["--format=machine"];
+
+  if (enableLintMode) {
+    args.add("--lints");
+  }
+
+  args.addAll(files);
+
+  var result = await Process.run("dartanalyzer", args);
+
   List<String> lines = [];
   lines.addAll(result.stdout.toString().split("\n"));
   lines.addAll(result.stderr.toString().split("\n"));
@@ -31,7 +48,7 @@ main(List<String> files) async {
   for (String line in lines) {
     line = line.trim();
 
-    if (line.contains('is a part and cannot be analyzed')) {
+    if (line.contains("is a part and cannot be analyzed")) {
       var path = line.split(" is a part").first.trim();
       figureItOut.add(path);
       continue;
@@ -45,11 +62,15 @@ main(List<String> files) async {
 
     List<String> parts = line.split("|");
 
-    String severity = SEVERITY[parts[0]];
+    String severity = severityLevels[parts[0]];
     String name = parts[2];
 
     name = name.toLowerCase().replaceAll("_", " ");
     name = name[0].toUpperCase() + name.substring(1);
+
+    if (friendlyMessageMap.containsKey(name)) {
+      name = friendlyMessageMap[name];
+    }
 
     String path = parts[3];
     int lineNumber = int.parse(parts[4]);
@@ -57,7 +78,11 @@ main(List<String> files) async {
     String message = parts[7];
 
     path = pathlib.relative(path, from: Directory.current.path);
-    if (ALWAYS_IGNORE_FILES.contains(path)) {
+    if (alwaysIgnoreFiles.contains(path)) {
+      continue;
+    }
+
+    if (ignoreMessages.contains(name)) {
       continue;
     }
 
