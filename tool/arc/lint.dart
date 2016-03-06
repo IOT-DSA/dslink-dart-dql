@@ -4,6 +4,7 @@ import "dart:io";
 import "package:path/path.dart" as pathlib;
 
 const bool enableLintMode = true;
+const bool enableStrongMode = false;
 
 const List<String> alwaysIgnoreFiles = const [
   "lib/script.dart"
@@ -33,6 +34,10 @@ main(List<String> files) async {
 
   if (enableLintMode) {
     args.add("--lints");
+  }
+
+  if (enableStrongMode) {
+    args.add("--strong");
   }
 
   args.addAll(files);
