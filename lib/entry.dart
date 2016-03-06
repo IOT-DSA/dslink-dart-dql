@@ -57,5 +57,5 @@ main(List<String> args) async {
 
   link.connect();
   await link.onRequesterReady;
-  context = new BasicQueryContext(link.requester, BASE_QUERY_COMMANDS);
+  context = new BasicQueryContext(link.requester, baseQueryCommandSet);
 }

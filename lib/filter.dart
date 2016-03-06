@@ -4,7 +4,7 @@ import "package:petitparser/petitparser.dart";
 
 import "parse.dart";
 
-const Existent EXISTS = Existent.EXISTS;
+const Existent exists = Existent.exists;
 
 abstract class FilterTestVisitor {
   void visit(FilterTest test) {
@@ -59,7 +59,7 @@ class FilterTestKeyCollector extends FilterTestVisitor {
 }
 
 class Existent {
-  static const Existent EXISTS = const Existent();
+  static const Existent exists = const Existent();
 
   const Existent();
 
@@ -184,7 +184,7 @@ class FilterCompareTest extends FilterTest {
     bool result = false;
     var v = m[key];
 
-    if (value == EXISTS) {
+    if (value == exists) {
       result = m.containsKey(key);
     } else if (operator == "=" ||
       operator == "==" ||
@@ -234,7 +234,7 @@ class FilterCompareTest extends FilterTest {
 
 class FilterGrammarDefinition extends GrammarDefinition {
   @override
-  Parser start() => ref(expressions).end();
+  start() => ref(expressions).end();
 
   expressions() => (whitespace().star() & ref(expression).separatedBy(
     whitespace().plus(),
@@ -358,7 +358,7 @@ class FilterParserDefinition extends FilterGrammarDefinition {
 
     List second = m[1];
     if (second == null) {
-      val = EXISTS;
+      val = exists;
     } else {
       op = second[0];
       val = second[1];
@@ -403,10 +403,10 @@ class FilterParserDefinition extends FilterGrammarDefinition {
 }
 
 class FilterParser extends GrammarParser {
-  static final FilterParser INSTANCE = new FilterParser();
+  static final FilterParser instance = new FilterParser();
 
   static FilterTestCollection doParse(String input) {
-    Result result = INSTANCE.parse(input);
+    Result result = instance.parse(input);
     if (result.isFailure) {
       result = new PowerParseError(result);
     }

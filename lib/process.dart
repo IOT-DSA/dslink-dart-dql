@@ -9,9 +9,9 @@ import "package:dslink/utils.dart";
 
 import "parse.dart";
 
-final bool DEBUG = false;
+const bool debugMode = false;
 
-final List<String> POSSIBLE_IDS = [
+final List<String> _possibleIdColumns = [
   "path",
   "id"
 ];
@@ -27,7 +27,7 @@ class QueryUpdate {
       return getAttribute("id");
     }
 
-    for (String mik in POSSIBLE_IDS) {
+    for (String mik in _possibleIdColumns) {
       if (values[mik] is String) {
         return values[mik];
       }
@@ -201,7 +201,7 @@ Stream<QueryUpdate> processQuery(List<QueryProcessor> processors) {
       return update;
     });
 
-    if (DEBUG) {
+    if (debugMode) {
       stream = stream.map((QueryUpdate u) {
         print("[${_seqId} ${id}] ${processor.runtimeType} => ${u.values}");
         return u;

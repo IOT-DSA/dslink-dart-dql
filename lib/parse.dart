@@ -10,16 +10,14 @@ import "package:petitparser/petitparser.dart";
 import "process.dart";
 import "filter.dart";
 
-final RegExp PATTERN_MODIFIER = new RegExp(r"(\*|\?)");
-final RegExp PATTERN_STRING = new RegExp(r"""
+final RegExp _patternModifier = new RegExp(r"(\*|\?)");
+final RegExp _patternString = new RegExp(r"""
 (?:\'|\")([^\"]*)(?:\'|\")|([^\s\,]+)
 """.trim());
 
-final RegExp PATTERN_STRING_SINGLE = new RegExp(r"""
+final RegExp _patternStringSingle = new RegExp(r"""
 ([\@\/\.\$A-Za-z0-9]+)=(?:\'|\")([^\"]*)(?:\'|\")
 """.trim());
-
-final Object _EXISTS = new Object();
 
 typedef bool NodeFilter(RemoteNode node, QueryUpdate update);
 
@@ -80,7 +78,7 @@ class QueryStatement {
 }
 
 List<String> parseInputParameters(String input) {
-  return PATTERN_STRING.allMatches(input).map((Match match) {
+  return _patternString.allMatches(input).map((Match match) {
     if (match.group(1) == null) {
       return match.group(2);
     }
@@ -90,7 +88,7 @@ List<String> parseInputParameters(String input) {
 
 Map<String, String> parseStringMapInput(String input) {
   var map = <String, String>{};
-  for (Match match in PATTERN_STRING_SINGLE.allMatches(input)) {
+  for (Match match in _patternStringSingle.allMatches(input)) {
     map[match.group(1)] = match.group(2);
   }
   return map;
@@ -122,9 +120,9 @@ PathExpression parseExpressionInput(String input) {
   if (!input.startsWith("/")) {
     input = "/${input}";
   }
-  List<String> parts = input.split(PATTERN_MODIFIER);
+  List<String> parts = input.split(_patternModifier);
   var count = 0;
-  String ptrn = input.splitMapJoin(PATTERN_MODIFIER, onMatch: (Match match) {
+  String ptrn = input.splitMapJoin(_patternModifier, onMatch: (Match match) {
     String mod = match.group(1);
     if (mod == "?") {
       count++;
@@ -241,10 +239,10 @@ class QueryStatementParserDefinition extends QueryStatementGrammarDefinition {
 }
 
 class QueryStatementParser extends GrammarParser {
-  static final QueryStatementParser INSTANCE = new QueryStatementParser();
+  static final QueryStatementParser instance = new QueryStatementParser();
 
   static List<QueryStatement> doParse(String input) {
-    Result result = INSTANCE.parse(input);
+    Result result = instance.parse(input);
     if (result.isFailure) {
       result = new PowerParseError(result);
     }

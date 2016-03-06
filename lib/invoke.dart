@@ -172,10 +172,10 @@ class QueryInvokeParserDefinition extends QueryInvokeGrammarDefinition {
 }
 
 class QueryInvokeParser extends GrammarParser {
-  static final QueryInvokeParser INSTANCE = new QueryInvokeParser();
+  static final QueryInvokeParser instance = new QueryInvokeParser();
 
   static QueryInvokeCall doParse(String input) {
-    Result result = INSTANCE.parse(input);
+    Result result = instance.parse(input);
     if (result.isFailure) {
       result = new PowerParseError(result);
     }

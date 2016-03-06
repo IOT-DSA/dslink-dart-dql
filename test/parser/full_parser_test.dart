@@ -26,7 +26,7 @@ basicQueryTests() {
 }
 
 parse(String input) {
-  var ctx = new BasicQueryContext(null, BASE_QUERY_COMMANDS);
+  var ctx = new BasicQueryContext(null, baseQueryCommandSet);
 
   return ctx.parse(input);
 }

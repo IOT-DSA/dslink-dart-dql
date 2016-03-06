@@ -72,10 +72,10 @@ class QuerySubscribeParserDefinition extends QuerySubscribeGrammarDefinition {
 }
 
 class QuerySubscribeParser extends GrammarParser {
-  static final QuerySubscribeParser INSTANCE = new QuerySubscribeParser();
+  static final QuerySubscribeParser instance = new QuerySubscribeParser();
 
   static Map<String, String> doParse(String input) {
-    Result result = INSTANCE.parse(input);
+    Result result = instance.parse(input);
     if (result.isFailure) {
       result = new PowerParseError(result);
     }

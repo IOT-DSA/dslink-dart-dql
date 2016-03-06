@@ -23,7 +23,7 @@ main() async {
 }
 
 MockQueryContext createQueryContext(Map input) {
-  var ctx = new MockQueryContext(BASE_QUERY_COMMANDS);
+  var ctx = new MockQueryContext(baseQueryCommandSet);
   ctx.root.load(input);
   return ctx;
 }

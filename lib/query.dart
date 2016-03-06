@@ -27,7 +27,7 @@ part "src/commands/invoke.dart";
 
 part "src/query/basic_context.dart";
 
-final Map<String, QueryProcessorFactory> BASE_QUERY_COMMANDS = {
+final Map<String, QueryProcessorFactory> baseQueryCommandSet = {
   "list": (QueryContext context) => new ListNodeQueryProcessor(context),
   "subscribe": (QueryContext context) => new SubscribeQueryProcessor(context),
   "filter": (QueryContext context) => new FilterQueryProcessor(context),
