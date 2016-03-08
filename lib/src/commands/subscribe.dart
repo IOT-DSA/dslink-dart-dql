@@ -48,7 +48,8 @@ class SubscribeQueryProcessor extends QueryProcessor {
     StreamSubscription sub;
     controller = new StreamController<QueryUpdate>(onListen: () {
       sub = stream.listen((QueryUpdate update) {
-        String path = update.values["path"];
+        String path = update.findNodePath();
+
         if (update.remove) {
           if (holders.containsKey(path)) {
             holders.remove(path).cancel();
@@ -64,6 +65,8 @@ class SubscribeQueryProcessor extends QueryProcessor {
 
           for (String target in childs.keys) {
             String rkey = childs[target];
+
+            holder.values[rkey] = null;
 
             String targetPath = path;
 
@@ -163,7 +166,7 @@ class SubscribeQueryProcessor extends QueryProcessor {
             }
           }
 
-          controller.add(update.cloneAndStub(childs.values.toList()));
+          controller.add(update.cloneAndStub(childs.values.toList(), true));
 
           holders[path] = holder;
         } else {

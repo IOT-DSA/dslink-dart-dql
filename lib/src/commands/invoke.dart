@@ -35,7 +35,7 @@ class InvokeQueryProcessor extends QueryProcessor {
           return;
         }
 
-        String path = update.values["path"];
+        String path = update.findNodePath();
         if (update.remove) {
           var holder = holders.remove(path);
           if (holder != null) {

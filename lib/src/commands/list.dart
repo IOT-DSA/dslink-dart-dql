@@ -98,12 +98,14 @@ class ListNodeQueryProcessor extends QueryProcessor {
               if (displayName == null) {
                 displayName = update.node.name;
               }
+
               QueryUpdate event = new QueryUpdate({
                 "path": path
               }, attributes: {
                 "node": update.node,
                 ":name": update.node.name,
-                ":displayName": displayName
+                ":displayName": displayName,
+                "id": path
               });
               controller.add(event);
             }

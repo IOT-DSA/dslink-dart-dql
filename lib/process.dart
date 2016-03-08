@@ -9,7 +9,10 @@ import "package:dslink/utils.dart";
 
 import "parse.dart";
 
-const bool debugMode = false;
+const bool debugMode = const bool.fromEnvironment(
+  "dql.mode.debug",
+  defaultValue: false
+);
 
 final List<String> _possibleIdColumns = [
   "path",
@@ -38,6 +41,20 @@ class QueryUpdate {
     }
 
     return _id;
+  }
+
+  String findNodePath() {
+    if (attributes["node"] is RemoteNode) {
+      RemoteNode node = attributes["node"];
+
+      return node.remotePath;
+    }
+
+    if (attributes["nodePath"] is String) {
+      return attributes["nodePath"];
+    }
+
+    return values["path"];
   }
 
   String _id;
@@ -98,10 +115,14 @@ class QueryUpdate {
     return c;
   }
 
-  QueryUpdate cloneAndStub(List<String> keys) {
+  QueryUpdate cloneAndStub(List<String> keys, [bool force = false]) {
     QueryUpdate c = clone();
     for (String key in keys) {
-      if (!c.values.containsKey(key)) {
+      if (!force) {
+        if (!c.values.containsKey(key)) {
+          c.values[key] = null;
+        }
+      } else {
         c.values[key] = null;
       }
     }
