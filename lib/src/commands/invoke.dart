@@ -30,12 +30,13 @@ class InvokeQueryProcessor extends QueryProcessor {
     StreamController controller;
     controller = new StreamController(onListen: () {
       stream.listen((QueryUpdate update) {
-        if (update.values["path"] is! String) {
+        String path = update.findNodePath();
+
+        if (path is! String) {
           controller.add(update);
           return;
         }
 
-        String path = update.findNodePath();
         if (update.remove) {
           var holder = holders.remove(path);
           if (holder != null) {
