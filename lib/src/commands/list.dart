@@ -14,6 +14,7 @@ class ListNodeQueryProcessor extends QueryProcessor {
 
   @override
   Stream<QueryUpdate> process(Stream<QueryUpdate> stream) {
+    StreamSubscription passthrough;
     var subs = <String, StreamSubscription>{};
     var dones = <String, Function>{};
     Set<String> uids = new Set<String>();
@@ -124,7 +125,15 @@ class ListNodeQueryProcessor extends QueryProcessor {
       }
       subs.clear();
       uids.clear();
+
+      if (passthrough != null) {
+        passthrough.cancel();
+      }
     });
+
+    passthrough = stream.listen((QueryUpdate update) {
+      controller.add(update);
+    }, onDone: () => controller.close());
 
     return controller.stream;
   }
