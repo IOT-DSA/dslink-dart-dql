@@ -51,11 +51,20 @@ class ListNodeQueryProcessor extends QueryProcessor {
                   dones[key]();
                 }
               });
+
+              if (context is QueryStatisticManager) {
+                (context as QueryStatisticManager).reportEnd("list");
+              }
             }
           };
 
           dones[path] = onDone;
 
+          if (context is QueryStatisticManager) {
+            (context as QueryStatisticManager).reportStart("list");
+          }
+
+          logger.fine("List ${path}");
           subs[path] = context.list(path).listen((RequesterListUpdate update) {
             if (p.parentPath.endsWith("/upstream") &&
               update.node.configs[r"$uid"] == null) {

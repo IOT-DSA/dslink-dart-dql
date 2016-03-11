@@ -177,6 +177,11 @@ abstract class QueryContext {
   Stream<RequesterInvokeUpdate> invoke(String actionPath, Map params);
 }
 
+abstract class QueryStatisticManager {
+  void reportStart(String id);
+  void reportEnd(String id);
+}
+
 int _seqId = 0;
 
 Stream<QueryUpdate> processQuery(List<QueryProcessor> processors) {
