@@ -133,7 +133,7 @@ class ListNodeQueryProcessor extends QueryProcessor {
 
     passthrough = stream.listen((QueryUpdate update) {
       controller.add(update);
-    }, onDone: () => controller.close());
+    });
 
     return controller.stream;
   }
