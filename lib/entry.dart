@@ -32,6 +32,11 @@ main(List<String> args) async {
     new QueryNode("/query")
   );
 
+  (link.provider as SimpleNodeProvider).setNode(
+    "/getRunningQueries",
+    new GetQueriesNode("/getRunningQueries")
+  );
+
   SimpleNode node;
 
   node = link.addNode("/uniqueQueryCount", {
@@ -58,4 +63,32 @@ main(List<String> args) async {
   link.connect();
   await link.onRequesterReady;
   context = new BasicQueryContext(link.requester, baseQueryCommandSet);
+}
+
+class GetQueriesNode extends SimpleNode {
+  GetQueriesNode(String path) : super(path) {
+    configs[r"$name"] = "Get Running Queries";
+    configs[r"$invokable"] = "read";
+    configs[r"$columns"] = [
+      {
+        "name": "query",
+        "type": "string"
+      },
+      {
+        "name": "listeners",
+        "type": "number"
+      }
+    ];
+    configs[r"$result"] = "stream";
+  }
+
+  @override
+  onInvoke(Map<String, dynamic> params) {
+    return queryManager.queries.keys.map(((String input) {
+      return [
+        input,
+        queryManager.queries[input].listenCount
+      ];
+    })).toList();
+  }
 }
