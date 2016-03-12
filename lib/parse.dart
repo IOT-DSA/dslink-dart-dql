@@ -24,10 +24,11 @@ typedef bool NodeFilter(RemoteNode node, QueryUpdate update);
 class PathExpression {
   final String topmost;
   final RegExp pattern;
+  final int depthLimit;
 
   bool hasAnyMods = false;
 
-  PathExpression(this.topmost, this.pattern);
+  PathExpression(this.topmost, this.pattern, this.depthLimit);
 
   bool matches(String input) {
     if (!hasAnyMods && topmost == input) {
@@ -122,15 +123,20 @@ PathExpression parseExpressionInput(String input) {
   }
   List<String> parts = input.split(_patternModifier);
   var count = 0;
+  var questionCount = 0;
+  var starCount = 0;
   String ptrn = input.splitMapJoin(_patternModifier, onMatch: (Match match) {
     String mod = match.group(1);
     if (mod == "?") {
       count++;
+      questionCount++;
       return r"[^\/]+";
     } else if (mod == "*") {
       count++;
+      starCount++;
       return r".*";
     }
+
     return match.group(0);
   }, onNonMatch: (String str) {
     return escapeRegex(str);
@@ -149,7 +155,14 @@ PathExpression parseExpressionInput(String input) {
     topmost = "/";
   }
 
-  var e = new PathExpression(topmost, new RegExp(ptrn));
+  var slashesAfter = parts.skip(1).join().codeUnits.where((unit) => unit == 47).length;
+  var recurseLimit = -1;
+
+  if (questionCount > 0 && starCount == 0) {
+    recurseLimit = slashesAfter + 1;
+  }
+
+  var e = new PathExpression(topmost, new RegExp(ptrn), recurseLimit);
   if (count != 0) {
     e.hasAnyMods = true;
   }

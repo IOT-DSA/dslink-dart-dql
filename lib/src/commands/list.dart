@@ -21,7 +21,7 @@ class ListNodeQueryProcessor extends QueryProcessor {
     StreamController<QueryUpdate> controller;
 
     controller = new StreamController<QueryUpdate>(onListen: () {
-      void handle(String path) {
+      void handle(String path, [int depth = 1]) {
         Path p = new Path(path);
 
         String uid;
@@ -64,7 +64,7 @@ class ListNodeQueryProcessor extends QueryProcessor {
             (context as QueryStatisticManager).reportStart("list");
           }
 
-          logger.fine("List ${path}");
+          logger.finer("List ${path}");
           subs[path] = context.list(path).listen((RequesterListUpdate update) {
             if (p.parentPath.endsWith("/upstream") &&
               update.node.configs[r"$uid"] == null) {
@@ -99,10 +99,6 @@ class ListNodeQueryProcessor extends QueryProcessor {
               uids.add(uid);
             }
 
-            for (RemoteNode child in update.node.children.values) {
-              handle(child.remotePath);
-            }
-
             if (expression.matches(path)) {
               String displayName = update.node.configs[r"$name"];
               if (displayName == null) {
@@ -118,6 +114,12 @@ class ListNodeQueryProcessor extends QueryProcessor {
                 "id": path
               });
               controller.add(event);
+            }
+
+            if (expression.depthLimit < 0 || depth <= expression.depthLimit) {
+              for (RemoteNode child in update.node.children.values) {
+                handle(child.remotePath, depth + 1);
+              }
             }
           }, onDone: () {
             if (dones.containsKey(path)) {
