@@ -79,7 +79,7 @@ class GetQueriesNode extends SimpleNode {
         "type": "number"
       }
     ];
-    configs[r"$result"] = "stream";
+    configs[r"$result"] = "table";
   }
 
   @override
