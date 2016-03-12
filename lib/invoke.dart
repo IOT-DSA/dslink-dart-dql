@@ -1,7 +1,7 @@
 library dsa.query.parse.invoke;
 
 import "package:petitparser/petitparser.dart";
-import "package:path/path.dart" as pathlib;
+import "package:dslink/common.dart" show Path;
 
 import "parse.dart";
 
@@ -36,7 +36,7 @@ class QueryInvokeCall {
   }
 
   String resolvePath(String base) {
-    return pathlib.join(base, action);
+    return new Path(base).child(action).path;
   }
 
   @override
