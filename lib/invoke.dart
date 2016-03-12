@@ -71,7 +71,11 @@ class QueryInvokeGrammarDefinition extends GrammarDefinition {
     ref(value)
   ).permute(const [0, 4]);
 
-  identifier() => pattern("A-Za-z0-9\$@_:./").plus().flatten();
+  identifier() => (
+    pattern("A-Za-z0-9\$@_:./") |
+    char('-')
+  ).plus().flatten();
+
   value() => ref(stringLiteral) |
     ref(nil) |
     ref(number) |
@@ -151,7 +155,6 @@ class QueryInvokeParserDefinition extends QueryInvokeGrammarDefinition {
   @override
   call() => super.call().map((v) {
     var m = {};
-    print(v);
     for (Map param in v) {
       m.addAll(param);
     }

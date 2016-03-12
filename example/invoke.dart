@@ -6,6 +6,7 @@ main() {
   test('hello(param=1)');
   test('hello(param=%name)');
   test('hello(param=name)');
+  test('hello-goodbye(param=fi)');
 
   if (hasAnyError) {
     exit(1);
