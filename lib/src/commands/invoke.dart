@@ -71,6 +71,10 @@ class InvokeQueryProcessor extends QueryProcessor {
           }
         }
 
+        if (call.requiredColumns.isEmpty) {
+          doInvokeAgain = true;
+        }
+
         if (doInvokeAgain) {
           if (holder.sub != null) {
             holder.sub.cancel();
