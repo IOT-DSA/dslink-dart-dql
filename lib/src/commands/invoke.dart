@@ -28,8 +28,10 @@ class InvokeQueryProcessor extends QueryProcessor {
   Stream<QueryUpdate> process(Stream<QueryUpdate> stream) {
     Map<String, QueryInvokeHolder> holders = {};
     StreamController controller;
+    StreamSubscription sub;
+
     controller = new StreamController(onListen: () {
-      stream.listen((QueryUpdate update) {
+      sub = stream.listen((QueryUpdate update) {
         String path = update.findNodePath();
 
         if (path is! String) {
@@ -98,6 +100,10 @@ class InvokeQueryProcessor extends QueryProcessor {
       }
 
       holders.clear();
+
+      if (sub != null) {
+        sub.cancel();
+      }
     });
 
     return controller.stream;
