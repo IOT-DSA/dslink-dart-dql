@@ -142,7 +142,10 @@ PathExpression parseExpressionInput(String input) {
     return escapeRegex(str);
   });
 
-  String topmost = parts.first;
+  String topmost = input.split("/")
+    .takeWhile(
+    (String part) => _patternModifier.allMatches(part).isEmpty
+  ).join("/");
   if (count == 0) {
     topmost = input;
   }
@@ -155,7 +158,11 @@ PathExpression parseExpressionInput(String input) {
     topmost = "/";
   }
 
-  var slashesAfter = parts.skip(1).join().codeUnits.where((unit) => unit == 47).length;
+  var slashesAfter = parts
+    .skip(1)
+    .join()
+    .codeUnits
+    .where((unit) => unit == 47).length;
   var recurseLimit = -1;
 
   if (questionCount > 0 && starCount == 0) {
