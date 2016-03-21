@@ -6,9 +6,11 @@ class ListNodeQueryProcessor extends QueryProcessor {
   ListNodeQueryProcessor(this.context);
 
   PathExpression expression;
+  bool allowActions = false;
 
   @override
   void init(QueryStatement statement) {
+    allowActions = statement.command == "lista";
     expression = parseExpressionInput(statement.argument);
   }
 
@@ -68,6 +70,12 @@ class ListNodeQueryProcessor extends QueryProcessor {
           subs[path] = context.list(path).listen((RequesterListUpdate update) {
             if (p.parentPath.endsWith("/upstream") &&
               update.node.configs[r"$uid"] == null) {
+              onDone();
+              return;
+            }
+
+            if (update.node.configs.containsKey(r"$invokable") &&
+              !allowActions) {
               onDone();
               return;
             }

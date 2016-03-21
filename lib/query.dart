@@ -37,5 +37,6 @@ final Map<String, QueryProcessorFactory> baseQueryCommandSet = {
   "expression": (QueryContext context) => new ExpressionQueryProcessor(context),
   "rename": (QueryContext context) => new RenameQueryProcessor(context),
   "where": (QueryContext context) => new FilterQueryProcessor(context),
-  "invoke": (QueryContext context) => new InvokeQueryProcessor(context)
+  "invoke": (QueryContext context) => new InvokeQueryProcessor(context),
+  "lista": (QueryContext context) => new ListNodeQueryProcessor(context)
 };
