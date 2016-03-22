@@ -7,7 +7,7 @@ import "package:dslink/common.dart" show ValueUpdate;
 import "package:dslink/requester.dart";
 import "package:dslink/utils.dart";
 
-import "parse.dart";
+import "package:dql/parsers/query.dart";
 
 const bool debugMode = const bool.fromEnvironment(
   "dql.mode.debug",

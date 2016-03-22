@@ -10,11 +10,12 @@ import "package:path/path.dart" as pathlib;
 import "package:dslink/utils.dart" show logger;
 
 import "process.dart";
-import "parse.dart";
-import "filter.dart";
-import "subscribe.dart";
-import "script.dart";
-import "invoke.dart";
+import "parsers/query.dart";
+import "parsers/filter.dart";
+import "parsers/subscribe.dart";
+import "parsers/invoke.dart";
+
+import "addons/script.dart";
 
 part "src/commands/list.dart";
 part "src/commands/subscribe.dart";

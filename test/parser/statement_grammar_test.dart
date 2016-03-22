@@ -4,7 +4,8 @@ import "dart:io";
 
 import "package:yaml/yaml.dart";
 import "package:test/test.dart";
-import "package:dql/parse.dart";
+
+import "package:dql/parsers/query.dart";
 
 const String CASE_FILE = "test/parser/cases/statement_grammar.yaml";
 

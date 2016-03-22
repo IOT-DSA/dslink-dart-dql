@@ -1,6 +1,6 @@
 import "dart:io";
 
-import "package:dql/invoke.dart";
+import "package:dql/parsers/invoke.dart";
 
 main() {
   test('hello(param=1)');

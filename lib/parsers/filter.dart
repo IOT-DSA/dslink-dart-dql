@@ -2,7 +2,7 @@ library dsa.query.parse.filter;
 
 import "package:petitparser/petitparser.dart";
 
-import "parse.dart";
+import "package:dql/parsers/query.dart";
 
 const Existent exists = Existent.exists;
 

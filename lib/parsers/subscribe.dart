@@ -2,7 +2,7 @@ library dsa.query.parse.subscribe;
 
 import "package:petitparser/petitparser.dart";
 
-import "parse.dart";
+import "package:dql/parsers/query.dart";
 
 class QuerySubscribeGrammarDefinition extends GrammarDefinition {
   @override

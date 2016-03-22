@@ -1,9 +1,10 @@
 library dsa.query.parse.invoke;
 
-import "package:petitparser/petitparser.dart";
 import "package:dslink/common.dart" show Path;
 
-import "parse.dart";
+import "package:petitparser/petitparser.dart";
+
+import "package:dql/parsers/query.dart";
 
 class QueryInvokeColumnRef {
   final String name;

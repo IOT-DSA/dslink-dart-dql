@@ -1,4 +1,4 @@
-import "package:dql/filter.dart";
+import "package:dql/parsers/filter.dart";
 
 main() {
   test('"hi"="bye"');

@@ -1,4 +1,4 @@
-import "package:dql/parse.dart";
+import "package:dql/parsers/query.dart";
 
 main() async {
   test("*");

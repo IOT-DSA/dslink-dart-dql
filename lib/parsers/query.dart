@@ -7,8 +7,8 @@ import "package:dslink/common.dart";
 
 import "package:petitparser/petitparser.dart";
 
-import "process.dart";
-import "filter.dart";
+import "package:dql/process.dart";
+import "package:dql/parsers/filter.dart";
 
 final RegExp _patternModifier = new RegExp(r"(\*|\?)");
 final RegExp _patternString = new RegExp(r"""

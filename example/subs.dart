@@ -1,6 +1,6 @@
 import "dart:io";
 
-import "package:dql/subscribe.dart";
+import "package:dql/parsers/subscribe.dart";
 
 main() {
   test('level as BatteryLevel, estimate as TimeEstimate');
