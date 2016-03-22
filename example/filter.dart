@@ -44,6 +44,14 @@ main() {
   test('@name in ["Alex", "Emily"]', {
     "@name": "Emily"
   });
+
+  test(r'not $disconnectedTs');
+  test(r'not not $disconnectedTs');
+  test(r'(not $a) and (not $b) or $c');
+
+  test(r'not $disconnectedTs', {
+    r"$disconnectedTs": "ABC"
+  });
 }
 
 test(String filter, [Map m]) {

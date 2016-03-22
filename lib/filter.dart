@@ -137,6 +137,25 @@ class FilterLogicalTest extends FilterTest {
   }
 }
 
+class FilterNotTest extends FilterTest {
+  final FilterTest test;
+
+  FilterNotTest(this.test);
+
+  @override
+  bool matches(Map m) {
+    return !test.matches(m);
+  }
+
+  @override
+  void visit(FilterTestVisitor visitor) {
+    test.visit(visitor);
+  }
+
+  @override
+  String toString() => "Not(${test})";
+}
+
 class FilterTestCollection extends FilterTest {
   final List<FilterTest> tests;
 
@@ -241,12 +260,15 @@ class FilterGrammarDefinition extends GrammarDefinition {
     includeSeparators: false
   ) & whitespace().star()).pick(1);
 
-  expression() => ref(logical) |
+  expression() =>
+    ref(leftHandOperation) |
+    ref(logical) |
     ref(compare) |
     ref(parens);
 
   leftHandLogical() => ref(compare) |
-    ref(parens);
+    ref(parens) |
+    ref(leftHandOperation);
 
   logical() => ref(leftHandLogical) &
     (
@@ -262,6 +284,12 @@ class FilterGrammarDefinition extends GrammarDefinition {
     string("and") |
     char("^") |
     string("xor");
+
+  leftHandOperation() => (
+    ref(leftHandOperator) &
+    whitespace().star() &
+    ref(expression)
+  ).permute(const [0, 2]);
 
   compare() => (
     ref(identifier) | ref(stringLiteral)
@@ -287,6 +315,10 @@ class FilterGrammarDefinition extends GrammarDefinition {
     ref(expression) &
     char(")")
   ).pick(1);
+
+  leftHandOperator() => (
+    string("not")
+  );
 
   stringLiteral() => (
     ref(quote) &
@@ -394,6 +426,15 @@ class FilterParserDefinition extends FilterGrammarDefinition {
   @override
   parens() => super.parens().map((v) {
     return new FilterParenthesesTest(v);
+  });
+
+  @override
+  leftHandOperation() => super.leftHandOperation().map((v) {
+    if (v[0] == "not") {
+      return new FilterNotTest(v[1]);
+    } else {
+      return v[1];
+    }
   });
 
   @override
