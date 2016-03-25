@@ -266,12 +266,12 @@ abstract class _HashBase implements Hash {
   List<int> _pendingData;
   bool _digestCalled = false;
   _HashBase(int chunkSizeInWords, int digestSizeInWords, bool this._bigEndianWords) : _pendingData = [], _currentChunk = new Uint32List(chunkSizeInWords), _h = new Uint32List(digestSizeInWords), _chunkSizeInWords = chunkSizeInWords, _digestSizeInWords = digestSizeInWords;
-  void add(List<int> data) {
+  void add(List<int> data_A) {
     if (_digestCalled) {
       throw new StateError('Hash update method called after digest was retrieved');
     }
-    _lengthInBytes += data.length;
-    _pendingData.addAll(data);
+    _lengthInBytes += data_A.length;
+    _pendingData.addAll(data_A);
     _iterate();
   }
   List<int> close() {
@@ -294,13 +294,13 @@ abstract class _HashBase implements Hash {
     }
     return result_A;
   }
-  void _bytesToChunk(List<int> data, int dataIndex) {
-    assert((data.length - dataIndex) >= (_chunkSizeInWords * _BYTES_PER_WORD));
+  void _bytesToChunk(List<int> data_A, int dataIndex) {
+    assert((data_A.length - dataIndex) >= (_chunkSizeInWords * _BYTES_PER_WORD));
     for (var wordIndex = 0; wordIndex < _chunkSizeInWords; wordIndex++) {
-      var w3 = _bigEndianWords ? data[dataIndex] : data[dataIndex + 3];
-      var w2 = _bigEndianWords ? data[dataIndex + 1] : data[dataIndex + 2];
-      var w1 = _bigEndianWords ? data[dataIndex + 2] : data[dataIndex + 1];
-      var w0 = _bigEndianWords ? data[dataIndex + 3] : data[dataIndex];
+      var w3 = _bigEndianWords ? data_A[dataIndex] : data_A[dataIndex + 3];
+      var w2 = _bigEndianWords ? data_A[dataIndex + 1] : data_A[dataIndex + 2];
+      var w1 = _bigEndianWords ? data_A[dataIndex + 2] : data_A[dataIndex + 1];
+      var w0 = _bigEndianWords ? data_A[dataIndex + 3] : data_A[dataIndex];
       dataIndex += 4;
       var word_A = (w3 & 0xff) << 24;
       word_A |= (w2 & _MASK_8) << 16;
@@ -496,33 +496,6 @@ class SHA256 extends _HashBase {
     _h[6] = _add32(g, _h[6]);
     _h[7] = _add32(h, _h[7]);
   }
-}
-class DelegatingMap<K, V> implements Map<K, V> {
-  final Map<K, V> _base;
-  const DelegatingMap(Map<K, V> base_A) : _base = base_A;
-  V operator[](Object key_A) => _base[key_A];
-  void operator[]=(K key_A, V value_A) {
-    _base[key_A] = value_A;
-  }
-  void addAll(Map<K, V> other) {
-    _base.addAll(other);
-  }
-  void clear() {
-    _base.clear();
-  }
-  bool containsKey(Object key_A) => _base.containsKey(key_A);
-  bool containsValue(Object value_A) => _base.containsValue(value_A);
-  void forEach(void f(K key, V value)) {
-    _base.forEach(f);
-  }
-  bool get isEmpty => _base.isEmpty;
-  bool get isNotEmpty => _base.isNotEmpty;
-  Iterable<K> get keys => _base.keys;
-  int get length => _base.length;
-  V putIfAbsent(K key_A, V ifAbsent()) => _base.putIfAbsent(key_A, ifAbsent);
-  V remove(Object key_A) => _base.remove(key_A);
-  Iterable<V> get values => _base.values;
-  String toString() => _base.toString();
 }
 class _JsDateTimeClass implements JsNativeClass {
   const _JsDateTimeClass();
@@ -4085,7 +4058,14 @@ String dgToString(Object obj, [String defaultVal = null]) {
     return obj.buffer.asUint8List().map((i) => i.toRadixString(16)).join(" ");
   }
   if (obj is Map || obj is List) {
-    return DGCodec.encode_A(obj);
+    try {
+      return DGCodec.encode_A(obj);
+    } catch (err) {
+      if (obj is Map) {
+        return '{encodingError}';
+      }
+      return '[encodingError]';
+    }
   }
   return obj.toString();
 }
@@ -4150,16 +4130,42 @@ RegExp _dateReg1 = new RegExp(r'\b(\d{4})-(\d{1,2})-(\d{1,2})\b');
 RegExp _dateReg2 = new RegExp(r'\b(\d{4})\/(\d{1,2})\/(\d{1,2})\b');
 RegExp _dateReg3 = new RegExp(r'\b(\d{1,2})\/(\d{1,2})\/(\d{4})\b');
 RegExp _timeReg = new RegExp(r'\b(\d{2}):(\d{2}):(\d{2})\b');
+RegExp _longms = new RegExp(r'(\d{2}:\d{2}:\d{2}\.\d{3})\d+');
 RegExp _amReg = new RegExp(r'\bam\b');
 RegExp _pmReg = new RegExp(r'\bpm\b');
+DGHashMap<Object, DateTime> dgToDateTimeCache = new DGHashMap<Object, DateTime>();
+String _fixLongMs(Match m) {
+  return m.group(1);
+}
 DateTime dgToDateTime(Object obj) {
+  DateTime cachedValue = dgToDateTimeCache[obj];
+  if (cachedValue != null) {
+    return cachedValue;
+  }
+  if (dgToDateTimeCache.length > 8196) {
+    dgToDateTimeCache.clear();
+  }
+  cachedValue = dgToDateTimeHelper(obj);
+  dgToDateTimeCache[obj] = cachedValue;
+  return cachedValue;
+}
+DateTime dgToDateTimeHelper(Object obj) {
   if (obj is num && obj.isFinite) {
     return new DateTime.fromMillisecondsSinceEpoch(obj.toInt());
   }
   if (obj is String) {
+    if (obj.length > 40) {
+      return null;
+    }
     try {
       return DateTime.parse(obj).toLocal();
     } catch (e) {
+      String fixedLongMs = obj.replaceFirstMapped(_longms, _fixLongMs);
+      if (fixedLongMs != obj) {
+        try {
+          return DateTime.parse(fixedLongMs).toLocal();
+        } catch (e) {}
+      }
       int year_A;
       int month_A;
       int date;
@@ -5020,6 +5026,33 @@ class Token_A {
     }
   }
 }
+class DelegatingMap<K, V> implements Map<K, V> {
+  final Map<K, V> _base;
+  const DelegatingMap(Map<K, V> base_A) : _base = base_A;
+  V operator[](Object key_A) => _base[key_A];
+  void operator[]=(K key_A, V value_A) {
+    _base[key_A] = value_A;
+  }
+  void addAll(Map<K, V> other) {
+    _base.addAll(other);
+  }
+  void clear() {
+    _base.clear();
+  }
+  bool containsKey(Object key_A) => _base.containsKey(key_A);
+  bool containsValue(Object value_A) => _base.containsValue(value_A);
+  void forEach(void f(K key, V value)) {
+    _base.forEach(f);
+  }
+  bool get isEmpty => _base.isEmpty;
+  bool get isNotEmpty => _base.isNotEmpty;
+  Iterable<K> get keys => _base.keys;
+  int get length => _base.length;
+  V putIfAbsent(K key_A, V ifAbsent()) => _base.putIfAbsent(key_A, ifAbsent);
+  V remove(Object key_A) => _base.remove(key_A);
+  Iterable<V> get values => _base.values;
+  String toString() => _base.toString();
+}
 final Parser_A _parser = new XmlParserDefinition().build();
 XmlDocument parse_B(String input_A) {
   var result_A = _parser.parse_C(input_A);
@@ -5266,8 +5299,20 @@ String _encodeXmlText(String input_A) {
 }
 final Pattern _TEXT_PATTERN = new RegExp(r'[&<]');
 String _encodeXmlAttributeValue(String input_A) {
-  return input_A.replaceAll('"', '&quot;');
+  return input_A.replaceAllMapped(_ATTRIBUTE_PATTERN, (match) {
+    switch (match.group(0)) {
+      case '"':
+        return '&quot;';
+
+      case '&':
+        return '&amp;';
+
+      case '<':
+        return '&lt;';
+    }
+  });
 }
+final Pattern _ATTRIBUTE_PATTERN = new RegExp(r'["&<]');
 const _SEPARATOR = ':';
 const _XMLNS = 'xmlns';
 abstract class XmlName extends Object with XmlVisitable, XmlWritable, XmlOwned {
