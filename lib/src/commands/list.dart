@@ -15,12 +15,18 @@ class ListNodeQueryProcessor extends QueryProcessor {
   }
 
   @override
-  Stream<QueryUpdate> process(Stream<QueryUpdate> stream) {
+  QueryStream process(QueryStream stream) {
     StreamSubscription passthrough;
     var subs = <String, StreamSubscription>{};
     var dones = <String, Function>{};
     Set<String> uids = new Set<String>();
     StreamController<QueryUpdate> controller;
+
+    var traverseBrokers = false;
+
+    if (stream.getAttribute("option:traverseBrokers") == true) {
+      traverseBrokers = true;
+    }
 
     controller = new StreamController<QueryUpdate>(onListen: () {
       void handle(String path, [int depth = 1]) {
@@ -124,7 +130,19 @@ class ListNodeQueryProcessor extends QueryProcessor {
               controller.add(event);
             }
 
-            if (expression.depthLimit < 0 || depth <= expression.depthLimit) {
+            bool isBroker = update.node.configs[r"$is"] == "dsa/broker";
+            bool handleChildren = expression.depthLimit <0 ||
+              depth <= expression.depthLimit;
+
+            if (p.isRoot) {
+              isBroker = false;
+            }
+
+            if (isBroker && traverseBrokers == false) {
+              handleChildren = false;
+            }
+
+            if (handleChildren) {
               for (RemoteNode child in update.node.children.values) {
                 handle(child.remotePath, depth + 1);
               }
@@ -154,7 +172,7 @@ class ListNodeQueryProcessor extends QueryProcessor {
       controller.add(update);
     });
 
-    return controller.stream;
+    return new WrappedQueryStream(stream, controller.stream);
   }
 
   @override

@@ -17,7 +17,7 @@ class FilterQueryProcessor extends QueryProcessor {
   }
 
   @override
-  Stream<QueryUpdate> process(Stream<QueryUpdate> stream) {
+  QueryStream process(QueryStream stream) {
     Set<String> visited = new Set<String>();
 
     return stream.map((QueryUpdate update) {

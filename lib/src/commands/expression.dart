@@ -13,7 +13,7 @@ class ExpressionQueryProcessor extends QueryProcessor {
   }
 
   @override
-  Stream<QueryUpdate> process(Stream<QueryUpdate> stream) {
+  QueryStream process(QueryStream stream) {
     return stream.map((QueryUpdate update) {
       if (update.remove) {
         return update;

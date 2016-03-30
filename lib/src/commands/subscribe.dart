@@ -42,7 +42,7 @@ class SubscribeQueryProcessor extends QueryProcessor {
   }
 
   @override
-  Stream<QueryUpdate> process(Stream<QueryUpdate> stream) {
+  QueryStream process(QueryStream stream) {
     Map<String, SubscribeQueryHolder> holders = {};
     StreamController<QueryUpdate> controller;
     StreamSubscription sub;
@@ -186,7 +186,7 @@ class SubscribeQueryProcessor extends QueryProcessor {
       }
     });
 
-    return controller.stream;
+    return new WrappedQueryStream(stream, controller.stream);
   }
 
   @override

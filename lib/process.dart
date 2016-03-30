@@ -19,6 +19,73 @@ final List<String> _possibleIdColumns = [
   "id"
 ];
 
+abstract class QueryStream extends Stream<QueryUpdate> {
+  QueryStream get parent;
+  Map<String, dynamic> attributes = {};
+
+  dynamic getAttribute(String key) {
+    if (hasAttribute(key)) {
+      return attributes[key];
+    } else if (parent != null) {
+      return parent.getAttribute(key);
+    }
+    return null;
+  }
+
+  bool hasAttribute(String key, [bool search = false]) {
+    bool has = attributes.containsKey(key);
+    if (!has && search && parent != null) {
+      has = parent.hasAttribute(key);
+    }
+    return has;
+  }
+
+  void setAttribute(String key, dynamic value) {
+    attributes[key] = value;
+  }
+
+  void removeAttribute(String key) {
+    attributes[key] = null;
+  }
+
+  @override
+  QueryStream map(convert(QueryUpdate event)) {
+    return new WrappedQueryStream(
+      this,
+      super.map(convert)
+    );
+  }
+
+  @override
+  QueryStream where(bool check(QueryUpdate event)) {
+    return new WrappedQueryStream(
+      this,
+      super.where(check)
+    );
+  }
+}
+
+class WrappedQueryStream extends QueryStream {
+  final QueryStream parent;
+  final Stream<QueryUpdate> stream;
+
+  WrappedQueryStream(this.parent, this.stream);
+
+  @override
+  StreamSubscription<QueryUpdate> listen(void onData(QueryUpdate event), {
+    Function onError,
+    void onDone(),
+    bool cancelOnError
+  }) {
+    return stream.listen(
+      onData,
+      onError: onError,
+      onDone: onDone,
+      cancelOnError: cancelOnError
+    );
+  }
+}
+
 typedef QueryProcessor QueryProcessorFactory(QueryContext context);
 
 class QueryUpdate {
@@ -153,7 +220,7 @@ abstract class QueryProcessor implements StreamTransformer<QueryUpdate, QueryUpd
     return null;
   }
 
-  Stream<QueryUpdate> process(Stream<QueryUpdate> stream);
+  QueryStream process(QueryStream stream);
 
   @override
   Stream<QueryUpdate> bind(Stream<QueryUpdate> stream) {
@@ -215,7 +282,10 @@ Stream<QueryUpdate> processQuery(List<QueryProcessor> processors) {
 
   logger.fine("Process Final Query: ${processors}");
 
-  Stream<QueryUpdate> stream = new Stream<QueryUpdate>.empty();
+  QueryStream stream = new WrappedQueryStream(
+    null,
+    new Stream<QueryUpdate>.empty()
+  );
   _seqId++;
   int pid = 0;
 

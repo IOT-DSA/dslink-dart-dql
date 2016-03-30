@@ -25,7 +25,7 @@ class InvokeQueryProcessor extends QueryProcessor {
   }
 
   @override
-  Stream<QueryUpdate> process(Stream<QueryUpdate> stream) {
+  QueryStream process(QueryStream stream) {
     Map<String, QueryInvokeHolder> holders = {};
     StreamController controller;
     StreamSubscription sub;
@@ -106,6 +106,6 @@ class InvokeQueryProcessor extends QueryProcessor {
       }
     });
 
-    return controller.stream;
+    return new WrappedQueryStream(stream, controller.stream);
   }
 }

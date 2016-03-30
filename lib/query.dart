@@ -14,9 +14,11 @@ import "parsers/query.dart";
 import "parsers/filter.dart";
 import "parsers/subscribe.dart";
 import "parsers/invoke.dart";
+import "parsers/key_value.dart";
 
 import "addons/script.dart";
 
+part "src/commands/option.dart";
 part "src/commands/list.dart";
 part "src/commands/subscribe.dart";
 part "src/commands/filter.dart";
@@ -39,5 +41,6 @@ final Map<String, QueryProcessorFactory> baseQueryCommandSet = {
   "rename": (QueryContext context) => new RenameQueryProcessor(context),
   "where": (QueryContext context) => new FilterQueryProcessor(context),
   "invoke": (QueryContext context) => new InvokeQueryProcessor(context),
-  "lista": (QueryContext context) => new ListNodeQueryProcessor(context)
+  "lista": (QueryContext context) => new ListNodeQueryProcessor(context),
+  "option": (QueryContext context) => new OptionQueryProcessor(context)
 };

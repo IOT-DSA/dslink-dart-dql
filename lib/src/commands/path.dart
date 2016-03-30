@@ -13,7 +13,7 @@ class SinglePathQueryProcessor extends QueryProcessor {
   }
 
   @override
-  Stream<QueryUpdate> process(Stream<QueryUpdate> stream) {
+  QueryStream process(QueryStream stream) {
     Future<QueryUpdate> get() async {
       var node = await context.getRemoteNode(path);
       String displayName = node.configs[r"$name"];
@@ -29,7 +29,7 @@ class SinglePathQueryProcessor extends QueryProcessor {
         ":displayName": displayName
       });
     }
-    return new Stream.fromFuture(get());
+    return new WrappedQueryStream(stream, new Stream.fromFuture(get()));
   }
 
   @override
