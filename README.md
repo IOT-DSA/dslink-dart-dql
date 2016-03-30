@@ -2,7 +2,18 @@
 
 This is a DSLink-based mockup of what DQL (Distributed Query Language) should be like.
 
-DQL acts upon the connected broker and it's network.
+DQL acts upon the connected broker by default.
+
+## Multi-Broker Queries
+
+DQL shields the `list` query command from listing nodes on other brokers.
+This prevents massive queries that can cause a slowdown. This only applies to the `list` command.
+
+To enable multi-broker list queries, add the following command at the front of your query:
+
+```
+option traverseBrokers=true
+```
 
 ## Syntax
 
