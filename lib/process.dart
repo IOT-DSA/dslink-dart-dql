@@ -21,6 +21,8 @@ final List<String> _possibleIdColumns = [
 
 abstract class QueryStream extends Stream<QueryUpdate> {
   QueryStream get parent;
+
+  QueryProcessor processor;
   Map<String, dynamic> attributes = {};
 
   dynamic getAttribute(String key) {
@@ -69,7 +71,11 @@ class WrappedQueryStream extends QueryStream {
   final QueryStream parent;
   final Stream<QueryUpdate> stream;
 
-  WrappedQueryStream(this.parent, this.stream);
+  WrappedQueryStream(this.parent, this.stream) {
+    if (parent != null) {
+      processor = parent.processor;
+    }
+  }
 
   @override
   StreamSubscription<QueryUpdate> listen(void onData(QueryUpdate event), {
@@ -297,11 +303,15 @@ Stream<QueryUpdate> processQuery(List<QueryProcessor> processors) {
       return update;
     });
 
+    stream.processor = processor;
+
     if (debugMode) {
       stream = stream.map((QueryUpdate u) {
         print("[${_seqId} ${id}] ${processor.runtimeType} => ${u.values}");
         return u;
       });
+
+      stream.processor = processor;
     }
   }
   return stream;
