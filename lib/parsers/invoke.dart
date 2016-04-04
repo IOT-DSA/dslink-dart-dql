@@ -37,7 +37,11 @@ class QueryInvokeCall {
   }
 
   String resolvePath(String base) {
-    return new Path(base).child(action).path;
+    if (action.startsWith("/")) {
+      return action;
+    } else {
+      return new Path(base).child(action).path;
+    }
   }
 
   @override
