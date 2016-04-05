@@ -32,7 +32,7 @@ class PathExpression {
 
   bool matches(String input) {
     if (!hasAnyMods && topmost == input) {
-      return true;
+      return false;
     }
 
     Path p = new Path(input);
