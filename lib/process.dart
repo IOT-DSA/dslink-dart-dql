@@ -3,6 +3,8 @@ library dslink.dql.query.process;
 import "dart:async";
 import "dart:convert";
 
+import "package:async/async.dart";
+
 import "package:dslink/common.dart" show ValueUpdate;
 import "package:dslink/requester.dart";
 import "package:dslink/utils.dart";
@@ -288,9 +290,12 @@ Stream<QueryUpdate> processQuery(List<QueryProcessor> processors) {
 
   logger.fine("Process Final Query: ${processors}");
 
+  StreamCompleter<QueryUpdate> completer =
+    new StreamCompleter<QueryUpdate>();
+
   QueryStream stream = new WrappedQueryStream(
     null,
-    new Stream<QueryUpdate>.empty()
+    completer.stream
   );
   _seqId++;
   int pid = 0;

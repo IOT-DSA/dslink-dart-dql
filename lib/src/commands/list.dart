@@ -61,7 +61,7 @@ class ListNodeQueryProcessor extends QueryProcessor {
               });
 
               if (context is QueryStatisticManager) {
-                (context as QueryStatisticManager).reportEnd("list");
+                (context as QueryStatisticManager).reportEnd("vlist");
               }
             }
           };
@@ -69,10 +69,11 @@ class ListNodeQueryProcessor extends QueryProcessor {
           dones[path] = onDone;
 
           if (context is QueryStatisticManager) {
-            (context as QueryStatisticManager).reportStart("list");
+            (context as QueryStatisticManager).reportStart("vlist");
           }
 
           logger.finer("List ${path}");
+
           subs[path] = context.list(path).listen((RequesterListUpdate update) {
             if (p.parentPath.endsWith("/upstream") &&
               update.node.configs[r"$uid"] == null) {
@@ -157,20 +158,21 @@ class ListNodeQueryProcessor extends QueryProcessor {
 
       handle(expression.topmost);
     }, onCancel: () {
+      for (Function onDone in dones.values.toList()) {
+        onDone();
+      }
+
       for (var sub in subs.values) {
         sub.cancel();
       }
+
       subs.clear();
       uids.clear();
-
-      if (passthrough != null) {
-        passthrough.cancel();
-      }
     });
 
     passthrough = stream.listen((QueryUpdate update) {
       controller.add(update);
-    });
+    }, onError: controller.addError);
 
     return new WrappedQueryStream(stream, controller.stream);
   }

@@ -60,9 +60,23 @@ main(List<String> args) async {
     link.removeNode("/currentTotalQueryCount");
   } catch (e) {}
 
+  SimpleNode virtualListCount = link.addNode("/virtualListCount", {
+    r"$name": "Virtual List Count",
+    r"$type": "number",
+    "?value": 0
+  });
+
+  virtualListCount.serializable = false;
+
   link.connect();
   await link.onRequesterReady;
   context = new BasicQueryContext(link.requester, baseQueryCommandSet);
+
+  context.registerStatisticHandler((id, count) {
+    if (id == "vlist") {
+      virtualListCount.updateValue(count);
+    }
+  });
 }
 
 class GetQueriesNode extends SimpleNode {
