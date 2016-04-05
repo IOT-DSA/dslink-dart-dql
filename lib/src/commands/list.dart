@@ -158,6 +158,10 @@ class ListNodeQueryProcessor extends QueryProcessor {
 
       handle(expression.topmost);
     }, onCancel: () {
+      if (passthrough != null) {
+        passthrough.cancel();
+      }
+
       for (Function onDone in dones.values.toList()) {
         onDone();
       }
