@@ -66,7 +66,14 @@ main(List<String> args) async {
     "?value": 0
   });
 
+  SimpleNode virtualSubscribeCount = link.addNode("/virtualSubscribeCount", {
+    r"$name": "Virtual Subscribe Count",
+    r"$type": "number",
+    "?value": 0
+  });
+
   virtualListCount.serializable = false;
+  virtualSubscribeCount.serializable = false;
 
   link.connect();
   await link.onRequesterReady;
@@ -75,6 +82,8 @@ main(List<String> args) async {
   context.registerStatisticHandler((id, count) {
     if (id == "vlist") {
       virtualListCount.updateValue(count);
+    } else if (id == "vsubscribe") {
+      virtualSubscribeCount.updateValue(count);
     }
   });
 }

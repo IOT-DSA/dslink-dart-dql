@@ -1,15 +1,29 @@
 part of dslink.dql.query;
 
 class SubscribeQueryHolder {
+  final QueryContext context;
+
+  SubscribeQueryHolder(this.context);
+
   Map<String, dynamic> values = {};
   Map<String, StreamSubscription> subs = {};
   QueryUpdate lastUpdate;
+
+  void setup() {
+    if (context is QueryStatisticManager) {
+      (context as QueryStatisticManager).reportStart("vsubscribe");
+    }
+  }
 
   void cancel() {
     for (StreamSubscription sub in subs.values) {
       sub.cancel();
     }
     subs.clear();
+
+    if (context is QueryStatisticManager) {
+      (context as QueryStatisticManager).reportEnd("vsubscribe");
+    }
   }
 
   QueryUpdate build() {
@@ -60,7 +74,8 @@ class SubscribeQueryProcessor extends QueryProcessor {
 
         if (!holders.containsKey(path)) {
           QueryUpdate out = update.clone();
-          var holder = new SubscribeQueryHolder();
+          var holder = new SubscribeQueryHolder(context);
+          holder.setup();
           holder.lastUpdate = update;
 
           for (String target in childs.keys) {
