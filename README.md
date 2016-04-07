@@ -12,7 +12,7 @@ This prevents massive queries that can cause a slowdown. This only applies to th
 To enable multi-broker list queries, add the following command at the front of your query:
 
 ```
-option traverseBrokers=true
+option traverseBrokers=true|
 ```
 
 ## Syntax
