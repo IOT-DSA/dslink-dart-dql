@@ -3,7 +3,7 @@
   "repository.callsign": "DQL",
   "unit.engine": "DartUnitTestEngine",
   "load": [
-    ".arc/libdglogik/arcanist"
+    ".arc/libdglogik"
   ]
 }
 
