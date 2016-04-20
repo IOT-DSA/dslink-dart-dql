@@ -1,7 +1,8 @@
 {
   "exclude": [
     "(packages/)",
-    "(lib/script.dart)"
+    "(packages)",
+    "(lib/addons/script.dart)"
   ],
   "linters": {
     "chmod": {
