@@ -1,7 +1,6 @@
 {
   "exclude": [
     "(packages/)",
-    "(packages)",
     "(lib/addons/script.dart)"
   ],
   "linters": {
@@ -12,12 +11,14 @@
       "type": "spelling"
     },
     "dart": {
-      "type": "script-and-regex",
-      "script-and-regex.script": "bash tool/arc/lint.sh",
-      "script-and-regex.regex": "/^(?P<severity>.+) !!(?P<file>.+)!! !!(?P<name>.+)!! (?P<line>.+):(?P<char>[0-9]+) !!(?P<message>.+)!!$/m",
-      "include": [
-        "(\\.dart$)"
-      ]
+      "type": "dart",
+      "dart.ignore-files": [
+        "lib/addons/script.dart"
+      ],
+      "dart.ignore-messages": [
+        "Unnecessary brace in string interpolation"
+      ],
+      "dart.enable-linter": true
     },
     "merge-conflict": {
       "type": "merge-conflict"
