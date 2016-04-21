@@ -59,11 +59,7 @@ class MockQueryContext extends BasicQueryContext {
         null
       ]).listen(callback);
     } else {
-      callback(node.lastValueUpdate);
-
-      return node.values.stream.listen((update) {
-        callback(update);
-      });
+      return node.subscribe(callback);
     }
   }
 

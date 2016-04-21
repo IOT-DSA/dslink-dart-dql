@@ -78,6 +78,12 @@ class MockNode {
 
   ValueUpdate lastValueUpdate = new ValueUpdate(null);
 
+  StreamSubscription subscribe(callback(ValueUpdate update)) {
+    var sub = values.stream.listen(callback);
+    values.add(lastValueUpdate);
+    return sub;
+  }
+
   void updateValue(value) {
     ValueUpdate update;
 
@@ -88,6 +94,7 @@ class MockNode {
     }
 
     lastValueUpdate = update;
+
     values.add(update);
   }
 
