@@ -61,7 +61,7 @@ class InvokeQueryProcessor extends QueryProcessor {
           holder.actionPath = call.resolvePath(path);
         }
 
-        bool doInvokeAgain = false;
+        bool doInvokeAgain = call.requiredColumns.isEmpty;
         for (String key in call.requiredColumns.keys) {
           var currentHoldValue = holder.params[key];
           var currentUpdateValue = update.values[call.requiredColumns[key]];
@@ -71,10 +71,6 @@ class InvokeQueryProcessor extends QueryProcessor {
             holder.params[key] = currentUpdateValue;
             doInvokeAgain = true;
           }
-        }
-
-        if (call.requiredColumns.isEmpty) {
-          doInvokeAgain = true;
         }
 
         if (doInvokeAgain) {

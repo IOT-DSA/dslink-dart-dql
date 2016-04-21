@@ -23,9 +23,14 @@ class ListNodeQueryProcessor extends QueryProcessor {
     StreamController<QueryUpdate> controller;
 
     var traverseBrokers = false;
+    var enableActions = allowActions;
 
     if (stream.getAttribute("option:traverseBrokers") == true) {
       traverseBrokers = true;
+    }
+
+    if (stream.getAttribute("option:listActions") == true) {
+      enableActions = true;
     }
 
     controller = new StreamController<QueryUpdate>(onListen: () {
@@ -82,7 +87,7 @@ class ListNodeQueryProcessor extends QueryProcessor {
             }
 
             if (update.node.configs.containsKey(r"$invokable") &&
-              !allowActions) {
+              !enableActions) {
               onDone();
               return;
             }
