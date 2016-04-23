@@ -10,7 +10,8 @@ import "package:dql/process.dart";
 
 part "src/entry/ongoing_query.dart";
 part "src/entry/query_manager.dart";
-part "src/entry/query_node.dart";
+part "src/entry/query_action_node.dart";
+part "src/entry/query_extra_nodes.dart";
 part "src/entry/query_row.dart";
 
 BasicQueryContext context;
@@ -86,32 +87,4 @@ main(List<String> args) async {
       virtualSubscribeCount.updateValue(count);
     }
   });
-}
-
-class GetQueriesNode extends SimpleNode {
-  GetQueriesNode(String path) : super(path) {
-    configs[r"$name"] = "Get Running Queries";
-    configs[r"$invokable"] = "read";
-    configs[r"$columns"] = [
-      {
-        "name": "query",
-        "type": "string"
-      },
-      {
-        "name": "listeners",
-        "type": "number"
-      }
-    ];
-    configs[r"$result"] = "table";
-  }
-
-  @override
-  onInvoke(Map<String, dynamic> params) {
-    return queryManager.queries.keys.map(((String input) {
-      return [
-        input,
-        queryManager.queries[input].listenCount
-      ];
-    })).toList();
-  }
 }

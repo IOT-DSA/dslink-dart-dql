@@ -3,7 +3,7 @@ part of dslink.dql.entry;
 class OngoingQuery {
   final String input;
   final QueryManager manager;
-  final Stream<QueryUpdate> stream;
+  final QueryStream stream;
 
   StreamSubscription sub;
   List<InvokeResponse> _responses = [];
