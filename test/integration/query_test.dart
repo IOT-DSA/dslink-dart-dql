@@ -85,4 +85,29 @@ mockTests() {
       }
     ]);
   });
+
+  test("subscriptions send updates down the pipeline when there are multiple subscribers", () async {
+    var ctx = createSimpleQueryContext();
+
+    doWork(int i) async {
+      var result = await ctx.capture(
+        "list ${_BASE_PATH}${' ' * i} | filter :metric | subscribe value", work: () {
+        ctx.root.findNode("${_BASE_PATH}/a").updateValue(11);
+        ctx.root.findNode("${_BASE_PATH}/b").updateValue(21);
+      });
+
+      result.verify([
+        {
+          "path": "${_BASE_PATH}/a",
+          "value": 11
+        },
+        {
+          "path": "${_BASE_PATH}/b",
+          "value": 21
+        }
+      ]);
+    }
+
+    await Future.wait([doWork(1), doWork(2), doWork(3)]);
+  });
 }
