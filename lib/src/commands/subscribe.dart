@@ -117,11 +117,13 @@ class SubscribeQueryProcessor extends QueryProcessor {
                 }
               });
             } else if (target == "value") {
-              holder.subs[rkey] =
-                context.subscribe(path, (ValueUpdate update) {
-                  holder.values[rkey] = update.value;
-                  controller.add(holder.build());
-                });
+              new Future(() {
+                holder.subs[rkey] =
+                  context.subscribe(path, (ValueUpdate update) {
+                    holder.values[rkey] = update.value;
+                    controller.add(holder.build());
+                  });
+              });
             } else if (target == "value.timestamp") {
               holder.subs[rkey] = context.subscribe(path,
                 (ValueUpdate update) {
