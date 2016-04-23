@@ -565,13 +565,29 @@ Program parseProgramString(String str) {
   _programsCache[str] = program;
   return program;
 }
-final Map<String, Object> global_functions = {'Number': _toNumber, 'isNaN': _isNaN, 'String': _toString, 'Array': _toArray, 'parseInt': _parseInt, 'parseNumber': parseNumber, 'Math': const JsMath(), 'JSON': const JsJson(), 'XML': const JsXml(), 'DateTime': const _JsDateTimeClass(), 'createPromise': _createPromise};
+final Map<String, Object> global_functions = {'Number': _toNumber, 'isNaN': _isNaN, 'String': _toString, 'Array': _toArray, 'parseInt': _parseInt, 'parseNumber': parseNumber, 'Math': const JsMath(), 'JSON': const JsJson(), 'XML': const JsXml(), 'DateTime': const _JsDateTimeClass(), 'createPromise': _createPromise, 'parseUrl': _parseUrl};
 Object _createPromise(Object this_, List args) {
   Object value_A;
   if (args.length == 1) {
     value_A = args[0];
   }
   return new Future.value(value_A);
+}
+Object _parseUrl(Object this_, List args) {
+  if (args.length >= 1) {
+    var arg1 = args[0];
+    if (arg1 is! String) {
+      arg1 = arg1.toString();
+    }
+    Uri uri_A;
+    try {
+      uri_A = Uri.parse(arg1);
+    } catch (e) {
+      return null;
+    }
+    return {"scheme": uri_A.scheme, "host": uri_A.host, "path": uri_A.path, "port": uri_A.port, "fragment": uri_A.fragment, "query": uri_A.query, "queryParameters": uri_A.queryParameters};
+  }
+  return null;
 }
 Object _toNumber(Object this_, List args) {
   return dgToNumber(args[0]);
@@ -4383,7 +4399,7 @@ class TrimmingParser extends DelegateParser {
     var current_A = context;
     do {
       current_A = _left.parseOn(current_A);
-    } while (current_A.isSuccess);
+    } while ((current_A as Result).isSuccess);
     var result_A = _delegate_A.parseOn(current_A);
     if (result_A.isFailure) {
       return result_A;
@@ -4391,7 +4407,7 @@ class TrimmingParser extends DelegateParser {
     current_A = result_A;
     do {
       current_A = _right.parseOn(current_A);
-    } while (current_A.isSuccess);
+    } while ((current_A as Result).isSuccess);
     return current_A.success(result_A.value);
   }
   List<Parser_A> get children => [_delegate_A, _left, _right];
@@ -4474,7 +4490,7 @@ CharacterPredicate _optimizedRanges(Iterable<_RangeCharPredicate> ranges) {
   if (mergedRanges.length == 1) {
     return mergedRanges[0].start == mergedRanges[0].stop ? new _SingleCharPredicate(mergedRanges[0].start) : mergedRanges[0];
   } else {
-    return new _RangesCharPredicate(mergedRanges.length, mergedRanges.map((range_A) => range_A.start).toList(growable: false), mergedRanges.map((range_A) => range_A.stop).toList(growable: false));
+    return new _RangesCharPredicate(mergedRanges.length, mergedRanges.map((range_A) => range_A.start).toList(growable: false) as List<int>, mergedRanges.map((range_A) => range_A.stop).toList(growable: false) as List<int>);
   }
 }
 Parser_A char(element_A, [String message_A]) {
@@ -4499,7 +4515,7 @@ Parser_A pattern_A(String element_A, [String message_A]) {
 Parser_A _createPatternParser() {
   var single_A = any_A().map((each) => new _RangeCharPredicate(_toCharCode(each), _toCharCode(each)));
   var multiple = any_A().seq(char('-')).seq(any_A()).map((each) => new _RangeCharPredicate(_toCharCode(each[0]), _toCharCode(each[2])));
-  var positive = multiple.or(single_A).plus().map((each) => _optimizedRanges(each));
+  var positive = multiple.or(single_A).plus().map((each) => _optimizedRanges(each as Iterable<_RangeCharPredicate>));
   return char('^').optional().seq(positive).map((each) => each[0] == null ? each[1] : new _NotCharacterPredicate(each[1]));
 }
 final _patternParser = _createPatternParser();
@@ -4624,7 +4640,7 @@ class ChoiceParser extends ListParser {
   factory ChoiceParser(Iterable<Parser_A> parsers) {
     return new ChoiceParser.__B(new List.from(parsers, growable: false));
   }
-  ChoiceParser.__B(parsers) : super(parsers);
+  ChoiceParser.__B(List<Parser_A> parsers) : super(parsers);
   Result parseOn(Context context) {
     var result_A;
     for (var i = 0; i < _parsers.length; i++) {
@@ -4645,7 +4661,7 @@ class SequenceParser extends ListParser {
   factory SequenceParser(Iterable<Parser_A> parsers) {
     return new SequenceParser.__C(new List.from(parsers, growable: false));
   }
-  SequenceParser.__C(parsers) : super(parsers);
+  SequenceParser.__C(List<Parser_A> parsers) : super(parsers);
   Result parseOn(Context context) {
     var current_A = context;
     var elements = new List(_parsers.length);
@@ -5092,7 +5108,7 @@ abstract class XmlGrammarDefinition<TNode, TName> extends GrammarDefinition {
   TName createQualified(String name_A);
   TNode createText(String text);
   start() => ref(document).end();
-  attribute() => ref(qualified).seq(ref(space_optional)).seq(char(EQUALS)).seq(ref(space_optional)).seq(ref(attributeValue)).map((each) => createAttribute(each[0], each[4]));
+  attribute() => ref(qualified).seq(ref(space_optional)).seq(char(EQUALS)).seq(ref(space_optional)).seq(ref(attributeValue)).map((each) => createAttribute(each[0] as TName, each[4]));
   attributeValue() => ref(attributeValueDouble).or(ref(attributeValueSingle)).pick(1);
   attributeValueDouble() => char(DOUBLE_QUOTE).seq(new _XmlCharacterDataParser(DOUBLE_QUOTE, 0)).seq(char(DOUBLE_QUOTE));
   attributeValueSingle() => char(SINGLE_QUOTE).seq(new _XmlCharacterDataParser(SINGLE_QUOTE, 0)).seq(char(SINGLE_QUOTE));
@@ -5101,13 +5117,13 @@ abstract class XmlGrammarDefinition<TNode, TName> extends GrammarDefinition {
   cdata() => string_A(OPEN_CDATA).seq(any_A().starLazy(string_A(CLOSE_CDATA)).flatten()).seq(string_A(CLOSE_CDATA)).map((each) => createCDATA(each[1]));
   content() => ref(characterData).or(ref(element)).or(ref(processing)).or(ref(comment)).or(ref(cdata)).star();
   doctype() => string_A(OPEN_DOCTYPE).seq(ref(space)).seq(ref(nameToken).or(ref(attributeValue)).or(any_A().starLazy(char(OPEN_DOCTYPE_BLOCK)).seq(char(OPEN_DOCTYPE_BLOCK)).seq(any_A().starLazy(char(CLOSE_DOCTYPE_BLOCK))).seq(char(CLOSE_DOCTYPE_BLOCK))).separatedBy(ref(space)).flatten()).seq(ref(space_optional)).seq(char(CLOSE_DOCTYPE)).map((each) => createDoctype(each[2]));
-  document() => ref(processing).optional().seq(ref(misc)).seq(ref(doctype).optional()).seq(ref(misc)).seq(ref(element)).seq(ref(misc)).map((each) => createDocument([each[0], each[2], each[4]].where((each) => each != null)));
+  document() => ref(processing).optional().seq(ref(misc)).seq(ref(doctype).optional()).seq(ref(misc)).seq(ref(element)).seq(ref(misc)).map((each) => createDocument([each[0], each[2], each[4]].where((each) => each != null) as Iterable<TNode>));
   element() => char(OPEN_ELEMENT).seq(ref(qualified)).seq(ref(attributes)).seq(ref(space_optional)).seq(string_A(CLOSE_END_ELEMENT).or(char(CLOSE_ELEMENT).seq(ref(content)).seq(string_A(OPEN_END_ELEMENT)).seq(ref(qualified)).seq(ref(space_optional)).seq(char(CLOSE_ELEMENT)))).map((list_A) {
     if (list_A[4] == CLOSE_END_ELEMENT) {
-      return createElement(list_A[1], list_A[2], []);
+      return createElement(list_A[1] as TName, list_A[2] as Iterable<TNode>, []);
     } else {
       if (list_A[1] == list_A[4][3]) {
-        return createElement(list_A[1], list_A[2], list_A[4][1]);
+        return createElement(list_A[1] as TName, list_A[2] as Iterable<TNode>, list_A[4][1] as Iterable<TNode>);
       } else {
         throw new ArgumentError('Expected </${list_A[1]}>, but found </${list_A[4][3]}>');
       }
@@ -5313,8 +5329,8 @@ String _encodeXmlAttributeValue(String input_A) {
   });
 }
 final Pattern _ATTRIBUTE_PATTERN = new RegExp(r'["&<]');
-const _SEPARATOR = ':';
-const _XMLNS = 'xmlns';
+final _SEPARATOR = ':';
+final _XMLNS = 'xmlns';
 abstract class XmlName extends Object with XmlVisitable, XmlWritable, XmlOwned {
   String get prefix;
   String get local;
@@ -5409,17 +5425,17 @@ abstract class XmlWritable implements XmlVisitable {
 abstract class XmlVisitable {
   accept(XmlVisitor visitor);
 }
-abstract class XmlVisitor {
-  visit(XmlVisitable visitable) => visitable.accept(this);
-  visitName(XmlName name_A);
-  visitAttribute(XmlAttribute node);
-  visitDocument(XmlDocument node);
-  visitElement(XmlElement node);
-  visitCDATA(XmlCDATA node);
-  visitComment(XmlComment node);
-  visitDoctype(XmlDoctype node);
-  visitProcessing(XmlProcessing node);
-  visitText(XmlText node);
+abstract class XmlVisitor<E_A> {
+  E_A visit(XmlVisitable visitable) => visitable.accept(this) as E_A;
+  E_A visitName(XmlName name_A);
+  E_A visitAttribute(XmlAttribute node);
+  E_A visitDocument(XmlDocument node);
+  E_A visitElement(XmlElement node);
+  E_A visitCDATA(XmlCDATA node);
+  E_A visitComment(XmlComment node);
+  E_A visitDoctype(XmlDoctype node);
+  E_A visitProcessing(XmlProcessing node);
+  E_A visitText(XmlText node);
 }
 class XmlWriter extends XmlVisitor {
   final StringBuffer buffer;
@@ -5471,7 +5487,7 @@ class XmlWriter extends XmlVisitor {
   visitProcessing(XmlProcessing node) {
     buffer.write(XmlGrammarDefinition.OPEN_PROCESSING);
     buffer.write(node.target);
-    if (!node.text.isEmpty) {
+    if (node.text.isNotEmpty) {
       buffer.write(XmlGrammarDefinition.WHITESPACE);
       buffer.write(node.text);
     }
