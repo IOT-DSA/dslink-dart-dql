@@ -9,7 +9,7 @@ class BasicQueryContext extends QueryContext implements QueryStatisticManager {
   BasicQueryContext(this.requester, this.processors);
 
   @override
-  Stream<QueryUpdate> query(String input) {
+  QueryStream query(String input) {
     logger.fine("Run Query: ${input}");
 
     var processors = parse(input);

@@ -16,7 +16,7 @@ abstract class QueryProcessor implements StreamTransformer<QueryUpdate, QueryUpd
   QueryStream process(QueryStream stream);
 
   @override
-  Stream<QueryUpdate> bind(Stream<QueryUpdate> stream) {
+  QueryStream bind(QueryStream stream) {
     var result = process(stream);
     if (result == null) {
       return stream;

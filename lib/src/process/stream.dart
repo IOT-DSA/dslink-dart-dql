@@ -57,10 +57,8 @@ class WrappedQueryStream extends QueryStream {
 
   Stream<QueryUpdate> _stream;
 
-  WrappedQueryStream(this.parent, Stream<QueryUpdate> stream, {
-  bool broadcast: true
-  }) {
-    _stream = broadcast ? stream.asBroadcastStream() : stream;
+  WrappedQueryStream(this.parent, Stream<QueryUpdate> stream) {
+    _stream = stream;
     if (parent != null) {
       processor = parent.processor;
     }
@@ -68,9 +66,9 @@ class WrappedQueryStream extends QueryStream {
 
   @override
   StreamSubscription<QueryUpdate> listen(void onData(QueryUpdate event), {
-  Function onError,
-  void onDone(),
-  bool cancelOnError
+    Function onError,
+    void onDone(),
+    bool cancelOnError
   }) {
     return _stream.listen(
       onData,

@@ -33,8 +33,7 @@ QueryStream processQuery(List<QueryProcessor> processors) {
 
   logger.fine("Process Final Query: ${processors}");
 
-  StreamCompleter<QueryUpdate> completer =
-  new StreamCompleter<QueryUpdate>();
+  StreamCompleter<QueryUpdate> completer = new StreamCompleter<QueryUpdate>();
 
   QueryStream stream = new WrappedQueryStream(
     null,
