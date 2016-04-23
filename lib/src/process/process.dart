@@ -45,10 +45,7 @@ QueryStream processQuery(List<QueryProcessor> processors) {
   for (QueryProcessor processor in processors) {
     var id = ++pid;
     processor.calculateColumnSet(columns);
-    var s = processor.bind(stream).map((QueryUpdate update) {
-      update.setAttribute("lastProcessor", processor);
-      return update;
-    });
+    var s = processor.bind(stream);
 
     if (s is! QueryStream) {
       s = new WrappedQueryStream(stream, s);
