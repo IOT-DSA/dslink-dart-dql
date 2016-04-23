@@ -120,7 +120,6 @@ class SubscribeQueryProcessor extends QueryProcessor {
             });
           } else if (target == "value") {
             holder.subs[rkey] = context.subscribe(path, (ValueUpdate update) {
-              print("${path} = ${update.value}");
               holder.values[rkey] = update.value;
               controller.add(holder.build());
             });
