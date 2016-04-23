@@ -6,14 +6,20 @@ import "package:dql/process.dart";
 import "package:dslink/browser.dart";
 
 Uri currentUri;
-String brokerUrl = "http://127.0.0.1:8080/conn";
+String brokerUrl = const String.fromEnvironment(
+  "broker.url",
+  defaultValue: "http://127.0.0.1:8080/conn"
+);
+
+String currentQuery = "";
+
 String linkName = "DQL-Browser-";
 LinkProvider provider;
 Requester requester;
 BasicQueryContext queryContext;
 
 main() async {
-  updateLogLevel("ALL");
+  updateLogLevel("FINE");
   currentUri = Uri.parse(window.location.href);
 
   if (currentUri.queryParameters.containsKey("broker")) {
@@ -22,6 +28,14 @@ main() async {
 
   if (currentUri.queryParameters.containsKey("name")) {
     brokerUrl = currentUri.queryParameters["name"];
+  }
+
+  if (currentUri.queryParameters.containsKey("query")) {
+    currentQuery = currentUri.queryParameters["query"];
+  }
+
+  if (currentUri.hasFragment) {
+    currentQuery = Uri.decodeComponent(window.location.hash.substring(1));
   }
 
   provider = new LinkProvider(
@@ -36,13 +50,28 @@ main() async {
 
   requester = await provider.onRequesterReady;
 
-  print("Requester Ready!");
-
   queryContext = new BasicQueryContext(requester, baseQueryCommandSet);
 
   inputElement.onKeyDown.where((e) => e.keyCode == 13).listen((KeyboardEvent e) async {
-    await onChange(inputElement.value);
+    await update(inputElement.value);
   });
+
+  window.onHashChange.listen((_) async {
+    await update(Uri.decodeComponent(window.location.hash.substring(1)));
+  });
+
+  if (currentQuery != null && currentQuery.isNotEmpty) {
+    await update(currentQuery, force: true);
+  }
+}
+
+update(String text, {bool force: false}) async {
+  if (currentQuery == text && !force) {
+    return;
+  }
+
+  inputElement.value = text;
+  await onChange(text);
 }
 
 InputElement inputElement = querySelector("#query");
@@ -50,7 +79,9 @@ TableElement table = querySelector("#table");
 QueryTableAssembly queryTable;
 
 onChange(String text) async {
-  print("Text Changed to '${text}'");
+  currentQuery = text;
+
+  window.location.hash = Uri.encodeComponent(text);
 
   if (queryTable != null) {
     queryTable.close();

@@ -150,6 +150,10 @@ class ListNodeQueryProcessor extends QueryProcessor {
 
             if (handleChildren) {
               for (RemoteNode child in update.node.children.values) {
+                if (child.getConfig(r"$invokable") != null && !allowActions) {
+                  continue;
+                }
+
                 handle(child.remotePath, depth + 1);
               }
             }
