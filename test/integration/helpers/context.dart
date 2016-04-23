@@ -5,11 +5,15 @@ class MockQueryContext extends BasicQueryContext {
 
   MockNode root = new MockNode.rootNode();
 
+  Set<String> listedNodes = new Set<String>();
+
   MockQueryContext(Map<String, QueryProcessorFactory> processors) :
       super(null, processors);
 
   @override
   Stream<RequesterListUpdate> list(String path) {
+    listedNodes.add(path);
+
     var node = root.findNode(path);
     var controller = new StreamController<RequesterListUpdate>();
 
@@ -124,5 +128,15 @@ class MockQueryContext extends BasicQueryContext {
     var remoteNode = new RemoteNode(path);
     remoteNode.configs[DISCONNECTED_CONFIG] = ValueUpdate.getTs();
     return remoteNode;
+  }
+
+  void checkListedNodes(Iterable<String> input) {
+    var list = input.toList();
+
+    expect(listedNodes, hasLength(list.length));
+
+    for (var path in list) {
+      expect(listedNodes, contains(path));
+    }
   }
 }

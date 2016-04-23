@@ -169,6 +169,10 @@ PathExpression parseExpressionInput(String input) {
     recurseLimit = slashesAfter + 1;
   }
 
+  if (input == topmost) {
+    recurseLimit = 1;
+  }
+
   var e = new PathExpression(topmost, new RegExp(ptrn), recurseLimit);
   if (count != 0) {
     e.hasAnyMods = true;

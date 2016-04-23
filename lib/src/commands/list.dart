@@ -137,7 +137,7 @@ class ListNodeQueryProcessor extends QueryProcessor {
             }
 
             bool isBroker = update.node.configs[r"$is"] == "dsa/broker";
-            bool handleChildren = expression.depthLimit <0 ||
+            bool handleChildren = expression.depthLimit < 0 ||
               depth <= expression.depthLimit;
 
             if (p.isRoot) {
