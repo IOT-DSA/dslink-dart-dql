@@ -4,6 +4,7 @@ import "dart:async";
 
 import "package:dql/query.dart";
 import "package:dql/process.dart";
+import "package:dql/utils.dart";
 
 import "package:dslink/common.dart";
 import "package:dslink/requester.dart";

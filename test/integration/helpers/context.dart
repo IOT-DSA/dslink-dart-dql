@@ -69,7 +69,7 @@ class MockQueryContext extends BasicQueryContext {
 
   Future<MockResult> capture(String input, {
     Function work,
-    int time: 10
+    int pump: 100
   }) async {
     var updates = <QueryUpdate>[];
     var sub = query(input).listen((QueryUpdate update) {
@@ -80,7 +80,7 @@ class MockQueryContext extends BasicQueryContext {
       work();
     }
 
-    await new Future.delayed(new Duration(milliseconds: time));
+    await pumpEventQueue(pump);
 
     if (sub != null) {
       sub.cancel();
