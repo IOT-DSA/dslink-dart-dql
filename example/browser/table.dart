@@ -88,6 +88,10 @@ onChange(String text) async {
     table.rows.toList().forEach((t) => t.remove());
   }
 
+  TableSectionElement thead = table.tHead;
+  TableRowElement head = thead.addRow();
+  Map<String, Element> headers = {};
+
   queryTable = queryContext.query(text).assemble();
 
   queryTable.onRowAdded.listen((QueryTableAssemblyRow row) {
@@ -95,6 +99,13 @@ onChange(String text) async {
     Map<String, TableCellElement> cells = {};
 
     for (String key in row.keys) {
+      if (!headers.containsKey(key)) {
+        Element h = new Element.th();
+        headers[key] = h;
+        head.append(h);
+        h.text = key;
+      }
+
       TableCellElement cell = tr.addCell();
       cell.text = row.getValue(key).toString();
       cell.dataset["col"] = key;
