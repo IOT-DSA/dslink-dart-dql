@@ -1,3 +1,4 @@
+import "dart:async";
 import "dart:html";
 
 import "package:dql/query.dart";
@@ -91,6 +92,9 @@ QueryTableAssembly currentQueryTable;
 int currentTotalStreams = 0;
 int currentStreamId = 0;
 
+StreamSubscription subA;
+StreamSubscription subB;
+
 useQueryTable(QueryTableAssembly input) async {
   var stat = "${currentStreamId} of ${currentTotalStreams}";
 
@@ -103,8 +107,17 @@ useQueryTable(QueryTableAssembly input) async {
   querySelector("#status").text = stat;
 
   if (currentQueryTable != null) {
-    currentQueryTable.close();
     table.rows.toList().forEach((t) => t.remove());
+  }
+
+  if (subA != null) {
+    subA.cancel();
+    subA = null;
+  }
+
+  if (subB != null) {
+    subB.cancel();
+    subB = null;
   }
 
   currentQueryTable = input;
@@ -131,7 +144,7 @@ useQueryTable(QueryTableAssembly input) async {
       cells[key] = cell;
     }
 
-    row.onUpdate.listen((_) {
+    subA = row.onUpdate.listen((_) {
       if (row.isDeleted) {
         tr.remove();
         return;
@@ -148,7 +161,7 @@ useQueryTable(QueryTableAssembly input) async {
       }
     });
   };
-  currentQueryTable.onRowAdded.listen(handleRow);
+  subB = currentQueryTable.onRowAdded.listen(handleRow);
   currentQueryTable.rows.values.forEach(handleRow);
 }
 

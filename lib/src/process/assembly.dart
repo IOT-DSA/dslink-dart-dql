@@ -46,7 +46,7 @@ class QueryTableAssembly {
   }
 
   StreamController<QueryTableAssemblyRow> _onRowAddedController =
-  new StreamController<QueryTableAssemblyRow>.broadcast();
+    new StreamController<QueryTableAssemblyRow>.broadcast();
 
   Stream<QueryTableAssemblyRow> get onRowAdded => _onRowAddedController.stream;
 
