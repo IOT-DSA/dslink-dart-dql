@@ -1,6 +1,16 @@
 part of dslink.dql.query.process;
 
 abstract class QueryStream extends Stream<QueryUpdate> {
+  static bool autoAssembleTable = false;
+
+  QueryStream() {
+    if (autoAssembleTable) {
+      new Future(() {
+        assemble();
+      });
+    }
+  }
+
   QueryStream get parent;
 
   QueryProcessor processor;
@@ -48,8 +58,14 @@ abstract class QueryStream extends Stream<QueryUpdate> {
   }
 
   QueryTableAssembly assemble() {
-    return new QueryTableAssembly(this);
+    if (_assembly != null) {
+      return _assembly;
+    }
+
+    return _assembly = new QueryTableAssembly(this);
   }
+
+  QueryTableAssembly _assembly;
 }
 
 class WrappedQueryStream extends QueryStream {
@@ -57,8 +73,10 @@ class WrappedQueryStream extends QueryStream {
 
   Stream<QueryUpdate> _stream;
 
-  WrappedQueryStream(this.parent, Stream<QueryUpdate> stream) {
-    _stream = stream;
+  WrappedQueryStream(this.parent, Stream<QueryUpdate> stream, {
+    bool broadcast: true
+  }) : super() {
+    _stream = broadcast ? stream.asBroadcastStream() : stream;
     if (parent != null) {
       processor = parent.processor;
     }

@@ -21,12 +21,15 @@
   </head>
 
   <body class="container">
-
     <div class="input-group" id="input">
       <input id="query" type="text" class="form-control" placeholder="Query">
+
+      <input class="btn btn-default" style="margin-top: 10px; margin-right: 5px;" type="button" id="peek-up" value="Go Up">
+      <input class="btn btn-default" style="margin-top: 10px;" type="button" id="peek-down" value="Go Down">
+      <span style="margin-top: 10px; margin-left: 10px;" id="status"></span>
     </div>
 
-    <div style="height: 20px;"></div>
+    <div style="height: 10px;"></div>
 
     <div class="table-responsive">
       <table id="table" class="table table-bordered">

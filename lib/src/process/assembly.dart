@@ -18,6 +18,10 @@ class QueryTableAssembly {
 
   void _init() {
     _sub = stream.listen((QueryUpdate update) {
+      if (update == null) {
+        return;
+      }
+
       String id = update.id;
 
       if (_rows.containsKey(id)) {

@@ -19,7 +19,8 @@ Requester requester;
 BasicQueryContext queryContext;
 
 main() async {
-  updateLogLevel("FINE");
+  QueryStream.autoAssembleTable = true;
+
   currentUri = Uri.parse(window.location.href);
 
   if (currentUri.queryParameters.containsKey("broker")) {
@@ -63,6 +64,14 @@ main() async {
   if (currentQuery != null && currentQuery.isNotEmpty) {
     await update(currentQuery, force: true);
   }
+
+  querySelector("#peek-up").onClick.listen((_) {
+    peekUp();
+  });
+
+  querySelector("#peek-down").onClick.listen((_) {
+    peekDown();
+  });
 }
 
 update(String text, {bool force: false}) async {
@@ -76,25 +85,35 @@ update(String text, {bool force: false}) async {
 
 InputElement inputElement = querySelector("#query");
 TableElement table = querySelector("#table");
-QueryTableAssembly queryTable;
 
-onChange(String text) async {
-  currentQuery = text;
+QueryStream currentQueryStream;
+QueryTableAssembly currentQueryTable;
+int currentTotalStreams = 0;
+int currentStreamId = 0;
 
-  window.location.hash = Uri.encodeComponent(text);
+useQueryTable(QueryTableAssembly input) async {
+  var stat = "${currentStreamId} of ${currentTotalStreams}";
 
-  if (queryTable != null) {
-    queryTable.close();
+  if (input.stream.processor != null) {
+    stat += " (" + input.stream.processor.toString() + ")";
+  } else {
+    stat += " (Unprocessed)";
+  }
+
+  querySelector("#status").text = stat;
+
+  if (currentQueryTable != null) {
+    currentQueryTable.close();
     table.rows.toList().forEach((t) => t.remove());
   }
+
+  currentQueryTable = input;
 
   TableSectionElement thead = table.tHead;
   TableRowElement head = thead.addRow();
   Map<String, Element> headers = {};
 
-  queryTable = queryContext.query(text).assemble();
-
-  queryTable.onRowAdded.listen((QueryTableAssemblyRow row) {
+  var handleRow = (QueryTableAssemblyRow row) {
     TableRowElement tr = table.addRow();
     Map<String, TableCellElement> cells = {};
 
@@ -128,5 +147,59 @@ onChange(String text) async {
         cell.text = row.getValue(k).toString();
       }
     });
-  });
+  };
+  currentQueryTable.onRowAdded.listen(handleRow);
+  currentQueryTable.rows.values.forEach(handleRow);
+}
+
+onChange(String text) async {
+  currentQuery = text;
+  window.location.hash = Uri.encodeComponent(text);
+
+  QueryStream stream = queryContext.query(text);
+  currentQueryStream = stream;
+
+  var s = stream;
+  currentTotalStreams = 0;
+  while (s != null) {
+    currentTotalStreams++;
+    s = s.parent;
+  }
+
+  currentStreamId = currentTotalStreams;
+
+  await useQueryTable(stream.assemble());
+}
+
+peekUp() async {
+  if (currentQueryTable == null) {
+    return;
+  }
+
+  if (currentQueryTable.stream.parent != null) {
+    currentStreamId--;
+    await useQueryTable(currentQueryTable.stream.parent.assemble());
+  }
+}
+
+peekDown() async {
+  if (currentQueryStream == null) {
+    return;
+  }
+
+  QueryStream stream = currentQueryStream;
+
+  if (currentQueryTable.stream == stream) {
+    return;
+  }
+
+  while (stream.parent != null) {
+    if (stream.parent == currentQueryTable.stream) {
+      break;
+    }
+    stream = stream.parent;
+  }
+
+  currentStreamId++;
+  await useQueryTable(stream.assemble());
 }
