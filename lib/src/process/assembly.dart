@@ -7,7 +7,7 @@ class QueryTableAssembly {
   Map<String, QueryTableAssemblyRow> _rows = {};
 
   Map<String, QueryTableAssemblyRow> get rows =>
-    new Map<String, QueryTableAssemblyRow>.unmodifiable(_rows);
+    new Map<String, QueryTableAssemblyRow>.from(_rows);
 
   QueryTableAssembly(this.stream) {
     _init();
@@ -84,7 +84,7 @@ class QueryTableAssemblyRow {
   dynamic getValue(String key) => _values[key];
 
   Map<String, dynamic> get values =>
-    new Map<String, dynamic>.unmodifiable(_values);
+    new Map<String, dynamic>.from(_values);
 
   void _close() {
     _onUpdateController.close();

@@ -1,6 +1,9 @@
 part of dslink.dql.query;
 
 class FilterQueryProcessor extends QueryProcessor {
+  static const Iterable<QueryUpdate> emptyIterable =
+    const EmptyIterable<QueryUpdate>();
+
   final QueryContext context;
 
   FilterTestCollection test;
@@ -20,17 +23,17 @@ class FilterQueryProcessor extends QueryProcessor {
   QueryStream process(QueryStream stream) {
     Set<String> visited = new Set<String>();
 
-    return stream.map((QueryUpdate update) {
+    return stream.expand((QueryUpdate update) {
       if (update == null) {
-        return null;
+        return emptyIterable;
       }
 
       if (update.remove) {
-        return update;
+        return [update];
       }
 
       if (!update.hasAttribute("node")) {
-        return null;
+        return emptyIterable;
       } else {
         RemoteNode node = update.getAttribute("node");
 
@@ -42,15 +45,13 @@ class FilterQueryProcessor extends QueryProcessor {
         } else if (visited.contains(update.id)) {
           visited.remove(update.id);
           QueryUpdate u = update.clone(remove: true);
-          return u;
+          return [u];
         } else {
-          return null;
+          return emptyIterable;
         }
 
-        return update;
+        return [update];
       }
-    }).where((QueryUpdate update) {
-      return update != null;
     });
   }
 

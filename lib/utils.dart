@@ -9,3 +9,18 @@ Future pumpEventQueue([int times = 20]) {
 
   return new Future.delayed(Duration.ZERO, () => pumpEventQueue(times - 1));
 }
+
+class EmptyIterable<T> extends Iterable<T> {
+  const EmptyIterable();
+
+  @override
+  Iterator get iterator => new EmptyIterator<T>();
+}
+
+class EmptyIterator<T> extends Iterator<T> {
+  EmptyIterator();
+
+  @override
+  bool moveNext() => false;
+  T current = null;
+}

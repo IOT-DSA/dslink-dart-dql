@@ -9,6 +9,7 @@ import "package:path/path.dart" as pathlib;
 
 import "package:dslink/utils.dart" show logger;
 
+import "utils.dart";
 import "process.dart";
 import "parsers/query.dart";
 import "parsers/filter.dart";

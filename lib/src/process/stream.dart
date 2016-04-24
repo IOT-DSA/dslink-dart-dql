@@ -57,6 +57,14 @@ abstract class QueryStream extends Stream<QueryUpdate> {
     );
   }
 
+  @override
+  QueryStream expand(Iterable<QueryUpdate> convert(QueryUpdate value)) {
+    return new WrappedQueryStream(
+      this,
+      super.expand(convert)
+    );
+  }
+
   QueryTableAssembly assemble() {
     if (_assembly != null) {
       return _assembly;
