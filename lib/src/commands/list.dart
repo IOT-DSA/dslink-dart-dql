@@ -33,7 +33,7 @@ class ListNodeQueryProcessor extends QueryProcessor {
       enableActions = true;
     }
 
-    controller = new StreamController<QueryUpdate>(onListen: () {
+    controller = new StreamController<QueryUpdate>.broadcast(onListen: () {
       void handle(String path, [int depth = 1]) {
         Path p = new Path(path);
 

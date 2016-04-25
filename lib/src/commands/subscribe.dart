@@ -188,7 +188,7 @@ class SubscribeQueryProcessor extends QueryProcessor {
       }
     };
 
-    controller = new StreamController<QueryUpdate>(onListen: () {
+    controller = new StreamController<QueryUpdate>.broadcast(onListen: () {
       sub = stream.listen(handleUpdate);
     }, onCancel: () {
       for (SubscribeQueryHolder holder in holders.values) {

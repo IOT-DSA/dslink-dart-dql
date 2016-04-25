@@ -84,7 +84,16 @@ class WrappedQueryStream extends QueryStream {
   WrappedQueryStream(this.parent, Stream<QueryUpdate> stream, {
     bool broadcast: true
   }) : super() {
-    _stream = broadcast ? stream.asBroadcastStream() : stream;
+    if (broadcast && !stream.isBroadcast) {
+      _stream = stream.asBroadcastStream(
+        onCancel: (StreamSubscription<QueryUpdate> sub) {
+          sub.cancel();
+        }
+      );
+    } else {
+      _stream = stream;
+    }
+
     if (parent != null) {
       processor = parent.processor;
     }

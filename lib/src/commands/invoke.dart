@@ -30,7 +30,7 @@ class InvokeQueryProcessor extends QueryProcessor {
     StreamController controller;
     StreamSubscription sub;
 
-    controller = new StreamController(onListen: () {
+    controller = new StreamController<QueryUpdate>.broadcast(onListen: () {
       sub = stream.listen((QueryUpdate update) {
         String path = update.findNodePath();
 
