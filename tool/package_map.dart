@@ -9,7 +9,7 @@ main() async  {
   var out = new StringBuffer();
 
   for (var pkg in map.keys) {
-    if (pkg == "dslink_digital_ocean") {
+    if (pkg == "dql") {
       out.writeln("${pkg}:lib/");
     } else {
       out.writeln("${pkg}:packages/${pkg}/");
@@ -19,4 +19,3 @@ main() async  {
   var outFile = new File("build/.packages");
   await outFile.writeAsString(out.toString());
 }
-
