@@ -8,7 +8,7 @@ rm -rf ${TMP:?}/*
 cp -R build/example/browser/*  "${TMP:?}/"
 cd ${TMP} || exit 1
 git add .
-git commit -m "Update DQL Site"
-git push origin gh-pages
+git commit -m "Update DQL Site" || true
+git push origin gh-pages || true
 cd ${MD} || exit 1
 rm -rf ${TMP}
