@@ -185,7 +185,7 @@ class ListNodeQueryProcessor extends QueryProcessor {
 
     passthrough = stream.listen((QueryUpdate update) {
       controller.add(update);
-    }, onError: controller.addError);
+    }, onDone: controller.close, onError: controller.addError);
 
     return new WrappedQueryStream(stream, controller.stream);
   }
