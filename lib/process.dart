@@ -9,6 +9,7 @@ import "package:dslink/common.dart" show ValueUpdate;
 import "package:dslink/requester.dart";
 import "package:dslink/utils.dart";
 
+import "package:dql/utils.dart";
 import "package:dql/parsers/query.dart";
 
 part "src/process/assembly.dart";

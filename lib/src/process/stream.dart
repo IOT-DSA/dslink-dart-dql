@@ -65,6 +65,20 @@ abstract class QueryStream extends Stream<QueryUpdate> {
     );
   }
 
+  QueryStream fork({Reference<StreamController<QueryUpdate>> controller}) {
+    var control = new StreamController<QueryUpdate>();
+
+    listen((QueryUpdate update) {
+      control.add(update);
+    }, onDone: control.close, onError: control.addError);
+
+    if (controller != null) {
+      controller.set(control);
+    }
+
+    return new WrappedQueryStream(this, control.stream);
+  }
+
   QueryTableAssembly assemble() {
     if (_assembly != null) {
       return _assembly;
