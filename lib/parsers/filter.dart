@@ -223,7 +223,7 @@ class FilterCompareTest extends FilterTest {
     } else if (operator == "~" || operator == "like") {
       result = _regex.hasMatch(v.toString());
     } else if (operator == "contains") {
-      if (v is List) {
+      if (v is Iterable) {
         result = v.contains(value);
       } else if (v is String) {
         result = v.contains(value);
@@ -231,7 +231,7 @@ class FilterCompareTest extends FilterTest {
         result = false;
       }
     } else if (operator == "in") {
-      if (value is List) {
+      if (value is Iterable) {
         result = value.contains(v);
       } else if (value is String) {
         result = value.contains(v.toString());
