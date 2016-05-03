@@ -73,8 +73,15 @@ main(List<String> args) async {
     "?value": 0
   });
 
+  SimpleNode actionInvokeCount = link.addNode("/actionInvokeCount", {
+    r"$name": "Invoke Count",
+    r"$type": "number",
+    "?value": 0
+  });
+
   virtualListCount.serializable = false;
   virtualSubscribeCount.serializable = false;
+  actionInvokeCount.serializable = false;
 
   link.connect();
   await link.onRequesterReady;
@@ -85,6 +92,8 @@ main(List<String> args) async {
       virtualListCount.updateValue(count);
     } else if (id == "vsubscribe") {
       virtualSubscribeCount.updateValue(count);
+    } else if (id == "invoke") {
+      actionInvokeCount.updateValue(count);
     }
   });
 }

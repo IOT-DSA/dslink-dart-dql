@@ -4,7 +4,7 @@ dependencies:
   async: "^1.9.0"
   dslink:
     git: https://github.com/IOT-DSA/sdk-dslink-dart.git
-  quiver: "^0.21.4"
+  quiver: "^0.22.0"
   math_expressions: "^0.2.0+1"
   petitparser: "^1.5.1"
   package_config: "^0.1.3"

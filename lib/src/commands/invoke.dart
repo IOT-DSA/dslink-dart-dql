@@ -65,11 +65,24 @@ class InvokeQueryProcessor extends QueryProcessor {
         for (String key in call.requiredColumns.keys) {
           var currentHoldValue = holder.params[key];
           var currentUpdateValue = update.values[call.requiredColumns[key]];
+
           if (!holder.params.containsKey(key) || (
             currentHoldValue != currentUpdateValue
           )) {
             holder.params[key] = currentUpdateValue;
             doInvokeAgain = true;
+          }
+        }
+
+        var isAllowNullValue = stream.getAttribute(
+          "option:invokeAllowNull"
+        ) == true;
+
+        if (!isAllowNullValue && call.requiredColumns.isNotEmpty) {
+          for (String key in call.requiredColumns.keys) {
+            if (holder.params[key] == null) {
+              doInvokeAgain = false;
+            }
           }
         }
 
@@ -79,8 +92,29 @@ class InvokeQueryProcessor extends QueryProcessor {
             holder.sub = null;
           }
 
+          if (context is QueryStatisticManager) {
+            (context as QueryStatisticManager).reportStart("invoke");
+          }
+
+          bool _isDoneInvoke = false;
+
+          void finishInvoke() {
+            if (_isDoneInvoke) {
+              return;
+            }
+
+            _isDoneInvoke = true;
+
+            if (context is QueryStatisticManager) {
+              (context as QueryStatisticManager).reportEnd("invoke");
+            }
+          }
+
           holder.sub = context.invoke(holder.actionPath, holder.params)
             .listen((inv) {
+            if (inv.streamStatus == StreamStatus.closed) {
+              finishInvoke();
+            }
           });
         }
 
