@@ -82,12 +82,6 @@ class ListNodeQueryProcessor extends QueryProcessor {
           logger.finer("List ${path}");
 
           subs[path] = context.list(path).listen((RequesterListUpdate update) {
-            if (p.parentPath.endsWith("/upstream") &&
-              update.node.configs[r"$uid"] == null) {
-              onDone();
-              return;
-            }
-
             if (update.node.configs.containsKey(r"$invokable") &&
               !enableActions) {
               onDone();
