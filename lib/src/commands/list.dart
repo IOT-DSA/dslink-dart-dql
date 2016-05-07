@@ -19,7 +19,7 @@ class ListNodeQueryProcessor extends QueryProcessor {
     StreamSubscription passthrough;
     var subs = <String, StreamSubscription>{};
     var dones = <String, Function>{};
-    Set<String> uids = new Set<String>();
+    Map<String, String> uids = new Map<String, String>();
     StreamController<QueryUpdate> controller;
 
     var traverseBrokers = false;
@@ -40,6 +40,8 @@ class ListNodeQueryProcessor extends QueryProcessor {
         String uid;
         if (subs[path] is! StreamSubscription) {
           var onDone = ([bool isUidSame = false]) {
+            logger.finer("List Done ${path}");
+
             if (!isUidSame && uid != null) {
               uids.remove(uid);
             }
@@ -112,11 +114,27 @@ class ListNodeQueryProcessor extends QueryProcessor {
 
             if (update.node.configs[r"$uid"] is String) {
               uid = update.node.configs[r"$uid"];
-              if (uids.contains(uid)) {
+              var existing = uids[uid];
+              if (existing != null && existing != path) {
                 onDone(true);
                 return;
               }
-              uids.add(uid);
+
+              if (update.changes.contains(r"$uid")) {
+                var drops = [];
+
+                for (String id in uids.keys) {
+                  if (id != uid && uids[id] == path) {
+                    drops.add(id);
+                  }
+                }
+
+                for (String id in drops) {
+                  uids.remove(id);
+                }
+              }
+
+              uids[uid] = path;
             }
 
             if (expression.matches(path)) {
