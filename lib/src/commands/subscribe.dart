@@ -62,6 +62,20 @@ class SubscribeQueryProcessor extends QueryProcessor {
     StreamSubscription sub;
 
     var handleUpdate = (QueryUpdate update) {
+      int qos;
+
+      {
+        qos = stream.getIntAttribute("qos", 0);
+
+        if (qos < 0) {
+          qos = 0;
+        }
+
+        if (qos > 3) {
+          qos = 3;
+        }
+      }
+
       String path = update.findNodePath();
 
       if (update.remove) {
@@ -122,13 +136,12 @@ class SubscribeQueryProcessor extends QueryProcessor {
             holder.subs[rkey] = context.subscribe(path, (ValueUpdate update) {
               holder.values[rkey] = update.value;
               controller.add(holder.build());
-            });
+            }, qos);
           } else if (target == "value.timestamp") {
-            holder.subs[rkey] = context.subscribe(path,
-              (ValueUpdate update) {
+            holder.subs[rkey] = context.subscribe(path, (ValueUpdate update) {
               holder.values[rkey] = update.ts;
               controller.add(holder.build());
-            });
+            }, qos);
           } else if (parts.last == ":name") {
             var trp = pathlib.posix.normalize(
               pathlib.posix.join(
@@ -177,7 +190,7 @@ class SubscribeQueryProcessor extends QueryProcessor {
             holder.subs[rkey] = context.subscribe(targetPath, (ValueUpdate update) {
               holder.values[rkey] = ts ? update.ts : update.value;
               controller.add(holder.build());
-            });
+            }, qos);
           }
         }
 

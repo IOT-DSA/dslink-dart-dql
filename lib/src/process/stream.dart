@@ -25,6 +25,15 @@ abstract class QueryStream extends Stream<QueryUpdate> {
     return null;
   }
 
+  int getIntAttribute(String key, int defaultValue) {
+    var value = getAttribute(key);
+    if (value is int) {
+      return value;
+    } else {
+      return defaultValue;
+    }
+  }
+
   bool hasAttribute(String key, [bool search = false]) {
     bool has = attributes.containsKey(key);
     if (!has && search && parent != null) {
