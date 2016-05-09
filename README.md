@@ -1,6 +1,7 @@
-# DQL DSLink
+# DQL
 
-This is a DSLink-based mockup of what DQL (Distributed Query Language) should be like.
+DQL is a distributed query language for DSA.
+DQL can act both as a DSLink and an embedded library into a DSLink.
 
 DQL acts upon the connected broker by default.
 
