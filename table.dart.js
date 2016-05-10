@@ -10548,7 +10548,8 @@ if(x==null){w="="
 v=C.C}else{z=J.q(x)
 w=z.h(x,0)
 v=z.h(x,1)}z=new D.l6(y,w,v,null)
-if(J.j(w,"~")){u=J.a6(v)
+u=J.k(w)
+if(u.k(w,"~")||u.k(w,"like")){u=J.a6(v)
 z.d=new H.bT(u,H.d2(u,!1,!0,!1),null,null)}return z},null,null,2,0,null,15,"call"]},t3:{"^":"d:1;",
 $1:[function(a){var z,y,x
 z=J.q(a)
