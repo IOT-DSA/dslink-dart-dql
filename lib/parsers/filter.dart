@@ -191,7 +191,7 @@ class FilterCompareTest extends FilterTest {
   final dynamic value;
 
   FilterCompareTest(this.key, {this.operator: "=", this.value}) {
-    if (operator == "~") {
+    if (operator == "~" || operator == "like") {
       _regex = new RegExp(value.toString());
     }
   }
