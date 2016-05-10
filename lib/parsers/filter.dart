@@ -4,7 +4,11 @@ import "package:petitparser/petitparser.dart";
 
 import "package:dql/parsers/query.dart";
 
+import "package:quiver/pattern.dart" show escapeRegex;
+
 const Existent exists = Existent.exists;
+
+final RegExp _patternFilterLike = new RegExp(r"\%");
 
 abstract class FilterTestVisitor {
   void visit(FilterTest test) {
@@ -191,8 +195,18 @@ class FilterCompareTest extends FilterTest {
   final dynamic value;
 
   FilterCompareTest(this.key, {this.operator: "=", this.value}) {
-    if (operator == "~" || operator == "like") {
+    if (operator == "~") {
       _regex = new RegExp(value.toString());
+    }
+
+    if (operator == "like") {
+      _regex = new RegExp(value.toString().splitMapJoin(_patternFilterLike, onMatch: (Match match) {
+        if (match.group(0) == "%") {
+          return "(.+)";
+        }
+      }, onNonMatch: (String string) {
+        return escapeRegex(string);
+      }));
     }
   }
 

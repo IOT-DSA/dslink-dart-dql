@@ -52,6 +52,22 @@ main() {
   test(r'not $disconnectedTs', {
     r"$disconnectedTs": "ABC"
   });
+
+  test(r'@name like "%Boat%"', {
+    "@name": "Boaty McBoatface"
+  });
+
+  test(r'@name like "%Goat%"', {
+    "@name": "Boaty McBoatface"
+  });
+
+  test(r'@type like "float%"', {
+    "@type": "float64"
+  });
+
+  test(r'not @type like "%goat"', {
+    "@type": "goat64"
+  });
 }
 
 test(String filter, [Map m]) {
