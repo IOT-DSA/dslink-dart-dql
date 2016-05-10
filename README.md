@@ -1,6 +1,7 @@
-# DQL DSLink
+# DQL
 
-This is a DSLink-based mockup of what DQL (Distributed Query Language) should be like.
+DQL is a distributed query language for DSA.
+DQL can act both as a DSLink and an embedded library into a DSLink.
 
 DQL acts upon the connected broker by default.
 
@@ -12,7 +13,16 @@ This prevents massive queries that can cause a slowdown. This only applies to th
 To enable multi-broker list queries, add the following command at the front of your query:
 
 ```
-option traverseBrokers=true|
+option traverseBrokers=true |
+```
+
+## QOS Subscriptions
+
+DQL uses QOS `0` by default for value subscriptions. You can configure what QOS a query will use by adding the following command
+in any position in front of the subscribe command where `1` is any of `0 1 2 3`:
+
+```
+option qos=1 |
 ```
 
 ## Syntax
