@@ -144,12 +144,13 @@ class ListNodeQueryProcessor extends QueryProcessor {
               }
 
               QueryUpdate event = new QueryUpdate({
-                "path": update.node.remotePath
+                "path": path
               }, attributes: {
                 "node": update.node,
                 ":name": update.node.name,
                 ":displayName": displayName,
-                "id": update.node.remotePath
+                "id": ourRealPath,
+                "nodePath": path
               });
               controller.add(event);
             }
@@ -167,7 +168,7 @@ class ListNodeQueryProcessor extends QueryProcessor {
               handleChildren = false;
             }
 
-            var ourFakePath = reverseResolvePath(update.node.remotePath);
+            var ourFakePath = reverseResolvePath(ourRealPath);
             if (ourFakePath == "/") {
               ourFakePath = "";
             }
@@ -182,16 +183,18 @@ class ListNodeQueryProcessor extends QueryProcessor {
                     continue;
                   }
 
-                  handle("${ourFakePath}/${child.name}", depth + 1);
+                  var childPath = "${ourFakePath}/${child.name}";
+                  handle(childPath, depth + 1);
                 }
               }
             } else if (handleChildren) {
-              for (RemoteNode child in update.node.children.values) {
+              for (String key in update.node.children.keys) {
+                var child = update.node.children[key];
                 if (child.getConfig(r"$invokable") != null && !allowActions) {
                   continue;
                 }
 
-                handle("${ourFakePath}/${child.name}", depth + 1);
+                handle("${ourFakePath}/${key}", depth + 1);
               }
             }
           }, onDone: () {

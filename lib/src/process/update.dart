@@ -23,14 +23,14 @@ class QueryUpdate {
   }
 
   String findNodePath() {
+    if (attributes["nodePath"] is String) {
+      return attributes["nodePath"];
+    }
+
     if (attributes["node"] is RemoteNode) {
       RemoteNode node = attributes["node"];
 
       return node.remotePath;
-    }
-
-    if (attributes["nodePath"] is String) {
-      return attributes["nodePath"];
     }
 
     return values["path"];

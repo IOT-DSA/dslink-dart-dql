@@ -9,8 +9,6 @@ class SublistHolder {
   StreamSubscription<QueryUpdate> listSub;
   List<String> _handles = <String>[];
 
-  StreamCompleter<QueryUpdate> _completer;
-
   Iterable<String> destroy() {
     if (listSub != null) {
       listSub.cancel();
@@ -74,7 +72,8 @@ class SublistListQueryProcessor extends ListNodeQueryProcessor {
       path = path.substring(1);
     }
 
-    return "${_basePathS}${path}";
+    var result = "${_basePathS}${path}";
+    return result;
   }
 }
 
