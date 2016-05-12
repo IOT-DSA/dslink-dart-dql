@@ -26,7 +26,6 @@ class PathExpression {
     "brokers"
   ];
 
-  final String input;
   final String topmost;
   final RegExp pattern;
   final int depthLimit;

@@ -42,7 +42,9 @@ _diagram = Diagram(
                     '!=',
                     'equals',
                     'contains',
-                    'like'
+                    'like',
+                    '~',
+                    ''
                   ),
                   'value'
                 )
