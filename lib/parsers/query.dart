@@ -26,14 +26,19 @@ class PathExpression {
     "brokers"
   ];
 
+  final String input;
   final String topmost;
   final RegExp pattern;
   final int depthLimit;
   final String directive;
+  final String secondary;
 
   bool hasAnyMods = false;
 
-  PathExpression(this.topmost, this.pattern, this.depthLimit, {this.directive});
+  PathExpression(this.topmost, this.pattern, this.depthLimit, {
+    this.directive,
+    this.secondary
+  });
 
   bool matches(String input, {bool isBroker: false}) {
     if (directive == "brokers") {
@@ -129,11 +134,30 @@ final RegExp _patternNotEmpty = new RegExp(".+");
 PathExpression parseExpressionInput(String input) {
   input = input.trim();
 
+  var expressionParts = input
+    .split(",")
+    .map((p) => p.trim())
+    .where((String x) => x.isNotEmpty)
+    .toList();
+
+  String secondary;
+
+  if (expressionParts.length > 1) {
+    secondary = expressionParts.skip(1).join(",");
+    input = expressionParts[0];
+  }
+
   if (!input.startsWith("/")) {
     var lower = input.toLowerCase();
 
     if (PathExpression.directives.contains(lower)) {
-      return new PathExpression("/", _patternNotEmpty, 0, directive: lower);
+      return new PathExpression(
+        "/",
+        _patternNotEmpty,
+        0,
+        directive: lower,
+        secondary: secondary
+      );
     } else {
       input = "/${input}";
     }
@@ -190,7 +214,12 @@ PathExpression parseExpressionInput(String input) {
     recurseLimit = 1;
   }
 
-  var e = new PathExpression(topmost, new RegExp(ptrn), recurseLimit);
+  var e = new PathExpression(
+    topmost,
+    new RegExp(ptrn),
+    recurseLimit,
+    secondary: secondary
+  );
   if (count != 0) {
     e.hasAnyMods = true;
   }

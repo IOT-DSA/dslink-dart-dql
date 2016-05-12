@@ -5,11 +5,13 @@ class ListNodeQueryProcessor extends QueryProcessor {
 
   ListNodeQueryProcessor(this.context);
 
+  String commandUsed;
   PathExpression expression;
   bool allowActions = false;
 
   @override
   void init(QueryStatement statement) {
+    commandUsed = statement.command;
     allowActions = statement.command == "lista";
     expression = parseExpressionInput(statement.argument);
   }
@@ -232,8 +234,26 @@ class ListNodeQueryProcessor extends QueryProcessor {
 
   @override
   String toString() {
+    super.createDependencyProcessor();
     return "List ${expression == null ? 'none' : expression}";
   }
+
+  bool _hasAddedProcessor = false;
+
+  @override
+  QueryProcessor createDependencyProcessor() {
+    if (!_hasAddedProcessor &&
+      expression != null &&
+      expression.secondary != null &&
+      expression.secondary.isNotEmpty) {
+      var proc = new ListNodeQueryProcessor(context);
+      proc.init(new QueryStatement(commandUsed, expression.secondary));
+      _hasAddedProcessor = true;
+      return proc;
+    }
+    return null;
+  }
+
 
   String reverseResolvePath(String path) {
     return path;

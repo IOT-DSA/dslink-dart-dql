@@ -17,26 +17,14 @@ class SublistHolder {
       listSub = null;
     }
 
-    if (_completer != null) {
-      _completer.setEmpty();
-    }
-
     return _handles;
   }
 
   Stream<QueryUpdate> create(SublistQueryProcessor sublist) {
     listProcessor = new SublistListQueryProcessor(path, sublist.context);
-
     listProcessor.init(new QueryStatement("list", sublist.expression));
 
-    _completer = new StreamCompleter<QueryUpdate>();
-
-    QueryStream fakeStream = new WrappedQueryStream(
-      null,
-      _completer.stream
-    );
-
-    return listProcessor.process(fakeStream).map((QueryUpdate update) {
+    return processQuery([listProcessor]).map((QueryUpdate update) {
       var np = update.findNodePath();
       var rp = path;
       if (rp.endsWith("/")) {
