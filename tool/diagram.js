@@ -11,6 +11,14 @@ _diagram = Diagram(
         )
       ),
       Sequence(
+        'sublist',
+        OptionalSequence(
+          '*',
+          '?',
+          'path fragment'
+        )
+      ),
+      Sequence(
         'path',
         'target path'
       ),
@@ -19,6 +27,15 @@ _diagram = Diagram(
         Sequence(
           Optional('('),
           Sequence(
+            Optional(
+              Sequence(
+                Choice(
+                  0,
+                  'not'
+                ),
+                'filter expression'
+              )
+            ),
             'identifier',
             Optional(
               Choice(
@@ -44,7 +61,11 @@ _diagram = Diagram(
                     'contains',
                     'like',
                     '~',
-                    ''
+                    '<',
+                    '>',
+                    '<=',
+                    '>=',
+                    'in'
                   ),
                   'value'
                 )
