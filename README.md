@@ -133,6 +133,12 @@ list /downstream/System | filter :metric | subscribe | invoke /downstream/MongoD
 list brokers
 ```
 
+### List nodes with multiple expressions
+
+```
+list /downstream, /upstream, /sys
+```
+
 ### List nodes under each broker
 
 ```
