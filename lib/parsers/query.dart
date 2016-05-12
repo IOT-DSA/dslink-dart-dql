@@ -22,15 +22,24 @@ final RegExp _patternStringSingle = new RegExp(r"""
 typedef bool NodeFilter(RemoteNode node, QueryUpdate update);
 
 class PathExpression {
+  static const List<String> directives = const <String>[
+    "brokers"
+  ];
+
   final String topmost;
   final RegExp pattern;
   final int depthLimit;
+  final String directive;
 
   bool hasAnyMods = false;
 
-  PathExpression(this.topmost, this.pattern, this.depthLimit);
+  PathExpression(this.topmost, this.pattern, this.depthLimit, {this.directive});
 
-  bool matches(String input) {
+  bool matches(String input, {bool isBroker: false}) {
+    if (directive == "brokers") {
+      return isBroker;
+    }
+
     if (!hasAnyMods && topmost == input) {
       return false;
     }
@@ -115,11 +124,19 @@ NodeFilter createNodeFilter(FilterTestCollection test) {
   };
 }
 
+final RegExp _patternNotEmpty = new RegExp(".+");
+
 PathExpression parseExpressionInput(String input) {
   input = input.trim();
 
   if (!input.startsWith("/")) {
-    input = "/${input}";
+    var lower = input.toLowerCase();
+
+    if (PathExpression.directives.contains(lower)) {
+      return new PathExpression("/", _patternNotEmpty, 0, directive: lower);
+    } else {
+      input = "/${input}";
+    }
   }
   List<String> parts = input.split(_patternModifier);
   var count = 0;

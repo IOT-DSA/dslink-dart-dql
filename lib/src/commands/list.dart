@@ -19,7 +19,7 @@ class ListNodeQueryProcessor extends QueryProcessor {
     StreamSubscription passthrough;
     var subs = <String, StreamSubscription>{};
     var dones = <String, Function>{};
-    Map<String, String> uids = new Map<String, String>();
+    var uids = new Map<String, String>();
     StreamController<QueryUpdate> controller;
 
     var traverseBrokers = false;
@@ -131,7 +131,9 @@ class ListNodeQueryProcessor extends QueryProcessor {
               uids[uid] = path;
             }
 
-            if (expression.matches(path)) {
+            bool isBroker = update.node.configs[r"$is"] == "dsa/broker";
+
+            if (expression.matches(path, isBroker: isBroker)) {
               String displayName = update.node.configs[r"$name"];
               if (displayName == null) {
                 displayName = update.node.name;
@@ -148,19 +150,38 @@ class ListNodeQueryProcessor extends QueryProcessor {
               controller.add(event);
             }
 
-            bool isBroker = update.node.configs[r"$is"] == "dsa/broker";
             bool handleChildren = expression.depthLimit < 0 ||
               depth <= expression.depthLimit;
 
+            bool isSubBroker = isBroker;
+
             if (p.isRoot) {
-              isBroker = false;
+              isSubBroker = false;
             }
 
-            if (isBroker && traverseBrokers == false) {
+            if (isSubBroker && traverseBrokers == false) {
               handleChildren = false;
             }
 
-            if (handleChildren) {
+            if (expression.directive == "brokers") {
+              if (isBroker) {
+                var ourFakePath = update.node.remotePath;
+                if (ourFakePath == "/") {
+                  ourFakePath = "";
+                }
+
+                handle("${ourFakePath}/downstream", depth + 1);
+                handle("${ourFakePath}/upstream", depth + 1);
+              } else if (path.endsWith("/downstream") || path.endsWith("/upstream")) {
+                for (RemoteNode child in update.node.children.values) {
+                  if (child.getConfig(r"$is") != "dsa/broker") {
+                    continue;
+                  }
+
+                  handle(child.remotePath, depth + 1);
+                }
+              }
+            } else if (handleChildren) {
               for (RemoteNode child in update.node.children.values) {
                 if (child.getConfig(r"$invokable") != null && !allowActions) {
                   continue;
