@@ -81,7 +81,9 @@ class ListNodeQueryProcessor extends QueryProcessor {
 
           logger.finer("List ${path}");
 
-          subs[path] = context.list(path).listen((RequesterListUpdate update) {
+          var ourRealPath = resolveRealPath(path);
+
+          subs[path] = context.list(ourRealPath).listen((RequesterListUpdate update) {
             if (update.node.configs.containsKey(r"$invokable") &&
               !enableActions) {
               onDone();
@@ -140,12 +142,12 @@ class ListNodeQueryProcessor extends QueryProcessor {
               }
 
               QueryUpdate event = new QueryUpdate({
-                "path": path
+                "path": update.node.remotePath
               }, attributes: {
                 "node": update.node,
                 ":name": update.node.name,
                 ":displayName": displayName,
-                "id": path
+                "id": update.node.remotePath
               });
               controller.add(event);
             }
@@ -163,13 +165,13 @@ class ListNodeQueryProcessor extends QueryProcessor {
               handleChildren = false;
             }
 
+            var ourFakePath = reverseResolvePath(update.node.remotePath);
+            if (ourFakePath == "/") {
+              ourFakePath = "";
+            }
+
             if (expression.directive == "brokers") {
               if (isBroker) {
-                var ourFakePath = update.node.remotePath;
-                if (ourFakePath == "/") {
-                  ourFakePath = "";
-                }
-
                 handle("${ourFakePath}/downstream", depth + 1);
                 handle("${ourFakePath}/upstream", depth + 1);
               } else if (path.endsWith("/downstream") || path.endsWith("/upstream")) {
@@ -178,7 +180,7 @@ class ListNodeQueryProcessor extends QueryProcessor {
                     continue;
                   }
 
-                  handle(child.remotePath, depth + 1);
+                  handle("${ourFakePath}/${child.name}", depth + 1);
                 }
               }
             } else if (handleChildren) {
@@ -187,7 +189,7 @@ class ListNodeQueryProcessor extends QueryProcessor {
                   continue;
                 }
 
-                handle(child.remotePath, depth + 1);
+                handle("${ourFakePath}/${child.name}", depth + 1);
               }
             }
           }, onDone: () {
@@ -231,5 +233,13 @@ class ListNodeQueryProcessor extends QueryProcessor {
   @override
   String toString() {
     return "List ${expression == null ? 'none' : expression}";
+  }
+
+  String reverseResolvePath(String path) {
+    return path;
+  }
+
+  String resolveRealPath(String path) {
+    return path;
   }
 }

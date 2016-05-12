@@ -2,6 +2,8 @@ library dslink.dql.query;
 
 import "dart:async";
 
+import "package:async/async.dart";
+
 import "package:dslink/common.dart";
 import "package:dslink/requester.dart";
 
@@ -28,6 +30,7 @@ part "src/commands/drop.dart";
 part "src/commands/expression.dart";
 part "src/commands/rename.dart";
 part "src/commands/invoke.dart";
+part "src/commands/sublist.dart";
 
 part "src/query/basic_context.dart";
 
@@ -43,5 +46,6 @@ final Map<String, QueryProcessorFactory> baseQueryCommandSet = {
   "where": (QueryContext context) => new FilterQueryProcessor(context),
   "invoke": (QueryContext context) => new InvokeQueryProcessor(context),
   "lista": (QueryContext context) => new ListNodeQueryProcessor(context),
-  "option": (QueryContext context) => new OptionQueryProcessor(context)
+  "option": (QueryContext context) => new OptionQueryProcessor(context),
+  "sublist": (QueryContext context) => new SublistQueryProcessor(context)
 };
