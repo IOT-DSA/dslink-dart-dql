@@ -126,3 +126,15 @@ path /downstream/System | subscribe Memory_Usage
 ```
 list /downstream/System | filter :metric | subscribe | invoke /downstream/MongoDB/local/SystemValues/publish(Path=%path, Value=%value)
 ```
+
+### List all brokers
+
+```
+list brokers
+```
+
+### List nodes under each broker
+
+```
+list brokers | sublist /downstream/?
+```
