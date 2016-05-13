@@ -22,6 +22,7 @@ class ListNodeQueryProcessor extends QueryProcessor {
     var subs = <String, StreamSubscription>{};
     var dones = <String, Function>{};
     var uids = new Map<String, String>();
+    var currentPaths = <String>[];
     StreamController<QueryUpdate> controller;
 
     var traverseBrokers = false;
@@ -138,6 +139,10 @@ class ListNodeQueryProcessor extends QueryProcessor {
           bool isLink = update.node.configs[r"$is"] == "dsa/link";
 
           if (expression.matches(path, isBroker: isBroker)) {
+            if (!currentPaths.contains(path)) {
+              currentPaths.add(path);
+            }
+
             String displayName = update.node.configs[r"$name"];
             if (displayName == null) {
               displayName = update.node.name;
@@ -155,6 +160,14 @@ class ListNodeQueryProcessor extends QueryProcessor {
               "nodePath": path
             });
             controller.add(event);
+          } else if (currentPaths.contains(path)) {
+            QueryUpdate event = new QueryUpdate({
+              "path": path
+            }, attributes: {
+              "id": ourRealPath
+            }, remove: true);
+            controller.add(event);
+            currentPaths.remove(path);
           }
 
           bool handleChildren = expression.depthLimit < 0 ||
