@@ -41,6 +41,8 @@ class ListNodeQueryProcessor extends QueryProcessor {
 
       String uid;
       if (subs[path] is! StreamSubscription) {
+        var ourRealPath = resolveRealPath(path);
+
         var onDone = ([bool isUidSame = false]) {
           logger.finer("List Done ${path}");
 
@@ -56,11 +58,14 @@ class ListNodeQueryProcessor extends QueryProcessor {
 
             dones.remove(path);
 
-            if (!isUidSame && expression.matches(path)) {
+            if (!isUidSame && currentPaths.contains(path)) {
               QueryUpdate update = new QueryUpdate({
                 "path": path
+              }, attributes: {
+                "id": ourRealPath
               }, remove: true);
               controller.add(update);
+              currentPaths.remove(path);
             }
 
             subs.keys.where((p) => p.startsWith("${path}/")).toList().forEach((key) {
@@ -82,8 +87,6 @@ class ListNodeQueryProcessor extends QueryProcessor {
         }
 
         logger.finer("List ${path}");
-
-        var ourRealPath = resolveRealPath(path);
 
         var handleListUpdate = (RequesterListUpdate update) {
           if (update.node.configs.containsKey(r"$invokable") &&
@@ -193,18 +196,28 @@ class ListNodeQueryProcessor extends QueryProcessor {
               handle("${ourFakePath}/downstream", depth + 1);
               handle("${ourFakePath}/upstream", depth + 1);
 
-              if (stream.getBooleanAttribute("brokersIncludeQuarantine", false)) {
+              if (stream.getBooleanAttribute("option:brokersIncludeQuarantine", false)) {
                 handle("${ourFakePath}/sys/quarantine", depth + 1);
               }
             } else if (path.endsWith("/downstream") ||
               path.endsWith("/upstream") ||
               path.endsWith("/sys/quarantine")) {
               for (RemoteNode child in update.node.children.values) {
+                var childPath = "${ourFakePath}/${child.name}";
+
                 if (child.getConfig(r"$is") != "dsa/broker") {
+                  if (currentPaths.contains(childPath)) {
+                    QueryUpdate event = new QueryUpdate({
+                      "path": path
+                    }, attributes: {
+                      "id": ourRealPath
+                    }, remove: true);
+                    controller.add(event);
+                    currentPaths.remove(path);
+                  }
                   continue;
                 }
 
-                var childPath = "${ourFakePath}/${child.name}";
                 handle(childPath, depth + 1);
               }
             }
