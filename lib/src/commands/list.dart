@@ -35,176 +35,187 @@ class ListNodeQueryProcessor extends QueryProcessor {
       enableActions = true;
     }
 
-    controller = new StreamController<QueryUpdate>.broadcast(onListen: () {
-      void handle(String path, [int depth = 1]) {
-        Path p = new Path(path);
+    void handle(String path, [int depth = 1]) {
+      Path p = new Path(path);
 
-        String uid;
-        if (subs[path] is! StreamSubscription) {
-          var onDone = ([bool isUidSame = false]) {
-            logger.finer("List Done ${path}");
+      String uid;
+      if (subs[path] is! StreamSubscription) {
+        var onDone = ([bool isUidSame = false]) {
+          logger.finer("List Done ${path}");
 
-            if (!isUidSame && uid != null) {
-              uids.remove(uid);
-            }
-
-            if (subs.containsKey(path)) {
-              StreamSubscription sub = subs.remove(path);
-              if (sub != null) {
-                sub.cancel();
-              }
-
-              dones.remove(path);
-
-              if (!isUidSame && expression.matches(path)) {
-                QueryUpdate update = new QueryUpdate({
-                  "path": path
-                }, remove: true);
-                controller.add(update);
-              }
-
-              subs.keys.where((p) => p.startsWith("${path}/")).toList().forEach((key) {
-                if (dones[key] is Function) {
-                  dones[key]();
-                }
-              });
-
-              if (context is QueryStatisticManager) {
-                (context as QueryStatisticManager).reportEnd("vlist");
-              }
-            }
-          };
-
-          dones[path] = onDone;
-
-          if (context is QueryStatisticManager) {
-            (context as QueryStatisticManager).reportStart("vlist");
+          if (!isUidSame && uid != null) {
+            uids.remove(uid);
           }
 
-          logger.finer("List ${path}");
+          if (subs.containsKey(path)) {
+            StreamSubscription sub = subs.remove(path);
+            if (sub != null) {
+              sub.cancel();
+            }
 
-          var ourRealPath = resolveRealPath(path);
+            dones.remove(path);
 
-          subs[path] = context.list(ourRealPath).listen((RequesterListUpdate update) {
-            if (update.node.configs.containsKey(r"$invokable") &&
-              !enableActions) {
-              onDone();
+            if (!isUidSame && expression.matches(path)) {
+              QueryUpdate update = new QueryUpdate({
+                "path": path
+              }, remove: true);
+              controller.add(update);
+            }
+
+            subs.keys.where((p) => p.startsWith("${path}/")).toList().forEach((key) {
+              if (dones[key] is Function) {
+                dones[key]();
+              }
+            });
+
+            if (context is QueryStatisticManager) {
+              (context as QueryStatisticManager).reportEnd("vlist");
+            }
+          }
+        };
+
+        dones[path] = onDone;
+
+        if (context is QueryStatisticManager) {
+          (context as QueryStatisticManager).reportStart("vlist");
+        }
+
+        logger.finer("List ${path}");
+
+        var ourRealPath = resolveRealPath(path);
+
+        var handleListUpdate = (RequesterListUpdate update) {
+          if (update.node.configs.containsKey(r"$invokable") &&
+            !enableActions) {
+            onDone();
+            return;
+          }
+
+          for (String change in update.changes) {
+            if (change.startsWith(r"$") || change.startsWith("@")) {
+              continue;
+            }
+
+            if (!update.node.children.containsKey(change)) {
+              String cp = path;
+              if (!cp.endsWith("/")) {
+                cp += "/";
+              }
+              cp += change;
+              if (dones.containsKey(cp)) {
+                dones[cp]();
+                continue;
+              }
+            }
+          }
+
+          if (update.node.configs[r"$uid"] is String) {
+            uid = update.node.configs[r"$uid"];
+            var existing = uids[uid];
+            if (existing != null && existing != path) {
+              onDone(true);
               return;
             }
 
-            for (String change in update.changes) {
-              if (change.startsWith(r"$") || change.startsWith("@")) {
+            if (update.changes.contains(r"$uid")) {
+              var drops = [];
+
+              for (String id in uids.keys) {
+                if (id != uid && uids[id] == path) {
+                  drops.add(id);
+                }
+              }
+
+              for (String id in drops) {
+                uids.remove(id);
+              }
+            }
+
+            uids[uid] = path;
+          }
+
+          bool isBroker = update.node.configs[r"$is"] == "dsa/broker";
+          bool isLink = update.node.configs[r"$is"] == "dsa/link";
+
+          if (expression.matches(path, isBroker: isBroker)) {
+            String displayName = update.node.configs[r"$name"];
+            if (displayName == null) {
+              displayName = update.node.name;
+            }
+
+            var values = <String, dynamic>{
+              "path": path
+            };
+
+            QueryUpdate event = new QueryUpdate(values, attributes: {
+              "node": update.node,
+              ":name": update.node.name,
+              ":displayName": displayName,
+              "id": ourRealPath,
+              "nodePath": path
+            });
+            controller.add(event);
+          }
+
+          bool handleChildren = expression.depthLimit < 0 ||
+            depth <= expression.depthLimit;
+
+          bool isSubBroker = isBroker;
+
+          if (p.isRoot) {
+            isSubBroker = false;
+          }
+
+          if (isSubBroker && traverseBrokers == false) {
+            handleChildren = false;
+          }
+
+          var ourFakePath = reverseResolvePath(ourRealPath);
+          if (ourFakePath == "/") {
+            ourFakePath = "";
+          }
+
+          if (expression.directive == "brokers") {
+            if (isBroker) {
+              handle("${ourFakePath}/downstream", depth + 1);
+              handle("${ourFakePath}/upstream", depth + 1);
+
+              if (stream.getBooleanAttribute("brokersIncludeQuarantine", false)) {
+                handle("${ourFakePath}/sys/quarantine", depth + 1);
+              }
+            } else if (path.endsWith("/downstream") ||
+              path.endsWith("/upstream") ||
+              path.endsWith("/sys/quarantine")) {
+              for (RemoteNode child in update.node.children.values) {
+                if (child.getConfig(r"$is") != "dsa/broker") {
+                  continue;
+                }
+
+                var childPath = "${ourFakePath}/${child.name}";
+                handle(childPath, depth + 1);
+              }
+            }
+          } else if (handleChildren) {
+            for (String key in update.node.children.keys) {
+              var child = update.node.children[key];
+              if (child.getConfig(r"$invokable") != null && !allowActions) {
                 continue;
               }
 
-              if (!update.node.children.containsKey(change)) {
-                String cp = path;
-                if (!cp.endsWith("/")) {
-                  cp += "/";
-                }
-                cp += change;
-                if (dones.containsKey(cp)) {
-                  dones[cp]();
-                  continue;
-                }
-              }
+              handle("${ourFakePath}/${key}", depth + 1);
             }
+          }
+        };
 
-            if (update.node.configs[r"$uid"] is String) {
-              uid = update.node.configs[r"$uid"];
-              var existing = uids[uid];
-              if (existing != null && existing != path) {
-                onDone(true);
-                return;
-              }
-
-              if (update.changes.contains(r"$uid")) {
-                var drops = [];
-
-                for (String id in uids.keys) {
-                  if (id != uid && uids[id] == path) {
-                    drops.add(id);
-                  }
-                }
-
-                for (String id in drops) {
-                  uids.remove(id);
-                }
-              }
-
-              uids[uid] = path;
-            }
-
-            bool isBroker = update.node.configs[r"$is"] == "dsa/broker";
-
-            if (expression.matches(path, isBroker: isBroker)) {
-              String displayName = update.node.configs[r"$name"];
-              if (displayName == null) {
-                displayName = update.node.name;
-              }
-
-              QueryUpdate event = new QueryUpdate({
-                "path": path
-              }, attributes: {
-                "node": update.node,
-                ":name": update.node.name,
-                ":displayName": displayName,
-                "id": ourRealPath,
-                "nodePath": path
-              });
-              controller.add(event);
-            }
-
-            bool handleChildren = expression.depthLimit < 0 ||
-              depth <= expression.depthLimit;
-
-            bool isSubBroker = isBroker;
-
-            if (p.isRoot) {
-              isSubBroker = false;
-            }
-
-            if (isSubBroker && traverseBrokers == false) {
-              handleChildren = false;
-            }
-
-            var ourFakePath = reverseResolvePath(ourRealPath);
-            if (ourFakePath == "/") {
-              ourFakePath = "";
-            }
-
-            if (expression.directive == "brokers") {
-              if (isBroker) {
-                handle("${ourFakePath}/downstream", depth + 1);
-                handle("${ourFakePath}/upstream", depth + 1);
-              } else if (path.endsWith("/downstream") || path.endsWith("/upstream")) {
-                for (RemoteNode child in update.node.children.values) {
-                  if (child.getConfig(r"$is") != "dsa/broker") {
-                    continue;
-                  }
-
-                  var childPath = "${ourFakePath}/${child.name}";
-                  handle(childPath, depth + 1);
-                }
-              }
-            } else if (handleChildren) {
-              for (String key in update.node.children.keys) {
-                var child = update.node.children[key];
-                if (child.getConfig(r"$invokable") != null && !allowActions) {
-                  continue;
-                }
-
-                handle("${ourFakePath}/${key}", depth + 1);
-              }
-            }
-          }, onDone: () {
-            if (dones.containsKey(path)) {
-              dones[path]();
-            }
-          });
-        }
+        subs[path] = context.list(ourRealPath).listen(handleListUpdate, onDone: () {
+          if (dones.containsKey(path)) {
+            dones[path]();
+          }
+        });
       }
+    }
 
+    controller = new StreamController<QueryUpdate>.broadcast(onListen: () {
       handle(expression.topmost);
     }, onCancel: () {
       if (passthrough != null) {
@@ -256,7 +267,6 @@ class ListNodeQueryProcessor extends QueryProcessor {
     }
     return null;
   }
-
 
   String reverseResolvePath(String path) {
     return path;

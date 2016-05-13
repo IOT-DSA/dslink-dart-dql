@@ -156,6 +156,32 @@ class SubscribeQueryProcessor extends QueryProcessor {
               holder.values[rkey] = new Path(a).name;
               controller.add(holder.build());
             });
+          } else if (parts.last == ":connectionType") {
+            var trp = pathlib.posix.normalize(
+              pathlib.posix.join(
+                path,
+                parts.sublist(0, parts.length - 1).join("/")
+              )
+            );
+
+            var p = new Path(trp);
+
+            holder.subs[rkey] = context.list(trp).listen((RequesterListUpdate update) {
+              bool isBroker = update.node.configs[r"$is"] == "dsa/broker";
+              bool isLink = update.node.configs[r"$is"] == "dsa/link";
+              String connectionType;
+
+              if (isBroker || isLink) {
+                connectionType = p.parent.name;
+
+                if (connectionType.isEmpty) {
+                  connectionType = "root";
+                }
+              }
+
+              holder.values[rkey] = connectionType;
+              controller.add(holder.build());
+            });
           } else if (parts.last == ":displayName") {
             var trp = pathlib.posix.normalize(
               pathlib.posix.join(

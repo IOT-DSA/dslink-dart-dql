@@ -34,6 +34,14 @@ abstract class QueryStream extends Stream<QueryUpdate> {
     }
   }
 
+  bool getBooleanAttribute(String key, bool defaultValue) {
+    var value = getAttribute(key);
+    if (value is bool) {
+      return value;
+    }
+    return defaultValue;
+  }
+
   bool hasAttribute(String key, [bool search = false]) {
     bool has = attributes.containsKey(key);
     if (!has && search && parent != null) {
