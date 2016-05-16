@@ -12,6 +12,11 @@ String brokerUrl = const String.fromEnvironment(
   defaultValue: "http://127.0.0.1:8080/conn"
 );
 
+String brokerToken = const String.fromEnvironment(
+  "broker.token",
+  defaultValue: null
+);
+
 String currentQuery = "";
 
 String linkName = "DQL-Browser-";
@@ -36,6 +41,10 @@ main() async {
     currentQuery = currentUri.queryParameters["query"];
   }
 
+  if (currentUri.queryParameters.containsKey("token")) {
+    brokerToken = currentUri.queryParameters["token"];
+  }
+
   if (currentUri.hasFragment) {
     currentQuery = Uri.decodeComponent(window.location.hash.substring(1));
   }
@@ -44,7 +53,8 @@ main() async {
     brokerUrl,
     linkName,
     isRequester: true,
-    isResponder: false
+    isResponder: false,
+    token: brokerToken
   );
 
   await provider.init();

@@ -3,9 +3,9 @@ set -e
 TMP=$(mktemp -d)
 MD=$(realpath "$(dirname $0)/..")
 git clone git@github.com:IOT-DSA/dslink-dart-dql.git -b gh-pages "${TMP}"
-pub build example/browser
+pub build
 rm -rf ${TMP:?}/*
-cp -R build/example/browser/*  "${TMP:?}/"
+cp -R build/web/*  "${TMP:?}/"
 cd ${TMP} || exit 1
 git add .
 git commit -m "Update DQL Site" || true
