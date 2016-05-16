@@ -28,28 +28,28 @@ const List<int> _ENCODED_PAD_BYTES = const[37, 51, 68];
 const String _PAD = "=";
 const String _ENCODED_PAD = "%3D";
 class Base64Codec_A extends Codec<List<int>, String> {
-  final bool _urlSafe;
+  final bool _urlSafe_A;
   final bool _addLineSeparator;
   final bool _encodePaddingCharacter;
-  const Base64Codec_A({bool urlSafe: false, bool addLineSeparator: false, bool encodePaddingCharacter: false}) : _urlSafe = urlSafe, _addLineSeparator = addLineSeparator, _encodePaddingCharacter = encodePaddingCharacter;
+  const Base64Codec_A({bool urlSafe: false, bool addLineSeparator: false, bool encodePaddingCharacter: false}) : _urlSafe_A = urlSafe, _addLineSeparator = addLineSeparator, _encodePaddingCharacter = encodePaddingCharacter;
   String get name => "base64";
   String encode(List<int> bytes, {bool urlSafe, bool addLineSeparator, bool encodePaddingCharacter}) {
-    if (urlSafe == null) urlSafe = _urlSafe;
+    if (urlSafe == null) urlSafe = _urlSafe_A;
     if (addLineSeparator == null) addLineSeparator = _addLineSeparator;
     if (encodePaddingCharacter == null) {
       encodePaddingCharacter = _encodePaddingCharacter;
     }
     return new Base64Encoder_A(urlSafe: urlSafe, addLineSeparator: addLineSeparator, encodePaddingCharacter: encodePaddingCharacter).convert(bytes);
   }
-  Base64Encoder_A get encoder => new Base64Encoder_A(urlSafe: _urlSafe, addLineSeparator: _addLineSeparator, encodePaddingCharacter: _encodePaddingCharacter);
+  Base64Encoder_A get encoder => new Base64Encoder_A(urlSafe: _urlSafe_A, addLineSeparator: _addLineSeparator, encodePaddingCharacter: _encodePaddingCharacter);
   Base64Decoder_A get decoder => new Base64Decoder_A();
 }
 class Base64Encoder_A extends Converter<List<int>, String> {
-  final bool _urlSafe;
+  final bool _urlSafe_A;
   final bool _addLineSeparator;
   final bool _encodePaddingCharacter;
   final List<int> _pad;
-  const Base64Encoder_A({bool urlSafe: false, bool addLineSeparator: false, bool encodePaddingCharacter: false}) : _urlSafe = urlSafe, _addLineSeparator = addLineSeparator, _encodePaddingCharacter = encodePaddingCharacter, _pad = encodePaddingCharacter == true ? _ENCODED_PAD_BYTES : _PAD_BYTES;
+  const Base64Encoder_A({bool urlSafe: false, bool addLineSeparator: false, bool encodePaddingCharacter: false}) : _urlSafe_A = urlSafe, _addLineSeparator = addLineSeparator, _encodePaddingCharacter = encodePaddingCharacter, _pad = encodePaddingCharacter == true ? _ENCODED_PAD_BYTES : _PAD_BYTES;
   String convert(List<int> bytes, [int start_A = 0, int end_A]) {
     int bytes_length = bytes.length;
     RangeError.checkValidRange(start_A, end_A, bytes_length);
@@ -58,7 +58,7 @@ class Base64Encoder_A extends Converter<List<int>, String> {
     if (length_A == 0) {
       return "";
     }
-    final String lookup_A = _urlSafe ? _encodeTableUrlSafe : _encodeTable;
+    final String lookup_A = _urlSafe_A ? _encodeTableUrlSafe : _encodeTable;
     final int remainderLength = length_A.remainder(3);
     final int chunkLength = length_A - remainderLength;
     int baseOutputLength = ((length_A ~/ 3) * 4);
@@ -109,7 +109,7 @@ class Base64Encoder_A extends Converter<List<int>, String> {
     } else {
       stringSink = new StringConversionSink.from(sink_A);
     }
-    return new _Base64EncoderSink_A(stringSink, _urlSafe, _addLineSeparator);
+    return new _Base64EncoderSink_A(stringSink, _urlSafe_A, _addLineSeparator);
   }
 }
 class _Base64EncoderSink_A extends ChunkedConversionSink<List<int>> {
@@ -117,7 +117,7 @@ class _Base64EncoderSink_A extends ChunkedConversionSink<List<int>> {
   final ChunkedConversionSink<String> _outSink;
   final List<int> _buffer_A = new List<int>();
   int _bufferCount = 0;
-  _Base64EncoderSink_A(this._outSink, urlSafe, addLineSeparator) : _encoder_B = new Base64Encoder_A(urlSafe: urlSafe, addLineSeparator: addLineSeparator);
+  _Base64EncoderSink_A(this._outSink, urlSafe_A, addLineSeparator) : _encoder_B = new Base64Encoder_A(urlSafe: urlSafe_A, addLineSeparator: addLineSeparator);
   void add(List<int> chunk) {
     var nextBufferCount = (chunk.length + _bufferCount) % 3;
     int decodableLength = _bufferCount + chunk.length - nextBufferCount;
@@ -241,8 +241,8 @@ abstract class _CryptoUtils {
     }
     return result_A.toString();
   }
-  static String bytesToBase64_A(List<int> bytes, [bool urlSafe = false, bool addLineSeparator = false]) {
-    return BASE64_A.encode(bytes, urlSafe: urlSafe, addLineSeparator: addLineSeparator);
+  static String bytesToBase64_A(List<int> bytes, [bool urlSafe_A = false, bool addLineSeparator = false]) {
+    return BASE64_A.encode(bytes, urlSafe: urlSafe_A, addLineSeparator: addLineSeparator);
   }
   static List<int> base64StringToBytes_A(String input_A) {
     return BASE64_A.decode(input_A);
@@ -684,7 +684,9 @@ Object jsonParse(Object this_, List args) {
   if (val is String) {
     try {
       return const JsonDecoder().convert(val);
-    } catch (e) {}
+    } catch (e) {
+      print(e.toString());
+    }
   }
   return null;
 }
@@ -3639,6 +3641,7 @@ Object getStringMember(String str, String name_A) {
   if (name_A == 'length') return str.length;
   if (name_A == 'replace') return _strReplace;
   if (name_A == 'replaceAll') return _strReplaceAll;
+  if (name_A == 'replaceAllMapped') return _strReplaceAllMapped;
   if (name_A == 'match') return _strMatch;
   if (name_A == 'matchAll') return _strMatchAll;
   if (name_A == 'charAt') return _strCharAt;
@@ -3692,6 +3695,23 @@ Object _strReplaceAll(Object this_, List args) {
       return this_.replaceAll(arg0, arg1);
     } else if (arg0 is JsRegExp) {
       return this_.replaceAll(arg0.reg, arg1);
+    }
+  }
+  return null;
+}
+Object _strReplaceAllMapped(Object this_, List args) {
+  if (this_ is String) {
+    Object arg0 = args[0];
+    Object arg1 = args[1];
+    String match(Match m) {
+      List<String> rslt = [];
+      for (int i = 0; i <= m.groupCount; ++i) {
+        rslt.add(m.group(i));
+      }
+      return (arg1 as ScriptFunction)(null, [rslt]);
+    }
+    if (arg0 is JsRegExp && arg1 is ScriptFunction) {
+      return this_.replaceAllMapped(arg0.reg, match);
     }
   }
   return null;
@@ -4325,8 +4345,8 @@ class UriComponentDecoder {
   static const int _PERCENT_A = 0x25;
   static const int _PLUS_A = 0x2B;
   static String decode_A(String text) {
-    List codes = new List();
-    List bytes = new List();
+    List<int> codes = new List<int>();
+    List<int> bytes = new List<int>();
     int len = text.length;
     for (int i = 0; i < len; i++) {
       var codeUnit = text.codeUnitAt(i);
