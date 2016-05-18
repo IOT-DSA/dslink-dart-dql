@@ -2,8 +2,6 @@ library dslink.dql.query;
 
 import "dart:async";
 
-import "package:async/async.dart";
-
 import "package:dslink/common.dart";
 import "package:dslink/requester.dart";
 
