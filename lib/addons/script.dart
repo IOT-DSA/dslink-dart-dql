@@ -1820,7 +1820,7 @@ class Sequence extends Expression {
   }
   Object run(Scope scope) {
     Object rslt;
-    for (Statement statement in expressions) {
+    for (Expression statement in expressions) {
       rslt = statement.run(scope);
     }
     return rslt;

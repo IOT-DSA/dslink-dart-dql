@@ -87,9 +87,11 @@ _diagram = Diagram(
               'value.timestamp',
               ':name',
               ':displayName',
+              ':attributes',
               '../../metric',
               '../../@attribute',
-              '../../:displayName'
+              '../../:displayName',
+              '../../:attributes'
             ),
             Optional(
               Sequence(
