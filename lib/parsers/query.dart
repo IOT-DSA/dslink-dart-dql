@@ -122,7 +122,7 @@ NodeFilter createNodeFilter(FilterTestCollection test) {
     m.addAll(update.attributes);
     m.addAll(node.save(includeValue: true));
     m.addAll(update.values);
-    m = createRealMap(m);
+    m = expandNodeDataMap(m);
 
     return test.matches(m);
   };
@@ -237,7 +237,7 @@ List<QueryStatement> parseQueryInput(String input) {
   return QueryStatementParser.doParse(input);
 }
 
-Map createRealMap(Map m) {
+Map<String, dynamic> expandNodeDataMap(Map<String, dynamic> m) {
   if (m.containsKey("?value")) {
     m["value"] = m.remove("?value");
   }

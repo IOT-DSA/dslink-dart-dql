@@ -204,6 +204,22 @@ class SubscribeQueryProcessor extends QueryProcessor {
                 controller.add(holder.build());
               }
             });
+          } else if (parts.last == ":attributes") {
+            var trp = pathlib.posix.normalize(
+              pathlib.posix.join(
+                path,
+                parts.sublist(0, parts.length - 1).join("/")
+              )
+            );
+
+            holder.subs[rkey] = context.list(trp).listen((RequesterListUpdate update) {
+              var attributeNames = update.node.attributes.keys.toList();
+
+              if (attributeNames != holder.values[rkey]) {
+                holder.values[rkey] = attributeNames;
+                controller.add(holder.build());
+              }
+            });
           } else {
             String rk = target;
             bool ts = false;
