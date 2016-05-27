@@ -112,6 +112,10 @@ class SubscribeQueryProcessor extends QueryProcessor {
             targetPath += target;
           }
 
+          if (targetPath.startsWith("//")) {
+            targetPath = targetPath.substring(1);
+          }
+
           out.values[rkey] = holder.values[rkey] = null;
           var parts = pathlib.posix.split(target);
 
