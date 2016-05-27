@@ -36,9 +36,13 @@ class SublistHolder {
         _handles.add(rp);
       }
 
-      return update.cloneAndMerge({
+      var out = update.cloneAndMerge({
         "path": rp
       });
+
+      out.setAttribute("nodePath", rp);
+
+      return out;
     });
   }
 }
