@@ -171,6 +171,8 @@ class ListNodeQueryProcessor extends QueryProcessor {
             }, remove: true);
             controller.add(event);
             currentPaths.remove(path);
+            onDone();
+            return;
           }
 
           bool handleChildren = expression.depthLimit < 0 ||
