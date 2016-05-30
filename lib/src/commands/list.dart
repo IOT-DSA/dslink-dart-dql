@@ -206,16 +206,20 @@ class ListNodeQueryProcessor extends QueryProcessor {
               path.endsWith("/sys/quarantine")) {
               for (RemoteNode child in update.node.children.values) {
                 var childPath = "${ourFakePath}/${child.name}";
+                var ourRealChildPath = "${ourRealPath}/${child.name}";
 
                 if (child.getConfig(r"$is") != "dsa/broker") {
                   if (currentPaths.contains(childPath)) {
                     QueryUpdate event = new QueryUpdate({
-                      "path": path
+                      "path": childPath
                     }, attributes: {
-                      "id": ourRealPath
+                      "id": ourRealChildPath
                     }, remove: true);
                     controller.add(event);
                     currentPaths.remove(path);
+                    if (dones[childPath] != null) {
+                      dones[childPath]();
+                    }
                   }
                   continue;
                 }
