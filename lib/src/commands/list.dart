@@ -164,6 +164,15 @@ class ListNodeQueryProcessor extends QueryProcessor {
               "nodePath": path
             });
             controller.add(event);
+          } else if (isOffline && currentPaths.contains(path)) {
+            QueryUpdate event = new QueryUpdate({
+              "path": path
+            }, attributes: {
+              "id": ourRealPath
+            }, remove: true);
+            controller.add(event);
+            currentPaths.remove(path);
+            return;
           } else if (currentPaths.contains(path)) {
             QueryUpdate event = new QueryUpdate({
               "path": path
