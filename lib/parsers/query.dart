@@ -225,6 +225,17 @@ PathExpression parseExpressionInput(String input) {
   return e;
 }
 
+int calculatePathPartCount(String input) {
+  if (input.endsWith("/")) {
+    input = input.substring(0, input.length - 1);
+  }
+
+  return input
+    .split("/")
+    .skip(1)
+    .length;
+}
+
 RegExp parseSimpleRegEx(String input) {
   return new RegExp("^" + input.splitMapJoin("*", onMatch: (Match m) {
     return ".*";

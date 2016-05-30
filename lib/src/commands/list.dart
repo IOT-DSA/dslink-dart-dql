@@ -21,7 +21,8 @@ class ListNodeQueryProcessor extends QueryProcessor {
     StreamSubscription passthrough;
     var subs = <String, StreamSubscription>{};
     var dones = <String, Function>{};
-    var uids = new Map<String, String>();
+    var uids = <String, String>{};
+    var rescanUidPaths = <String, String>{};
     var currentPaths = <String>[];
     StreamController<QueryUpdate> controller;
 
@@ -40,11 +41,12 @@ class ListNodeQueryProcessor extends QueryProcessor {
       Path p = new Path(path);
 
       String uid;
+
       if (subs[path] is! StreamSubscription) {
         var ourRealPath = resolveRealPath(path);
 
-        var onDone = ([bool isUidSame = false]) {
-          logger.finer("List Done ${path}");
+        var onDone = (String reason, [bool isUidSame = false]) {
+          logger.finer("List Done ${path} (${reason})");
 
           if (!isUidSame && uid != null) {
             uids.remove(uid);
@@ -58,7 +60,7 @@ class ListNodeQueryProcessor extends QueryProcessor {
 
             dones.remove(path);
 
-            if (!isUidSame && currentPaths.contains(path)) {
+            if (currentPaths.contains(path)) {
               QueryUpdate update = new QueryUpdate({
                 "path": path
               }, attributes: {
@@ -70,13 +72,17 @@ class ListNodeQueryProcessor extends QueryProcessor {
 
             subs.keys.where((p) => p.startsWith("${path}/")).toList().forEach((key) {
               if (dones[key] is Function) {
-                dones[key]();
+                dones[key]("Parent was canceled.");
               }
             });
 
             if (context is QueryStatisticManager) {
               (context as QueryStatisticManager).reportEnd("vlist");
             }
+          }
+
+          if (!isUidSame && uid != null && rescanUidPaths[uid] != null) {
+            handle(rescanUidPaths.remove(uid));
           }
         };
 
@@ -91,7 +97,7 @@ class ListNodeQueryProcessor extends QueryProcessor {
         var handleListUpdate = (RequesterListUpdate update) {
           if (update.node.configs.containsKey(r"$invokable") &&
             !enableActions) {
-            onDone();
+            onDone("Action not enabled.");
             return;
           }
 
@@ -107,7 +113,7 @@ class ListNodeQueryProcessor extends QueryProcessor {
               }
               cp += change;
               if (dones.containsKey(cp)) {
-                dones[cp]();
+                dones[cp]("Child '${change}' was removed from the parent.");
                 continue;
               }
             }
@@ -115,10 +121,22 @@ class ListNodeQueryProcessor extends QueryProcessor {
 
           if (update.node.configs[r"$uid"] is String) {
             uid = update.node.configs[r"$uid"];
+
             var existing = uids[uid];
-            if (existing != null && existing != path) {
-              onDone(true);
-              return;
+            if (existing != null) {
+              if (existing != path) {
+                var currentSlashCount = calculatePathPartCount(existing);
+                var thisSlashCount = calculatePathPartCount(path);
+
+                if (currentSlashCount > thisSlashCount) {
+                  dones[existing]("A node with the same UID of ${uid} (${path}) is shorter.", true);
+                  rescanUidPaths[uid] = existing;
+                } else if ((currentSlashCount == thisSlashCount) ||
+                  (thisSlashCount > currentSlashCount)) {
+                  onDone("A node with the same UID of ${uid} (${existing}) is present.", true);
+                  return;
+                }
+              }
             }
 
             if (update.changes.contains(r"$uid")) {
@@ -172,16 +190,14 @@ class ListNodeQueryProcessor extends QueryProcessor {
             }, remove: true);
             controller.add(event);
             currentPaths.remove(path);
+            logger.finer("List Offline ${path}");
+            uids.remove(uid);
+            if (uid != null && rescanUidPaths[uid] != null) {
+              handle(rescanUidPaths.remove(uid));
+            }
             return;
           } else if (currentPaths.contains(path)) {
-            QueryUpdate event = new QueryUpdate({
-              "path": path
-            }, attributes: {
-              "id": ourRealPath
-            }, remove: true);
-            controller.add(event);
-            currentPaths.remove(path);
-            onDone();
+            onDone("No longer matches expression.");
             return;
           }
 
@@ -234,7 +250,7 @@ class ListNodeQueryProcessor extends QueryProcessor {
 
         subs[path] = context.list(ourRealPath).listen(handleListUpdate, onDone: () {
           if (dones.containsKey(path)) {
-            dones[path]();
+            dones[path]("List stream closed.");
           }
         });
       }
@@ -248,7 +264,7 @@ class ListNodeQueryProcessor extends QueryProcessor {
       }
 
       for (Function onDone in dones.values.toList()) {
-        onDone();
+        onDone("Query Canceled.");
       }
 
       for (var sub in subs.values) {
