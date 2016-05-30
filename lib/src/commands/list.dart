@@ -140,8 +140,9 @@ class ListNodeQueryProcessor extends QueryProcessor {
 
           bool isBroker = update.node.configs[r"$is"] == "dsa/broker";
           bool isLink = update.node.configs[r"$is"] == "dsa/link";
+          bool isOffline = update.node.configs[r"$disconnectedTs"] is String;
 
-          if (expression.matches(path, isBroker: isBroker)) {
+          if (!isOffline && expression.matches(path, isBroker: isBroker)) {
             if (!currentPaths.contains(path)) {
               currentPaths.add(path);
             }
