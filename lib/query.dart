@@ -30,6 +30,11 @@ part "src/commands/rename.dart";
 part "src/commands/invoke.dart";
 part "src/commands/sublist.dart";
 
+part "src/commands/subscribe/base.dart";
+part "src/commands/subscribe/attribute.dart";
+part "src/commands/subscribe/special.dart";
+part "src/commands/subscribe/value.dart";
+
 part "src/query/basic_context.dart";
 
 final Map<String, QueryProcessorFactory> baseQueryCommandSet = {

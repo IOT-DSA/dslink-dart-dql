@@ -287,12 +287,6 @@ class ListNodeQueryProcessor extends QueryProcessor {
     columns.add("path");
   }
 
-  @override
-  String toString() {
-    super.createDependencyProcessor();
-    return "List ${expression == null ? 'none' : expression}";
-  }
-
   bool _hasAddedProcessor = false;
 
   @override
@@ -315,5 +309,11 @@ class ListNodeQueryProcessor extends QueryProcessor {
 
   String resolveRealPath(String path) {
     return path;
+  }
+
+  @override
+  String toString() {
+    super.createDependencyProcessor();
+    return "List ${expression == null ? 'none' : expression}";
   }
 }

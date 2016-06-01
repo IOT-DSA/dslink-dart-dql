@@ -2,6 +2,8 @@ library dslink.dql.utils;
 
 import "dart:async";
 
+import "package:path/path.dart" as pathlib;
+
 typedef OnReferenceSet<T>(T value);
 
 Future pumpEventQueue([int times = 20]) {
@@ -42,4 +44,9 @@ class Reference<T> {
       _callback(_value);
     }
   }
+}
+
+String joinNodePath(String a, String b) {
+  var ctx = new pathlib.Context(style: pathlib.Style.posix, current: a);
+  return ctx.absolute(b);
 }

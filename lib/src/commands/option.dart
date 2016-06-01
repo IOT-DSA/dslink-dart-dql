@@ -28,4 +28,7 @@ class OptionQueryProcessor extends QueryProcessor {
 
     return out;
   }
+
+  @override
+  String toString() => "Option ${options}";
 }

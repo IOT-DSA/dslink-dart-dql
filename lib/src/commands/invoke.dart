@@ -138,4 +138,10 @@ class InvokeQueryProcessor extends QueryProcessor {
 
     return new WrappedQueryStream(stream, controller.stream);
   }
+
+  @override
+  String toString() {
+    super.createDependencyProcessor();
+    return "Invoke ${call.action}";
+  }
 }

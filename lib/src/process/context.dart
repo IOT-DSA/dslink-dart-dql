@@ -1,14 +1,25 @@
 part of dslink.dql.query.process;
 
+typedef ValueUpdateCallback(ValueUpdate update);
+
 abstract class QueryContext {
   QueryStream query(String input);
-
-  StreamSubscription subscribe(String path, callback(ValueUpdate update), [int qos = 0]);
+  StreamSubscription subscribe(
+    String path,
+    ValueUpdateCallback callback,
+    [int qos = 0]);
   Stream<RequesterListUpdate> list(String path);
-
   Future<RemoteNode> getRemoteNode(String path);
-
   Stream<RequesterInvokeUpdate> invoke(String actionPath, Map params);
+
+  Stream<ValueUpdate> getValueUpdates(String path, [int qos = 0]) {
+    var controller = new StreamController<ValueUpdate>();
+    var sub = subscribe(path, (ValueUpdate update) {
+      controller.add(update);
+    });
+    controller.done.then((_) => sub.cancel());
+    return controller.stream;
+  }
 }
 
 class WrappedQueryContext extends QueryContext {
@@ -41,8 +52,16 @@ class WrappedQueryContext extends QueryContext {
   }
 
   @override
-  StreamSubscription subscribe(String path, callback(ValueUpdate update), [int qos = 0]) {
+  StreamSubscription subscribe(
+    String path,
+    ValueUpdateCallback callback,
+    [int qos = 0]) {
     return innerContext.subscribe(resolveRealPath(path), callback, qos);
+  }
+
+  @override
+  Stream<ValueUpdate> getValueUpdates(String path, [int qos = 0]) {
+    return innerContext.getValueUpdates(resolveRealPath(path), qos);
   }
 
   String resolveRealPath(String path) => path;

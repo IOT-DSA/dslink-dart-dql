@@ -18,7 +18,7 @@ class SublistHolder {
     return _handles;
   }
 
-  Stream<QueryUpdate> create(SublistQueryProcessor sublist) {
+  QueryStream create(SublistQueryProcessor sublist) {
     listProcessor = new SublistListQueryProcessor(path, sublist.context);
     listProcessor.init(new QueryStatement("list", sublist.expression));
 

@@ -23,7 +23,7 @@ class RenameQueryProcessor extends QueryProcessor {
       }
 
       if (update.values.containsKey("path") && !r.values.containsKey("path")) {
-        r.setAttribute("id", update.values["path"]);
+        r.setAttribute("nodePath", update.values["path"]);
       }
 
       return r;
