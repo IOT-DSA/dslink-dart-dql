@@ -214,47 +214,51 @@ class FilterCompareTest extends FilterTest {
 
   @override
   bool matches(Map m) {
-    bool result = false;
-    var v = m[key];
+    try {
+      bool result = false;
+      var v = m[key];
 
-    if (value == exists) {
-      result = m.containsKey(key);
-    } else if (operator == "=" ||
-      operator == "==" ||
-      operator == "equals" ||
-      operator == "is") {
-      result = v == value;
-    } else if (operator == "!=") {
-      result = v != value;
-    } else if (operator == ">") {
-      result = v > value;
-    } else if (operator == "<") {
-      result = v < value;
-    } else if (operator == "<=") {
-      result = v <= value;
-    } else if (operator == ">=") {
-      result = v = value;
-    } else if (operator == "~" || operator == "like") {
-      result = _regex.hasMatch(v.toString());
-    } else if (operator == "contains") {
-      if (v is Iterable) {
-        result = v.contains(value);
-      } else if (v is String) {
-        result = v.contains(value);
-      } else {
-        result = false;
+      if (value == exists) {
+        result = m.containsKey(key);
+      } else if (operator == "=" ||
+        operator == "==" ||
+        operator == "equals" ||
+        operator == "is") {
+        result = v == value;
+      } else if (operator == "!=") {
+        result = v != value;
+      } else if (operator == ">") {
+        result = v > value;
+      } else if (operator == "<") {
+        result = v < value;
+      } else if (operator == "<=") {
+        result = v <= value;
+      } else if (operator == ">=") {
+        result = v = value;
+      } else if (operator == "~" || operator == "like") {
+        result = _regex.hasMatch(v.toString());
+      } else if (operator == "contains") {
+        if (v is Iterable) {
+          result = v.contains(value);
+        } else if (v is String) {
+          result = v.contains(value);
+        } else {
+          result = false;
+        }
+      } else if (operator == "in") {
+        if (value is Iterable) {
+          result = value.contains(v);
+        } else if (value is String) {
+          result = value.contains(v.toString());
+        } else {
+          result = false;
+        }
       }
-    } else if (operator == "in") {
-      if (value is Iterable) {
-        result = value.contains(v);
-      } else if (value is String) {
-        result = value.contains(v.toString());
-      } else {
-        result = false;
-      }
+
+      return result;
+    } catch (e) {
+      return false;
     }
-
-    return result;
   }
 
   @override
