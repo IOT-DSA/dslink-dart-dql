@@ -82,6 +82,23 @@ abstract class QueryStream extends Stream<QueryUpdate> {
     );
   }
 
+  QueryStream inject(QueryUpdate update) {
+    var ref = new Reference<StreamController<QueryUpdate>>();
+    var stream = fork(controller: ref);
+    var controller = ref.value;
+    controller.add(update);
+    return stream;
+  }
+
+  QueryStream merge(QueryStream other) {
+    var ref = new Reference<StreamController<QueryUpdate>>();
+    var stream = fork(controller: ref);
+    var controller = ref.value;
+    var sub = other.listen(controller.add, onError: controller.addError);
+    controller.done.then((_) => sub.cancel);
+    return stream;
+  }
+
   QueryStream fork({Reference<StreamController<QueryUpdate>> controller}) {
     var control = new StreamController<QueryUpdate>();
 
