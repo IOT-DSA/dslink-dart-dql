@@ -152,4 +152,3 @@ class SublistQueryProcessor extends QueryProcessor {
     expression = statement.argument;
   }
 }
-

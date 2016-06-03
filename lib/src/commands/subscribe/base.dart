@@ -40,8 +40,8 @@ class SubscribeQueryHolder {
 
 class SubscribeQueryRequest {
   final String path;
+  final String column;
   final String key;
-  final String target;
   final QueryContext context;
   final SubscribeQueryHolder holder;
   final int qos;
@@ -49,16 +49,16 @@ class SubscribeQueryRequest {
 
   SubscribeQueryRequest(
     this.path,
-    this.target,
     this.key,
+    this.column,
     this.context,
     this.holder,
     this.qos,
     this.controller);
 
   void respond(Stream<dynamic> input) {
-    holder.subs[key] = input.listen((value) {
-      holder.values[key] = value;
+    holder.subs[column] = input.listen((value) {
+      holder.values[column] = value;
       controller.add(holder.build());
     });
   }
@@ -68,5 +68,3 @@ abstract class SubscribeProvider {
   bool canHandle(String key);
   void process(SubscribeQueryRequest request);
 }
-
-

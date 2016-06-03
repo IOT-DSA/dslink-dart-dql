@@ -9,10 +9,10 @@ class AttributeSubscribeProvider extends SubscribeProvider {
   @override
   void process(SubscribeQueryRequest request) {
     request.respond(request.context.list(request.path).map((update) {
-      if (request.target.startsWith("@")) {
-        return update.node.attributes[request.target];
-      } else if (request.target.startsWith(r"$")) {
-        return update.node.configs[request.target];
+      if (request.key.startsWith("@")) {
+        return update.node.attributes[request.key];
+      } else if (request.key.startsWith(r"$")) {
+        return update.node.configs[request.key];
       }
     }));
   }
@@ -28,9 +28,9 @@ class AttributeNamesSubscribeProvider extends SubscribeProvider {
   @override
   void process(SubscribeQueryRequest request) {
     request.respond(request.context.list(request.path).map((update) {
-      if (request.target == ":attributes") {
+      if (request.key == ":attributes") {
         return update.node.attributes.keys.toList();
-      } else if (request.target == ":configs") {
+      } else if (request.key == ":configs") {
         return update.node.configs.keys.toList();
       } else {
         return [];

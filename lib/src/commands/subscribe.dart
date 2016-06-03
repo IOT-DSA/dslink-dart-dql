@@ -58,16 +58,16 @@ class SubscribeQueryProcessor extends QueryProcessor {
         holder.setup();
         holder.lastUpdate = update;
 
-        for (String target in childs.keys) {
-          String  key = childs[target];
+        for (String key in childs.keys) {
+          String column = childs[key];
 
-          holder.values[key] = null;
-          out.values[key] = null;
+          holder.values[column] = null;
+          out.values[column] = null;
 
           var request = new SubscribeQueryRequest(
             path,
             key,
-            target,
+            column,
             context,
             holder,
             qos,

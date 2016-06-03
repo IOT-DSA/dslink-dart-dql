@@ -8,15 +8,15 @@ class ValueSubscribeProvider extends SubscribeProvider {
 
   @override
   void process(SubscribeQueryRequest request) {
-    String target = request.target;
+    String key = request.key;
     bool isTimestamp = false;
-    if (target.endsWith(".timestamp")) {
-      target = target.substring(0, target.length - 10);
+    if (key.endsWith(".timestamp")) {
+      key = key.substring(0, key.length - 10);
       isTimestamp = true;
     }
-    var targetPath = joinNodePath(request.path, target);
+    var targetPath = joinNodePath(request.path, key);
 
-    if (target == "value") {
+    if (key == "value") {
       targetPath = request.path;
     }
 

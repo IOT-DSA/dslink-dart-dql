@@ -11,13 +11,13 @@ class SpecialKeySubscribeProvider extends SubscribeProvider {
   void process(SubscribeQueryRequest request) {
     var thePathName = pathlib.posix.basename(request.path);
 
-    if (request.target == ":name") {
+    if (request.key == ":name") {
       request.respond(new Stream<String>.fromIterable([thePathName]));
     } else {
       request.respond(request.context.list(request.path).map((update) {
         var node = update.node;
 
-        if (request.target == ":displayName") {
+        if (request.key == ":displayName") {
           var displayName = node.configs[r"$name"];
 
           if (displayName == null) {
@@ -25,7 +25,7 @@ class SpecialKeySubscribeProvider extends SubscribeProvider {
           }
 
           return displayName;
-        } else if (request.target == ":connectionType") {
+        } else if (request.key == ":connectionType") {
           bool isBroker = node.configs[r"$is"] == "dsa/broker";
           bool isLink = node.configs[r"$is"] == "dsa/link";
           String connectionType;
@@ -40,6 +40,8 @@ class SpecialKeySubscribeProvider extends SubscribeProvider {
 
           return connectionType;
         }
+
+        return null;
       }));
     }
   }

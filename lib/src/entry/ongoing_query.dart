@@ -165,4 +165,6 @@ class OngoingQuery {
     new List<InvokeResponse>.unmodifiable(_responses);
 
   int get listenCount => _responses.length;
+  int get rowCount => rows.length;
+  int get columnCount => knownColumns.length;
 }

@@ -12,6 +12,14 @@ class GetQueriesNode extends SimpleNode {
       {
         "name": "listeners",
         "type": "number"
+      },
+      {
+        "name": "rows",
+        "type": "number"
+      },
+      {
+        "name": "columns",
+        "type": "number"
       }
     ];
     configs[r"$result"] = "table";
@@ -20,9 +28,13 @@ class GetQueriesNode extends SimpleNode {
   @override
   onInvoke(Map<String, dynamic> params) {
     return queryManager.queries.keys.map(((String input) {
+      var query = queryManager.queries[input];
+
       return [
         input,
-        queryManager.queries[input].listenCount
+        query.listenCount,
+        query.rowCount,
+        query.columnCount
       ];
     })).toList();
   }
