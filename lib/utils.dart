@@ -48,5 +48,5 @@ class Reference<T> {
 
 String joinNodePath(String a, String b) {
   var ctx = new pathlib.Context(style: pathlib.Style.posix, current: a);
-  return ctx.absolute(b);
+  return ctx.normalize(ctx.absolute(b));
 }

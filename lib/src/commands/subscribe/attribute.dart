@@ -9,10 +9,9 @@ class AttributeSubscribeProvider extends SubscribeProvider {
 
   @override
   void process(SubscribeQueryRequest request) {
-    var ctx = new pathlib.Context(current: request.path);
-    var fullPath = ctx.normalize(ctx.absolute(request.key));
-    var name = ctx.basename(fullPath);
-    fullPath = ctx.dirname(fullPath);
+    var fullPath = joinNodePath(request.path, request.key);
+    var name = pathlib.posix.basename(fullPath);
+    fullPath = pathlib.posix.dirname(fullPath);
 
     request.respond(request.context.list(fullPath).map((update) {
       if (name.startsWith("@")) {
