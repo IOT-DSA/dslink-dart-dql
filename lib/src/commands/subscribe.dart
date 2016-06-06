@@ -3,6 +3,7 @@ part of dslink.dql.query;
 class SubscribeQueryProcessor extends QueryProcessor {
   static final List<SubscribeProvider> subscribeProviders = <SubscribeProvider>[
     new AttributeNamesSubscribeProvider(),
+    new AttributeSubscribeProvider(),
     new SpecialKeySubscribeProvider(),
     new ValueSubscribeProvider()
   ];
