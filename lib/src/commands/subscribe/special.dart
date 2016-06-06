@@ -5,33 +5,39 @@ class SpecialKeySubscribeProvider extends SubscribeProvider {
   bool canHandle(String key) => const <String>[
     ":name",
     ":displayName"
-  ].contains(key);
+  ].contains(key) || (
+    key.endsWith("/:name") ||
+    key.endsWith("/:displayName")
+  );
 
   @override
   void process(SubscribeQueryRequest request) {
-    var thePathName = pathlib.posix.basename(request.path);
+    var fullPath = joinNodePath(request.path, request.key);
+    var key = pathlib.posix.basename(fullPath);
+    fullPath = pathlib.posix.dirname(fullPath);
+    var pathName = pathlib.posix.basename(fullPath);
 
     if (request.key == ":name") {
-      request.respond(new Stream<String>.fromIterable([thePathName]));
+      request.respond(new Stream<String>.fromIterable([pathName]));
     } else {
-      request.respond(request.context.list(request.path).map((update) {
+      request.respond(request.context.list(fullPath).map((update) {
         var node = update.node;
 
-        if (request.key == ":displayName") {
+        if (key == ":displayName") {
           var displayName = node.configs[r"$name"];
 
           if (displayName == null) {
-            displayName = thePathName;
+            displayName = pathName;
           }
 
           return displayName;
-        } else if (request.key == ":connectionType") {
+        } else if (key == ":connectionType") {
           bool isBroker = node.configs[r"$is"] == "dsa/broker";
           bool isLink = node.configs[r"$is"] == "dsa/link";
           String connectionType;
 
           if (isBroker || isLink) {
-            connectionType = pathlib.posix.dirname(request.path);
+            connectionType = pathlib.posix.dirname(fullPath);
 
             if (connectionType.isEmpty) {
               connectionType = "root";

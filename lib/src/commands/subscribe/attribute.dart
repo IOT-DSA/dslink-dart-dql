@@ -29,14 +29,21 @@ class AttributeNamesSubscribeProvider extends SubscribeProvider {
   bool canHandle(String key) => const <String>[
     ":configs",
     ":attributes"
-  ].contains(key);
+  ].contains(key) || (
+    key.endsWith("/:configs") ||
+    key.endsWith("/:attributes")
+  );
 
   @override
   void process(SubscribeQueryRequest request) {
-    request.respond(request.context.list(request.path).map((update) {
-      if (request.key == ":attributes") {
+    var fullPath = joinNodePath(request.path, request.key);
+    var name = pathlib.posix.basename(fullPath);
+    fullPath = pathlib.posix.dirname(fullPath);
+
+    request.respond(request.context.list(fullPath).map((update) {
+      if (name == ":attributes") {
         return update.node.attributes.keys.toList();
-      } else if (request.key == ":configs") {
+      } else if (name == ":configs") {
         return update.node.configs.keys.toList();
       } else {
         return [];
