@@ -28,7 +28,8 @@ class AttributeNamesSubscribeProvider extends SubscribeProvider {
   @override
   bool canHandle(String key) => const <String>[
     ":configs",
-    ":attributes"
+    ":attributes",
+    ":children"
   ].contains(key) || (
     key.endsWith("/:configs") ||
     key.endsWith("/:attributes") ||
@@ -47,6 +48,7 @@ class AttributeNamesSubscribeProvider extends SubscribeProvider {
       } else if (name == ":configs") {
         return update.node.configs.keys.toList();
       } else if (name == ":children") {
+        print(update.node.children.keys.toList());
         return update.node.children.keys.toList();
       } else {
         return [];
