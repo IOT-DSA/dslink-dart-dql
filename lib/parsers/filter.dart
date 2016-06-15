@@ -245,6 +245,17 @@ class FilterCompareTest extends FilterTest {
         } else {
           result = false;
         }
+      } else if (operator == "anyContains") {
+        if (v is Iterable) {
+          result = v.any((x) {
+            if (x is Iterable) {
+              return x.contains(value);
+            } else if (x is String) {
+              return x.contains(value);
+            }
+            return false;
+          });
+        }
       } else if (operator == "in") {
         if (value is Iterable) {
           result = value.contains(v);
@@ -369,7 +380,8 @@ class FilterGrammarDefinition extends GrammarDefinition {
     string("is") |
     string("like") |
     string("contains") |
-    string("in")
+    string("in") |
+    string("anyContains")
   ).flatten();
 
   valueList() => (

@@ -68,6 +68,14 @@ main() {
   test(r'not @type like "%goat"', {
     "@type": "goat64"
   });
+
+  test(r'@list anyContains "ak"', {
+    "@list": ["Make", "Rake"]
+  });
+
+  test(r'@list anyContains "ac"', {
+    "@list": ["Make", "Rake"]
+  });
 }
 
 test(String filter, [Map m]) {
