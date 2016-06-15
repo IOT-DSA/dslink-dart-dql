@@ -31,7 +31,8 @@ class AttributeNamesSubscribeProvider extends SubscribeProvider {
     ":attributes"
   ].contains(key) || (
     key.endsWith("/:configs") ||
-    key.endsWith("/:attributes")
+    key.endsWith("/:attributes") ||
+    key.endsWith("/:children")
   );
 
   @override
@@ -45,6 +46,8 @@ class AttributeNamesSubscribeProvider extends SubscribeProvider {
         return update.node.attributes.keys.toList();
       } else if (name == ":configs") {
         return update.node.configs.keys.toList();
+      } else if (name == ":children") {
+        return update.node.children.keys.toList();
       } else {
         return [];
       }
