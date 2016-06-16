@@ -265,6 +265,10 @@ Map<String, dynamic> expandNodeDataMap(Map<String, dynamic> m) {
     m[":metric"] = true;
   }
 
+  if (m["path"] is String) {
+    m[":path"] = m["path"];
+  }
+
   return m;
 }
 
