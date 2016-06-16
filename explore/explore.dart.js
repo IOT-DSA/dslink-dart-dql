@@ -12096,6 +12096,8 @@ if(y.G(0,"?value_timestamp"))y.j(0,"value.timestamp",y.I(0,"?value_timestamp"))
 if(y.h(0,"$type")==null&&y.h(0,"$invokable")==null)y.j(0,":node",!0)
 x=y.h(0,"$type")
 if(typeof x==="string")y.j(0,":metric",!0)
+x=y.h(0,"path")
+if(typeof x==="string")y.j(0,":path",y.h(0,"path"))
 return J.bD(z,y)}},
 DT:{"^":"d:1;",
 $1:[function(a){return J.cD(a)},null,null,2,0,null,28,"call"]},
