@@ -76,6 +76,10 @@ main() {
   test(r'@list anyContains "ac"', {
     "@list": ["Make", "Rake"]
   });
+
+  test(r'@test == "HelloX"', {
+    "@test": "HelloX"
+  });
 }
 
 test(String filter, [Map m]) {

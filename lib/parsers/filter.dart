@@ -368,7 +368,6 @@ class FilterGrammarDefinition extends GrammarDefinition {
   ).flatten();
 
   op() => (
-    char("=") |
     string("==") |
     string("!=") |
     char("~") |
@@ -381,7 +380,8 @@ class FilterGrammarDefinition extends GrammarDefinition {
     string("like") |
     string("contains") |
     string("in") |
-    string("anyContains")
+    string("anyContains") |
+    char("=")
   ).flatten();
 
   valueList() => (
