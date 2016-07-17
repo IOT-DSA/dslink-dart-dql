@@ -69,3 +69,21 @@ String typeOf(input) {
     return "unknown";
   }
 }
+
+int getIntegerFromInput(input, [def]) {
+  if (input is String) {
+    return num.parse(input, (source) => def).toInt();
+  } else if (input is num) {
+    return input.toInt();
+  }
+  return def;
+}
+
+int getNumberFromInput(input, [def]) {
+  if (input is String) {
+    return num.parse(input, (source) => def);
+  } else if (input is num) {
+    return input;
+  }
+  return def;
+}
