@@ -1,6 +1,7 @@
 library dslink.dql.utils;
 
 import "dart:async";
+import "dart:typed_data";
 
 import "package:path/path.dart" as pathlib;
 
@@ -49,4 +50,22 @@ class Reference<T> {
 String joinNodePath(String a, String b) {
   var ctx = new pathlib.Context(style: pathlib.Style.posix, current: a);
   return ctx.normalize(ctx.absolute(b));
+}
+
+String typeOf(input) {
+  if (input is int) {
+    return "integer";
+  } else if (input is num) {
+    return "number";
+  } else if (input is String) {
+    return "string";
+  } else if (input is Map) {
+    return "map";
+  } else if (input is List) {
+    return "list";
+  } else if (input is ByteData) {
+    return "binary";
+  } else {
+    return "unknown";
+  }
 }

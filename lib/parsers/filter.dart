@@ -2,13 +2,32 @@ library dsa.query.parse.filter;
 
 import "package:petitparser/petitparser.dart";
 
+import "package:dslink/utils.dart" show logger;
 import "package:dql/parsers/query.dart";
+import "package:dql/filter/functions.dart" as FilterFunctions;
 
 import "package:quiver/pattern.dart" show escapeRegex;
+import "package:logging/logging.dart";
 
 const Existent exists = Existent.exists;
 
 final RegExp _patternFilterLike = new RegExp(r"\%");
+
+class FilterBackReference {
+  final String name;
+
+  FilterBackReference(this.name);
+}
+
+class FilterFunctionCall {
+  final Function function;
+
+  FilterFunctionCall(this.function);
+
+  dynamic apply(Map<String, dynamic> map) {
+    return function(map);
+  }
+}
 
 abstract class FilterTestVisitor {
   void visit(FilterTest test) {
@@ -214,34 +233,52 @@ class FilterCompareTest extends FilterTest {
 
   @override
   bool matches(Map m) {
+    var against = value;
+
+    if (against is FilterBackReference) {
+      against = m[against.name];
+    }
+
+    if (against is FilterFunctionCall) {
+      against = against.apply(m);
+    }
+
     try {
       bool result = false;
-      var v = m[key];
+      var v = key is String ? m[key] : key;
 
-      if (value == exists) {
+      if (v is FilterBackReference) {
+        v = m[v];
+      }
+
+      if (v is FilterFunctionCall) {
+        v = v.apply(m);
+      }
+
+      if (against == exists) {
         result = m.containsKey(key);
       } else if (operator == "=" ||
         operator == "==" ||
         operator == "equals" ||
         operator == "is") {
-        result = v == value;
+        result = v == against;
       } else if (operator == "!=") {
-        result = v != value;
+        result = v != against;
       } else if (operator == ">") {
-        result = v > value;
+        result = v > against;
       } else if (operator == "<") {
-        result = v < value;
+        result = v < against;
       } else if (operator == "<=") {
-        result = v <= value;
+        result = v <= against;
       } else if (operator == ">=") {
-        result = v = value;
+        result = v = against;
       } else if (operator == "~" || operator == "like") {
         result = _regex.hasMatch(v.toString());
       } else if (operator == "contains") {
         if (v is Iterable) {
-          result = v.contains(value);
+          result = v.contains(against);
         } else if (v is String) {
-          result = v.contains(value);
+          result = v.contains(against);
         } else {
           result = false;
         }
@@ -249,18 +286,18 @@ class FilterCompareTest extends FilterTest {
         if (v is Iterable) {
           result = v.any((x) {
             if (x is Iterable) {
-              return x.contains(value);
+              return x.contains(against);
             } else if (x is String) {
-              return x.contains(value);
+              return x.contains(against);
             }
             return false;
           });
         }
       } else if (operator == "in") {
-        if (value is Iterable) {
-          result = value.contains(v);
-        } else if (value is String) {
-          result = value.contains(v.toString());
+        if (against is Iterable) {
+          result = against.contains(v);
+        } else if (against is String) {
+          result = against.contains(v.toString());
         } else {
           result = false;
         }
@@ -314,6 +351,23 @@ class FilterGrammarDefinition extends GrammarDefinition {
     char("^") |
     string("xor");
 
+  functionCall() => (
+    ref(identifier) &
+    whitespace().star() &
+    char("(") &
+    ref(functionArgumentList) &
+    char(")")
+  ).permute(const [0, 3]);
+
+  functionArgumentList() => ref(functionArgument).separatedBy(
+    whitespace().star() &
+    char(",") &
+    whitespace().star(),
+    includeSeparators: false
+  );
+
+  functionArgument() => ref(value);
+
   leftHandOperation() => (
     ref(leftHandOperator) &
     whitespace().star() &
@@ -321,7 +375,7 @@ class FilterGrammarDefinition extends GrammarDefinition {
   ).permute(const [0, 2]);
 
   compare() => (
-    ref(identifier) | ref(stringLiteral)
+    ref(functionCall) | ref(identifier) | ref(stringLiteral)
   ) & (
     (
       whitespace().star() &
@@ -331,13 +385,19 @@ class FilterGrammarDefinition extends GrammarDefinition {
     ref(value)
   ).optional();
 
+  literalReference() => char("#") & ref(stringLiteral);
+  identifierReference() => ref(identifier);
+
   identifier() => pattern("A-Za-z0-9\$@_:./").plus().flatten();
 
   value() => ref(stringLiteral) |
     ref(nil) |
     ref(number) |
     ref(boolean) |
-    ref(valueList);
+    ref(valueList) |
+    ref(identifierReference) |
+    ref(literalReference) |
+    ref(functionCall);
 
   parens() => (
     char("(") &
@@ -430,6 +490,16 @@ class FilterParserDefinition extends FilterGrammarDefinition {
   });
 
   @override
+  literalReference() => super.literalReference().map((v) {
+    return new FilterBackReference(v[1].toString());
+  });
+
+  @override
+  identifierReference() => super.identifierReference().map((v) {
+    return new FilterBackReference(v.toString());
+  });
+
+  @override
   logical() => super.logical().map((m) {
     var a = m[0];
     var b = m[1];
@@ -470,6 +540,46 @@ class FilterParserDefinition extends FilterGrammarDefinition {
   @override
   valueList() => super.valueList().map((v) {
     return v;
+  });
+
+  @override
+  functionCall() => super.functionCall().map((v) {
+    String funcName = v[0];
+    List args = v[1];
+
+    return new FilterFunctionCall((Map<String, dynamic> map) {
+      List argList = args.map((x) {
+        if (x is FilterBackReference) {
+          return map[x.name];
+        } else if (x is FilterTest) {
+          return x.matches(map);
+        } else if (x is FilterFunctionCall) {
+          return x.apply(map);
+        } else {
+          return x;
+        }
+      }).toList();
+
+      FilterFunctions.FilterFunction func =
+        FilterFunctions.filterFunctions[funcName];
+
+      try {
+        if (func != null) {
+          return func(argList);
+        } else {
+          return null;
+        }
+      } catch (e, stack) {
+        var msg = "Filter function ${funcName} had an error" +
+          " with arguments ${argList} and input ${map}.";
+        logger.warning(
+          msg,
+          e,
+          stack
+        );
+        return null;
+      }
+    });
   });
 }
 

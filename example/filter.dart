@@ -80,6 +80,22 @@ main() {
   test(r'@test == "HelloX"', {
     "@test": "HelloX"
   });
+
+  test(r'index(@map, "vehicle") is "Car"', {
+    "@map": {
+      "vehicle": "Car"
+    }
+  });
+
+  test(r'index(@map, "vehicle") is "Truck"', {
+    "@map": {
+      "vehicle": "Car"
+    }
+  });
+
+  test(r'index(@map, "vehicle") is "Truck"', {
+    "@map": null
+  });
 }
 
 test(String filter, [Map m]) {
