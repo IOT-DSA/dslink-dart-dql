@@ -48,7 +48,6 @@ class AttributeNamesSubscribeProvider extends SubscribeProvider {
       } else if (name == ":configs") {
         return update.node.configs.keys.toList();
       } else if (name == ":children") {
-        print(update.node.children.keys.toList());
         return update.node.children.keys.toList();
       } else {
         return [];
