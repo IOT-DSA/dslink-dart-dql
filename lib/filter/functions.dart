@@ -111,5 +111,23 @@ final Map<String, FilterFunction> filterFunctions = {
       }
     }
     return null;
+  },
+  "urlEncode": (List args) {
+    if (args.length == 1 && args[0] is String) {
+      return Uri.encodeComponent(args[0]);
+    }
+    return null;
+  },
+  "urlDecode": (List args) {
+    if (args.length == 1 && args[0] is String) {
+      return Uri.decodeComponent(args[0]);
+    }
+    return null;
+  },
+  "toString": (List args) {
+    if (args.length == 1) {
+      return args[0].toString();
+    }
+    return null;
   }
 };
