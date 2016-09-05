@@ -7,7 +7,6 @@ import "package:dql/parsers/query.dart";
 import "package:dql/filter/functions.dart" as FilterFunctions;
 
 import "package:quiver/pattern.dart" show escapeRegex;
-import "package:logging/logging.dart";
 
 const Existent exists = Existent.exists;
 

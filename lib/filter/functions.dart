@@ -100,5 +100,16 @@ final Map<String, FilterFunction> filterFunctions = {
   },
   "concat": (List args) {
     return args.fold("", (a, b) => a.toString() + b.toString());
+  },
+  "join": (List args) {
+    if (args.length == 2) {
+      var by = args[0].toString();
+      var of = args[1];
+
+      if (of is Iterable) {
+        return of.join(by);
+      }
+    }
+    return null;
   }
 };
