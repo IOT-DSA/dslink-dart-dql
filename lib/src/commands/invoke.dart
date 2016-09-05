@@ -118,7 +118,20 @@ class InvokeQueryProcessor extends QueryProcessor {
 
           holder.sub = context.invoke(holder.actionPath, holder.params)
             .listen((inv) {
-            if (inv.streamStatus == StreamStatus.closed) {
+            if (inv.streamStatus == StreamStatus.closed || inv.error != null) {
+              if (inv.error != null) {
+                var msg = inv.error.getMessage();
+
+                if (inv.error.detail != null) {
+                  msg += "\n${inv.error.detail}";
+                }
+
+                logger.fine(
+                  "Invoke ${holder.actionPath} with ${holder.params} errored.",
+                  msg
+                );
+              }
+
               finishInvoke();
             }
           });
