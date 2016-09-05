@@ -105,10 +105,16 @@ class InvokeQueryProcessor extends QueryProcessor {
 
             _isDoneInvoke = true;
 
+            logger.fine(
+              "Invoke complete"
+              " on ${holder.actionPath} with ${holder.params}");
+
             if (context is QueryStatisticManager) {
               (context as QueryStatisticManager).reportEnd("invoke");
             }
           }
+
+          logger.fine("Invoke ${holder.actionPath} with ${holder.params}");
 
           holder.sub = context.invoke(holder.actionPath, holder.params)
             .listen((inv) {
