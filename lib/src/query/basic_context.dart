@@ -38,8 +38,16 @@ class BasicQueryContext extends QueryContext implements QueryStatisticManager {
   }
 
   @override
-  Stream<RequesterListUpdate> list(String path) {
-    return requester.list(path);
+  Stream<RequesterListUpdate> list(String path) async* {
+    var node = requester.nodeCache.getRemoteNode(path);
+    if (node != null && node.isSelfUpdated()) {
+      var allDataChanges = <String>[];
+      allDataChanges.addAll(node.configs.keys);
+      allDataChanges.addAll(node.children.keys);
+      allDataChanges.addAll(node.attributes.keys);
+      yield new RequesterListUpdate(node, allDataChanges, "open");
+    }
+    yield* requester.list(path);
   }
 
   @override
