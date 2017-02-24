@@ -1,5 +1,13 @@
 part of dslink.dql.query;
 
+class ListNodeHolder {
+  final StreamSubscription sub;
+
+  ListNodeHolder(this.sub);
+
+  Function onDone;
+}
+
 class ListNodeQueryProcessor extends QueryProcessor {
   final QueryContext context;
 
@@ -19,8 +27,7 @@ class ListNodeQueryProcessor extends QueryProcessor {
   @override
   QueryStream process(QueryStream stream) {
     StreamSubscription passthrough;
-    var subs = <String, StreamSubscription>{};
-    var dones = <String, Function>{};
+    var holders = <String, ListNodeHolder>{};
     var uids = <String, String>{};
     var rescanUidPaths = <String, String>{};
     var currentPaths = <String>[];
@@ -42,7 +49,7 @@ class ListNodeQueryProcessor extends QueryProcessor {
 
       String uid;
 
-      if (subs[path] is! StreamSubscription) {
+      if (holders[path] is! ListNodeHolder) {
         var ourRealPath = resolveRealPath(path);
 
         var onDone = (String reason, [bool isUidSame = false, bool skipChildren = false]) {
@@ -52,13 +59,11 @@ class ListNodeQueryProcessor extends QueryProcessor {
             uids.remove(uid);
           }
 
-          if (subs.containsKey(path)) {
-            StreamSubscription sub = subs.remove(path);
-            if (sub != null) {
-              sub.cancel();
+          if (holders.containsKey(path)) {
+            ListNodeHolder holder = holders.remove(path);
+            if (holder != null) {
+              holder.sub.cancel();
             }
-
-            dones.remove(path);
 
             if (currentPaths.contains(path)) {
               QueryUpdate update = new QueryUpdate({
@@ -69,17 +74,21 @@ class ListNodeQueryProcessor extends QueryProcessor {
               controller.add(update);
               currentPaths.remove(path);
             }
+
             if (!skipChildren) {
-              String pathSlash = "${path}/";
-              subs.keys.where((p) => p.startsWith(pathSlash)).toList().forEach((key) {
-                if (dones[key] is Function) {
-                  Function f = dones[key];
-                  dones[key] = null;
-                  f("Parent was canceled.", false, true);
+              var pathSlash = "${path}/";
+              var functions = <Function>[];
+
+              holders.forEach((String a, ListNodeHolder b) {
+                if (a.startsWith(pathSlash) && b.onDone is Function) {
+                  functions.add(b.onDone);
                 }
               });
-            }
 
+              for (var func in functions) {
+                func("Parent was canceled.", false, true);
+              }
+            }
 
             if (context is QueryStatisticManager) {
               (context as QueryStatisticManager).reportEnd("vlist");
@@ -90,8 +99,6 @@ class ListNodeQueryProcessor extends QueryProcessor {
             handle(rescanUidPaths.remove(uid));
           }
         };
-
-        dones[path] = onDone;
 
         if (context is QueryStatisticManager) {
           (context as QueryStatisticManager).reportStart("vlist");
@@ -117,8 +124,9 @@ class ListNodeQueryProcessor extends QueryProcessor {
                 cp += "/";
               }
               cp += change;
-              if (dones.containsKey(cp)) {
-                dones[cp]("Child '${change}' was removed from the parent.");
+              var cholder = holders[cp];
+              if (cholder is ListNodeHolder) {
+                cholder.onDone("Child '${change}' was removed from the parent.");
                 continue;
               }
             }
@@ -134,7 +142,10 @@ class ListNodeQueryProcessor extends QueryProcessor {
                 var thisSlashCount = calculatePathPartCount(path);
 
                 if (currentSlashCount > thisSlashCount) {
-                  dones[existing]("A node with the same UID of ${uid} (${path}) is shorter.", true);
+                  holders[existing].onDone(
+                    "A node with the same UID of ${uid} (${path}) is shorter.",
+                    true
+                  );
                   rescanUidPaths[uid] = existing;
                 } else if ((currentSlashCount == thisSlashCount) ||
                   (thisSlashCount > currentSlashCount)) {
@@ -253,11 +264,15 @@ class ListNodeQueryProcessor extends QueryProcessor {
           }
         };
 
-        subs[path] = context.list(ourRealPath).listen(handleListUpdate, onDone: () {
-          if (dones.containsKey(path)) {
-            dones[path]("List stream closed.");
+        ListNodeHolder holder;
+        holder = new ListNodeHolder(context.list(ourRealPath).listen(handleListUpdate, onDone: () {
+          if (holder != null && holder.onDone is Function) {
+            holder.onDone("List stream closed.");
           }
-        });
+        }));
+
+        holder.onDone = onDone;
+        holders[path] = holder;
       }
     }
 
@@ -268,15 +283,12 @@ class ListNodeQueryProcessor extends QueryProcessor {
         passthrough.cancel();
       }
 
-      for (Function onDone in dones.values.toList()) {
-        onDone("Query Canceled.");
+      for (ListNodeHolder holder in holders.values.toList()) {
+        holder.onDone("Query Canceled.");
+        holder.sub.cancel();
       }
 
-      for (var sub in subs.values) {
-        sub.cancel();
-      }
-
-      subs.clear();
+      holders.clear();
       uids.clear();
     });
 
