@@ -284,7 +284,7 @@ class ListNodeQueryProcessor extends QueryProcessor {
       }
 
       for (ListNodeHolder holder in holders.values.toList()) {
-        holder.onDone("Query Canceled.");
+        holder.onDone("Query Canceled.", false, true);
         holder.sub.cancel();
       }
 
