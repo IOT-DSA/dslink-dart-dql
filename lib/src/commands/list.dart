@@ -45,8 +45,8 @@ class ListNodeQueryProcessor extends QueryProcessor {
       if (subs[path] is! StreamSubscription) {
         var ourRealPath = resolveRealPath(path);
 
-        var onDone = (String reason, [bool isUidSame = false]) {
-          logger.finer("List Done ${path} (${reason})");
+        var onDone = (String reason, [bool isUidSame = false, bool skipChildren = false]) {
+          logger.finest("List Done ${path} (${reason})");
 
           if (!isUidSame && uid != null) {
             uids.remove(uid);
@@ -69,12 +69,17 @@ class ListNodeQueryProcessor extends QueryProcessor {
               controller.add(update);
               currentPaths.remove(path);
             }
+            if (!skipChildren) {
+              String pathSlash = "${path}/";
+              subs.keys.where((p) => p.startsWith(pathSlash)).toList().forEach((key) {
+                if (dones[key] is Function) {
+                  Function f = dones[key];
+                  dones[key] = null;
+                  f("Parent was canceled.", false, true);
+                }
+              });
+            }
 
-            subs.keys.where((p) => p.startsWith("${path}/")).toList().forEach((key) {
-              if (dones[key] is Function) {
-                dones[key]("Parent was canceled.");
-              }
-            });
 
             if (context is QueryStatisticManager) {
               (context as QueryStatisticManager).reportEnd("vlist");
@@ -92,7 +97,7 @@ class ListNodeQueryProcessor extends QueryProcessor {
           (context as QueryStatisticManager).reportStart("vlist");
         }
 
-        logger.finer("List ${path}");
+        logger.finest("List ${path}");
 
         var handleListUpdate = (RequesterListUpdate update) {
           if (update.node.configs.containsKey(r"$invokable") &&
@@ -190,7 +195,7 @@ class ListNodeQueryProcessor extends QueryProcessor {
             }, remove: true);
             controller.add(event);
             currentPaths.remove(path);
-            logger.finer("List Offline ${path}");
+            logger.finest("List Offline ${path}");
             uids.remove(uid);
             if (uid != null && rescanUidPaths[uid] != null) {
               handle(rescanUidPaths.remove(uid));
