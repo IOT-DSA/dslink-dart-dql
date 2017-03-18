@@ -59,7 +59,7 @@ abstract class QueryStream extends Stream<QueryUpdate> {
   }
 
   @override
-  QueryStream map(convert(QueryUpdate event)) {
+  QueryStream map(QueryUpdate convert(QueryUpdate event)) {
     return new WrappedQueryStream(
       this,
       super.map(convert)

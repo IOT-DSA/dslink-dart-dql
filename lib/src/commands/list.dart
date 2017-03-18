@@ -278,14 +278,14 @@ class ListNodeQueryProcessor extends QueryProcessor {
 
     controller = new StreamController<QueryUpdate>.broadcast(onListen: () {
       handle(expression.topmost);
-    }, onCancel: () {
+    }, onCancel: () async {
       if (passthrough != null) {
         passthrough.cancel();
       }
 
       for (ListNodeHolder holder in holders.values.toList()) {
         holder.onDone("Query Canceled.");
-        holder.sub.cancel();
+        await holder.sub.cancel();
       }
 
       holders.clear();
