@@ -31,14 +31,12 @@ class PathExpression {
   final int depthLimit;
   final String directive;
   final String secondary;
-  final String endPath;
 
   bool hasAnyMods = false;
 
   PathExpression(this.topmost, this.pattern, this.depthLimit, {
     this.directive,
-    this.secondary,
-    this.endPath
+    this.secondary
   });
 
   bool matches(String input, {bool isBroker: false}) {
@@ -69,40 +67,6 @@ class PathExpression {
     }
 
     return true;
-  }
-
-  bool partialMatch(String input) {
-    if (!input.startsWith(topmost)) {
-      return false;
-    }
-
-    // Assume match if pattern is a *
-    if (pattern.toString().contains('*')) return true;
-
-    var subpaths = input.substring(topmost.length).split('/').skip(2).toList();
-    var endpaths = endPath.split('/').skip(1).toList();
-
-    if (subpaths.isEmpty || endpaths.isEmpty) return true;
-
-    for (var i = 0; i < endpaths.length; i++) {
-      if (_patternModifier.hasMatch(endpaths[i])) {
-        // Matches a ? or *
-        continue;
-      }
-      var ind = subpaths.indexOf(endpaths[i]);
-      if (ind == -1) {
-        // We know the remainer of the input does not match an element of the
-        // end path, and it's not a * or ?, so return false
-        return false;
-      }
-
-      if (ind == subpaths.length - 1) {
-        // It's the last element so it's a partial match.
-        return true;
-      }
-    }
-
-    return false;
   }
 
   @override
@@ -249,14 +213,11 @@ PathExpression parseExpressionInput(String input) {
     recurseLimit = 1;
   }
 
-  var endPath = parts.skip(1).join();
-
   var e = new PathExpression(
     topmost,
     new RegExp(ptrn),
     recurseLimit,
-    secondary: secondary,
-    endPath: endPath
+    secondary: secondary
   );
   if (count != 0) {
     e.hasAnyMods = true;

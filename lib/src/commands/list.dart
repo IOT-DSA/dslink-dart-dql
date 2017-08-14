@@ -258,10 +258,8 @@ class ListNodeQueryProcessor extends QueryProcessor {
               if (child.getConfig(r"$invokable") != null && !allowActions) {
                 continue;
               }
-              var newPath = '$ourFakePath/$key';
-              if (expression.partialMatch(newPath)) {
-                handle(newPath, depth + 1);
-              }
+
+              handle("${ourFakePath}/${key}", depth + 1);
             }
           }
         };
