@@ -8,7 +8,11 @@ abstract class QueryContext {
     String path,
     ValueUpdateCallback callback,
     [int qos = 0]);
-  Stream<RequesterListUpdate> list(String path);
+
+  Stream<RequesterListUpdate> list(String path, {
+    bool enableCache: true
+  });
+
   Future<RemoteNode> getRemoteNode(String path);
   Stream<RequesterInvokeUpdate> invoke(String actionPath, Map params);
 
@@ -29,9 +33,7 @@ class WrappedQueryContext extends QueryContext {
 
   @override
   Future<RemoteNode> getRemoteNode(String path) {
-    return getRemoteNode(resolveRealPath(path)).then((RemoteNode node) {
-      node.remotePath;
-    });
+    return getRemoteNode(resolveRealPath(path));
   }
 
   @override
@@ -40,8 +42,10 @@ class WrappedQueryContext extends QueryContext {
   }
 
   @override
-  Stream<RequesterListUpdate> list(String path) {
-    return innerContext.list(resolveRealPath(path));
+  Stream<RequesterListUpdate> list(String path, {
+    bool enableCache: true
+  }) {
+    return innerContext.list(resolveRealPath(path), enableCache: enableCache);
   }
 
   @override

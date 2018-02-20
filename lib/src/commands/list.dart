@@ -34,6 +34,7 @@ class ListNodeQueryProcessor extends QueryProcessor {
     StreamController<QueryUpdate> controller;
 
     var traverseBrokers = false;
+    var enableCache = true;
     var enableActions = allowActions;
 
     if (stream.getAttribute("option:traverseBrokers") == true) {
@@ -42,6 +43,10 @@ class ListNodeQueryProcessor extends QueryProcessor {
 
     if (stream.getAttribute("option:listActions") == true) {
       enableActions = true;
+    }
+
+    if (stream.getAttribute("option:enableCache") == false) {
+      enableCache = false;
     }
 
     void handle(String path, [int depth = 1]) {
@@ -265,7 +270,9 @@ class ListNodeQueryProcessor extends QueryProcessor {
         };
 
         ListNodeHolder holder;
-        holder = new ListNodeHolder(context.list(ourRealPath).listen(handleListUpdate, onDone: () {
+        holder = new ListNodeHolder(context
+          .list(ourRealPath, enableCache: enableCache)
+          .listen(handleListUpdate, onDone: () {
           if (holder != null && holder.onDone is Function) {
             holder.onDone("List stream closed.");
           }

@@ -59,6 +59,7 @@ abstract class QueryStream extends Stream<QueryUpdate> {
   }
 
   @override
+  // ignore: invalid_method_override_return_type
   QueryStream map(convert(QueryUpdate event)) {
     return new WrappedQueryStream(
       this,
@@ -75,6 +76,7 @@ abstract class QueryStream extends Stream<QueryUpdate> {
   }
 
   @override
+  // ignore: invalid_method_override_return_type
   QueryStream expand(Iterable<QueryUpdate> convert(QueryUpdate value)) {
     return new WrappedQueryStream(
       this,

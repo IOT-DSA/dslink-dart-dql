@@ -15,87 +15,89 @@ class OngoingQuery {
   }
 
   void forEachResponse(handler(InvokeResponse response)) {
-    _responses.forEach(handler);
+    for (InvokeResponse response in _responses) {
+      handler(response);
+    }
+  }
+
+  void handleQueryUpdate(QueryUpdate update) {
+    var forceRefresh = false;
+    if (!update.remove) {
+      List<String> keys = update.values.keys.toList();
+      var added = keys.where((x) => !knownColumns.contains(x)).toList();
+
+      for (String key in added) {
+        knownColumns.add(key);
+      }
+
+      if (added.isNotEmpty) {
+        forEachResponse((response) {
+          response.updateStream(
+            [],
+            columns: knownColumns
+              .map((name) => new TableColumn(name, "dynamic"))
+              .toList()
+          );
+        });
+      }
+    }
+
+    String path = update.id;
+
+    if (!rows.containsKey(path)) {
+      if (!update.remove) {
+        var row = rows[path] = new QueryTableRow(update.values);
+        row.id = rows.length - 1;
+
+        forEachResponse((response) {
+          response.updateStream(
+            [row.format(knownColumns)],
+            meta: {
+              "mode": "append"
+            }
+          );
+        });
+      }
+    } else {
+      if (update.remove) {
+        QueryTableRow row = rows.remove(path);
+        for (QueryTableRow m in rows.values) {
+          if (m.id > row.id) {
+            m.id--;
+          }
+        }
+
+        forEachResponse((response) {
+          response.updateStream(
+            rows.values.where((r) {
+              return r.id >= row.id;
+            }).map((row) => row.format(knownColumns)).toList(),
+            meta: {
+              "modify": "replace ${row.id}-${rows.length}"
+            }
+          );
+        });
+      } else {
+        QueryTableRow row = rows[path];
+        row.values.addAll(update.values);
+        forEachResponse((response) {
+          response.updateStream(
+            [row.format(knownColumns)],
+            meta: {
+              "modify": "replace ${row.id}-${row.id}"
+            }
+          );
+        });
+      }
+    }
+
+    if (forceRefresh) {
+      forEachResponse(sendToResponse);
+    }
   }
 
   void init() {
-    sub = stream.listen((QueryUpdate update) {
-      var forceRefresh = false;
-      if (!update.remove) {
-        List<String> keys = update.values.keys.toList();
-        var added = keys.where((x) => !knownColumns.contains(x)).toList();
-
-        for (String key in added) {
-          knownColumns.add(key);
-        }
-
-        if (added.isNotEmpty) {
-          forEachResponse((response) {
-            response.updateStream(
-              [],
-              columns: knownColumns
-                .map((name) => new TableColumn(name, "dynamic"))
-                .toList()
-            );
-          });
-        }
-      }
-
-      String path = update.id;
-
-      if (!rows.containsKey(path)) {
-        if (!update.remove) {
-          var row = rows[path] = new QueryTableRow(update.values);
-          row.id = rows.length - 1;
-
-          forEachResponse((response) {
-            response.updateStream(
-              [row.format(knownColumns)],
-              meta: {
-                "mode": "append"
-              }
-            );
-          });
-        }
-      } else {
-        if (update.remove) {
-          QueryTableRow row = rows.remove(path);
-          for (QueryTableRow m in rows.values) {
-            if (m.id > row.id) {
-              m.id--;
-            }
-          }
-
-          forEachResponse((response) {
-            response.updateStream(
-              rows.values.where((r) {
-                return r.id >= row.id;
-              }).map((row) => row.format(knownColumns)).toList(),
-              meta: {
-                "modify": "replace ${row.id}-${rows.length}"
-              }
-            );
-          });
-        } else {
-          QueryTableRow row = rows[path];
-          row.values.addAll(update.values);
-          forEachResponse((response) {
-            response.updateStream(
-              [row.format(knownColumns)],
-              meta: {
-                "modify": "replace ${row.id}-${row.id}"
-              }
-            );
-          });
-        }
-      }
-
-      if (forceRefresh) {
-        forEachResponse((response) {
-          sendToResponse(response);
-        });
-      }
-    }, onError: (e, stack) {
+    sub = stream.listen(handleQueryUpdate, onError: (e, stack) {
       var err = new DSError(
         "invokeError",
         msg: e.toString(),

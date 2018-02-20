@@ -11,7 +11,9 @@ class MockQueryContext extends BasicQueryContext {
       super(null, processors);
 
   @override
-  Stream<RequesterListUpdate> list(String path) {
+  Stream<RequesterListUpdate> list(String path, {
+    bool enableCache: true
+  }) {
     listedNodes.add(path);
 
     var node = root.findNode(path);

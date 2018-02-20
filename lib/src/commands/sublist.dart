@@ -88,6 +88,7 @@ class SublistQueryProcessor extends QueryProcessor {
 
   SublistQueryProcessor(this.context);
 
+  @override
   QueryStream process(QueryStream stream) {
     StreamController<QueryUpdate> controller;
     StreamSubscription parentStreamSub;
