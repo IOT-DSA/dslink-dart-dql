@@ -79,9 +79,30 @@ main(List<String> args) async {
     "?value": 0
   });
 
+  SimpleNode openRequestsCount = link.addNode("/openRequestsCount", {
+    r"$name": "Open Requests Count",
+    r"$type": "number",
+    "?value": 0
+  });
+
+  SimpleNode subscriptionsCount = link.addNode("/subscriptionsCount", {
+    r"$name": "Subscriptions Count",
+    r"$type": "number",
+    "?value": 0
+  });
+
+  SimpleNode cachedNodesCount = link.addNode("/cachedNodesCount", {
+    r"$name": "Cached Nodes Count",
+    r"$type": "number",
+    "?value": 0
+  });
+
   virtualListCount.serializable = false;
   virtualSubscribeCount.serializable = false;
   actionInvokeCount.serializable = false;
+  openRequestsCount.serializable = false;
+  subscriptionsCount.serializable = false;
+  cachedNodesCount.serializable = false;
 
   link.connect();
   await link.onRequesterReady;
@@ -94,6 +115,18 @@ main(List<String> args) async {
       virtualSubscribeCount.updateValue(count);
     } else if (id == "invoke") {
       actionInvokeCount.updateValue(count);
+    } else if (id == "requests") {
+      openRequestsCount.updateValue(count);
+    } else if (id == "subscriptions") {
+      subscriptionsCount.updateValue(count);
+    } else if (id == "cached-nodes") {
+      cachedNodesCount.updateValue(count);
     }
+  });
+
+  new Timer.periodic(const Duration(seconds: 1), (_) {
+    context.updateGenericStatistics(
+      reportCachedNodes: cachedNodesCount.hasSubscriber
+    );
   });
 }

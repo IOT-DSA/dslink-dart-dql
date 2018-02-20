@@ -70,6 +70,8 @@ class BasicQueryContext extends QueryContext implements QueryStatisticManager {
   StreamSubscription subscribe(String path, callback(ValueUpdate update), [
     int qos = 0
   ]) {
+    _reportNodeSeen(path);
+
     return requester.subscribe(path, callback, qos);
   }
 
@@ -97,9 +99,7 @@ class BasicQueryContext extends QueryContext implements QueryStatisticManager {
 
     _stats[id] = count;
 
-    for (OnStatisticUpdated handler in _statWatchers) {
-      handler(id, count);
-    }
+    reportStatistic(id, count);
   }
 
   @override
@@ -113,8 +113,12 @@ class BasicQueryContext extends QueryContext implements QueryStatisticManager {
 
     _stats[id] = count;
 
+    reportStatistic(id, count);
+  }
+
+  void reportStatistic(String id, int value) {
     for (OnStatisticUpdated handler in _statWatchers) {
-      handler(id, count);
+      handler(id, value);
     }
   }
 
@@ -138,6 +142,15 @@ class BasicQueryContext extends QueryContext implements QueryStatisticManager {
 
   void unregisterStatisticHandler(OnStatisticUpdated handler) {
     _statWatchers.remove(handler);
+  }
+
+  void updateGenericStatistics({bool reportCachedNodes: false}) {
+    reportStatistic("requests", requester.openRequestCount);
+    reportStatistic("subscriptions", requester.subscriptionCount);
+
+    if (reportCachedNodes) {
+      reportStatistic("cached-nodes", requester.nodeCache.cachedNodePaths.length);
+    }
   }
 
   void _reportNodeSeen(String path) {
