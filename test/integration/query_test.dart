@@ -83,6 +83,41 @@ MockQueryContext createDeepQueryContext() {
   return ctx;
 }
 
+MockQueryContext createPCSCQueryContext() {
+  var ctx = createQueryContext({
+    "downstream": {
+      "PCSC Security": {
+        "PCSC_ATL110": {
+          "Cards": {
+            "000000010137": {
+              r"$type": "string",
+              "?value": "234238"
+            },
+            "000000010136": {
+              r"$type": "string",
+              "?value": "234238"
+            }
+          }
+        },
+        "PCSC_ATL112": {
+          "Cards": {
+            "000000010137": {
+              r"$type": "string",
+              "?value": "234238"
+            },
+            "000000010136": {
+              r"$type": "string",
+              "?value": "234238"
+            }
+          }
+        }
+      }
+    }
+  });
+
+  return ctx;
+}
+
 mockTests() {
   test("listing a direct path to a node only yields the children", () async {
     var ctx = createDeepQueryContext();
@@ -182,5 +217,36 @@ mockTests() {
     }
 
     await Future.wait([doWork(1), doWork(2), doWork(3)]);
+  });
+
+  test("sublist works as expected", () async {
+    var ctx = createPCSCQueryContext();
+
+    var result = await ctx.capture(
+      r"list /downstream/PCSC Security/? | subscribe :name as Node | sublist /Cards/? | subscribe :name as Card"
+    );
+
+    result.verify([
+      {
+        "path": "/downstream/PCSC Security/PCSC_ATL110/Cards/000000010137",
+        "Node": "PCSC_ATL110",
+        "Card": "000000010137"
+      },
+      {
+        "path": "/downstream/PCSC Security/PCSC_ATL110/Cards/000000010136",
+        "Node": "PCSC_ATL110",
+        "Card": "000000010136"
+      },
+      {
+        "path": "/downstream/PCSC Security/PCSC_ATL112/Cards/000000010137",
+        "Node": "PCSC_ATL112",
+        "Card": "000000010137"
+      },
+      {
+        "path": "/downstream/PCSC Security/PCSC_ATL112/Cards/000000010136",
+        "Node": "PCSC_ATL112",
+        "Card": "000000010136"
+      }
+    ]);
   });
 }
