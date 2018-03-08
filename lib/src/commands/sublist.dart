@@ -3,6 +3,8 @@ part of dslink.dql.query;
 class SublistHolder {
   final String path;
 
+  QueryUpdate oldUpdate;
+
   SublistHolder(this.path);
 
   SublistListQueryProcessor listProcessor;
@@ -36,7 +38,13 @@ class SublistHolder {
         _handles.add(rp);
       }
 
-      var out = update.cloneAndMerge({
+      var out = update;
+
+      if (oldUpdate != null) {
+        out = out.cloneAndMerge(oldUpdate.values);
+      }
+
+      out = out.cloneAndMerge({
         "path": rp
       });
 
@@ -114,16 +122,18 @@ class SublistQueryProcessor extends QueryProcessor {
         }
       } else {
         // We don't care about updates. Paths don't really change.
-        if (holders.containsKey(path)) {
-          return;
+        if (!holders.containsKey(path)) {
+          var holder = new SublistHolder(path);
+          holder.listSub = holder.create(this).listen((QueryUpdate update) {
+            controller.add(update);
+          });
+
+          holder.oldUpdate = update;
+          holders[path] = holder;
+        } else {
+          SublistHolder holder = holders[path];
+          holder.oldUpdate = update;
         }
-
-        var holder = new SublistHolder(path);
-        holder.listSub = holder.create(this).listen((QueryUpdate update) {
-          controller.add(update);
-        });
-
-        holders[path] = holder;
       }
     };
 
