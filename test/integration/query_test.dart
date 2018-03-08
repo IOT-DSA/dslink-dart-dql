@@ -222,35 +222,31 @@ mockTests() {
   test("sublist works as expected", () async {
     var ctx = createPCSCQueryContext();
 
-    doWork(int i) async {
-      var result = await ctx.capture(
-        r"list /downstream/PCSC Security/? | subscribe :name as Node | sublist /Cards/? | subscribe :name as Card"
-      );
+    var result = await ctx.capture(
+      r"list /downstream/PCSC Security/? | subscribe :name as Node | sublist /Cards/? | subscribe :name as Card"
+    );
 
-      result.verify([
-        {
-          "path": "/downstream/PCSC Security/PCSC_ATL110/Cards/000000010137",
-          "Node": "PCSC_ATL110",
-          "Card": "000000010137"
-        },
-        {
-          "path": "/downstream/PCSC Security/PCSC_ATL110/Cards/000000010136",
-          "Node": "PCSC_ATL110",
-          "Card": "000000010136"
-        },
-        {
-          "path": "/downstream/PCSC Security/PCSC_ATL112/Cards/000000010137",
-          "Node": "PCSC_ATL112",
-          "Card": "000000010137"
-        },
-        {
-          "path": "/downstream/PCSC Security/PCSC_ATL112/Cards/000000010136",
-          "Node": "PCSC_ATL112",
-          "Card": "000000010136"
-        }
-      ]);
-    }
-
-    await Future.wait([doWork(1), doWork(2), doWork(3)]);
+    result.verify([
+      {
+        "path": "/downstream/PCSC Security/PCSC_ATL110/Cards/000000010137",
+        "Node": "PCSC_ATL110",
+        "Card": "000000010137"
+      },
+      {
+        "path": "/downstream/PCSC Security/PCSC_ATL110/Cards/000000010136",
+        "Node": "PCSC_ATL110",
+        "Card": "000000010136"
+      },
+      {
+        "path": "/downstream/PCSC Security/PCSC_ATL112/Cards/000000010137",
+        "Node": "PCSC_ATL112",
+        "Card": "000000010137"
+      },
+      {
+        "path": "/downstream/PCSC Security/PCSC_ATL112/Cards/000000010136",
+        "Node": "PCSC_ATL112",
+        "Card": "000000010136"
+      }
+    ]);
   });
 }
