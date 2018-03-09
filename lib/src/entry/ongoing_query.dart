@@ -69,9 +69,10 @@ class OngoingQuery {
 
         forEachResponse((response) {
           response.updateStream(
-            rows.values.where((r) {
-              return r.id >= row.id;
-            }).map((row) => row.format(knownColumns)).toList(),
+            rows.values
+              .where((r) => r.id >= row.id)
+              .map((row) => row.format(knownColumns))
+              .toList(),
             meta: {
               "modify": "replace ${row.id}-${rows.length}"
             }
