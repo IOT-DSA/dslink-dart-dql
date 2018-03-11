@@ -58,7 +58,7 @@ class ListNodeQueryProcessor extends QueryProcessor {
         var ourRealPath = resolveRealPath(path);
 
         var onDone = (String reason, [bool isUidSame = false, bool skipChildren = false]) {
-          logger.finest("List Done ${path} (${reason})");
+          logger.finer("List Done ${path} (${reason})");
 
           if (!isUidSame && uid != null) {
             uids.remove(uid);
@@ -109,7 +109,7 @@ class ListNodeQueryProcessor extends QueryProcessor {
           (context as QueryStatisticManager).reportStart("vlist");
         }
 
-        logger.finest("List ${path}");
+        logger.finer("List ${path}");
 
         var handleListUpdate = (RequesterListUpdate update) {
           if (update.node.configs.containsKey(r"$invokable") &&
@@ -231,7 +231,7 @@ class ListNodeQueryProcessor extends QueryProcessor {
             isSubBroker = false;
           }
 
-          if (isSubBroker && traverseBrokers == false) {
+          if (isSubBroker && traverseBrokers == false && !(expression.topmost == path)) {
             handleChildren = false;
           }
 

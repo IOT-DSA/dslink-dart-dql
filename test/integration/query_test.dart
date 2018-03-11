@@ -2,7 +2,6 @@ library dql.test.query.integration;
 
 import "dart:async";
 
-import 'dart:convert';
 import "package:dql/query.dart";
 import "package:dql/process.dart";
 import "package:dql/utils.dart";
@@ -76,6 +75,16 @@ MockQueryContext createDeepQueryContext() {
         "z": {
           r"$type": "number",
           "?value": 0
+        }
+      }
+    },
+    "sub-broker": {
+      r"$is": "dsa/broker",
+      "downstream": {
+        "LinkA": {
+          "metric": {
+            r"$type": "string"
+          }
         }
       }
     }
@@ -278,6 +287,30 @@ mockTests() {
         "Node": "PCSC_ATL112",
         "Card": "000000010136"
       }
+    ]);
+  });
+
+  test("query traverses broker when a broker is the topmost path", () async {
+    var ctx = createDeepQueryContext();
+    var result = await ctx.capture("list /sub-broker/*");
+
+    result.verify([
+      {
+        "path": "/sub-broker/downstream"
+      },
+      {
+        "path": "/sub-broker/downstream/LinkA"
+      },
+      {
+        "path": "/sub-broker/downstream/LinkA/metric"
+      }
+    ]);
+
+    ctx.checkListedNodes([
+      "/sub-broker",
+      "/sub-broker/downstream",
+      "/sub-broker/downstream/LinkA",
+      "/sub-broker/downstream/LinkA/metric"
     ]);
   });
 }

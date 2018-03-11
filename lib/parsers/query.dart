@@ -177,8 +177,12 @@ PathExpression parseExpressionInput(String input) {
   var starCount = 0;
 
   var sections = input.split("/");
+
+  var hasHitModifier = false;
+  var topmost = "";
+
   var patternPartials = sections.map((section) {
-    return section.splitMapJoin(_patternModifier, onMatch: (Match match) {
+    var result = section.splitMapJoin(_patternModifier, onMatch: (Match match) {
       String mod = match.group(1);
       String part = "";
       if (mod == "?") {
@@ -193,18 +197,21 @@ PathExpression parseExpressionInput(String input) {
         part = match.group(0);
       }
 
+      hasHitModifier = true;
+
       return part;
     }, onNonMatch: (String str) {
       return escapeRegex(str);
     });
+
+    if (!hasHitModifier) {
+      topmost += (section.isNotEmpty ? "/" : "") + section;
+    }
+
+    return result;
   }).toList();
 
   String ptrn = patternPartials.join("/");
-
-  String topmost = input.split("/")
-    .takeWhile(
-    (String part) => !_patternModifier.hasMatch(part)
-  ).join("/");
 
   if (count == 0) {
     topmost = input;
