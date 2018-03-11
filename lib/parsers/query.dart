@@ -27,6 +27,7 @@ class PathExpression {
   ];
 
   final String topmost;
+  final List<String> patternParts;
   final RegExp pattern;
   final int depthLimit;
   final String directive;
@@ -34,7 +35,7 @@ class PathExpression {
 
   bool hasAnyMods = false;
 
-  PathExpression(this.topmost, this.pattern, this.depthLimit, {
+  PathExpression(this.topmost, this.patternParts, this.pattern, this.depthLimit, {
     this.directive,
     this.secondary
   });
@@ -67,6 +68,14 @@ class PathExpression {
     }
 
     return true;
+  }
+
+  bool checkEntrancePath(String childPath) {
+    var toMatchPattern = patternParts
+      .take(calculatePathPartCount(childPath) + 1)
+      .join("/");
+    var regex = new RegExp(toMatchPattern);
+    return regex.hasMatch(childPath);
   }
 
   @override
@@ -152,6 +161,7 @@ PathExpression parseExpressionInput(String input) {
     if (PathExpression.directives.contains(lower)) {
       return new PathExpression(
         "/",
+        [],
         _patternNotEmpty,
         0,
         directive: lower,
@@ -165,27 +175,37 @@ PathExpression parseExpressionInput(String input) {
   var count = 0;
   var questionCount = 0;
   var starCount = 0;
-  String ptrn = input.splitMapJoin(_patternModifier, onMatch: (Match match) {
-    String mod = match.group(1);
-    if (mod == "?") {
-      count++;
-      questionCount++;
-      return r"[^\/]+";
-    } else if (mod == "*") {
-      count++;
-      starCount++;
-      return r".*";
-    }
 
-    return match.group(0);
-  }, onNonMatch: (String str) {
-    return escapeRegex(str);
-  });
+  var sections = input.split("/");
+  var patternPartials = sections.map((section) {
+    return section.splitMapJoin(_patternModifier, onMatch: (Match match) {
+      String mod = match.group(1);
+      String part = "";
+      if (mod == "?") {
+        count++;
+        questionCount++;
+        part = r"[^\/]+";
+      } else if (mod == "*") {
+        count++;
+        starCount++;
+        part = r".*";
+      } else {
+        part = match.group(0);
+      }
+
+      return part;
+    }, onNonMatch: (String str) {
+      return escapeRegex(str);
+    });
+  }).toList();
+
+  String ptrn = patternPartials.join("/");
 
   String topmost = input.split("/")
     .takeWhile(
-    (String part) => _patternModifier.allMatches(part).isEmpty
+    (String part) => !_patternModifier.hasMatch(part)
   ).join("/");
+
   if (count == 0) {
     topmost = input;
   }
@@ -215,6 +235,7 @@ PathExpression parseExpressionInput(String input) {
 
   var e = new PathExpression(
     topmost,
+    patternPartials,
     new RegExp(ptrn),
     recurseLimit,
     secondary: secondary

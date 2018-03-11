@@ -264,7 +264,13 @@ class ListNodeQueryProcessor extends QueryProcessor {
                 continue;
               }
 
-              handle("${ourFakePath}/${key}", depth + 1);
+              var childPath = "${ourFakePath}/${key}";
+
+              if (!expression.checkEntrancePath(childPath)) {
+                continue;
+              }
+
+              handle(childPath, depth + 1);
             }
           }
         };
