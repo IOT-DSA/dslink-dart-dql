@@ -8,8 +8,10 @@ class SublistHolder {
   SublistHolder(this.path);
 
   SublistListQueryProcessor listProcessor;
+  StreamController<QueryUpdate> controller;
+
   StreamSubscription<QueryUpdate> listSub;
-  List<String> _handles = <String>[];
+  Map<String, QueryUpdate> _handles = <String, QueryUpdate>{};
 
   Iterable<String> destroy() {
     if (listSub != null) {
@@ -17,7 +19,26 @@ class SublistHolder {
       listSub = null;
     }
 
-    return _handles;
+    if (controller != null) {
+      controller.close();
+      controller = null;
+    }
+
+    return _handles.keys;
+  }
+
+  void onOldUpdate() {
+    if (oldUpdate == null) {
+      return;
+    }
+
+    for (String key in _handles.keys.toList()) {
+      var lastToSend = _handles[key];
+      var newUpdateToSend = lastToSend.cloneAndMerge(oldUpdate.values);
+      newUpdateToSend.values["path"] = lastToSend.values["path"];
+      controller.add(newUpdateToSend);
+      _handles[key] = newUpdateToSend;
+    }
   }
 
   QueryStream create(SublistQueryProcessor sublist) {
@@ -32,12 +53,6 @@ class SublistHolder {
       }
       rp += np;
 
-      if (update.remove) {
-        _handles.remove(rp);
-      } else if (!_handles.contains(rp)) {
-        _handles.add(rp);
-      }
-
       var out = update;
 
       if (oldUpdate != null) {
@@ -49,6 +64,12 @@ class SublistHolder {
       });
 
       out.setAttribute("nodePath", rp);
+
+      if (update.remove) {
+        _handles.remove(rp);
+      } else if (!_handles.containsKey(rp)) {
+        _handles[rp] = out;
+      }
 
       return out;
     });
@@ -96,7 +117,6 @@ class SublistQueryProcessor extends QueryProcessor {
 
   SublistQueryProcessor(this.context);
 
-  @override
   QueryStream process(QueryStream stream) {
     StreamController<QueryUpdate> controller;
     StreamSubscription parentStreamSub;
@@ -121,18 +141,20 @@ class SublistQueryProcessor extends QueryProcessor {
           }
         }
       } else {
-        if (!holders.containsKey(path)) {
-          var holder = new SublistHolder(path);
+        SublistHolder holder = holders[path];
+
+        if (holder == null) {
+          holder = new SublistHolder(path);
+
           holder.listSub = holder.create(this).listen((QueryUpdate update) {
             controller.add(update);
           });
 
-          holder.oldUpdate = update;
+          holder.controller = controller;
           holders[path] = holder;
-        } else {
-          SublistHolder holder = holders[path];
-          holder.oldUpdate = update;
         }
+        holder.oldUpdate = update;
+        holder.onOldUpdate();
       }
     };
 
