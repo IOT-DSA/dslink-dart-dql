@@ -121,7 +121,6 @@ class SublistQueryProcessor extends QueryProcessor {
           }
         }
       } else {
-        // We don't care about updates. Paths don't really change.
         if (!holders.containsKey(path)) {
           var holder = new SublistHolder(path);
           holder.listSub = holder.create(this).listen((QueryUpdate update) {
