@@ -27,10 +27,11 @@ class SublistHolder {
     return _handles.keys;
   }
 
-  void onOldUpdate() {
-    if (oldUpdate == null) {
+  void onOldUpdate(QueryUpdate update) {
+    if (update == null) {
       return;
     }
+    oldUpdate = update;
 
     for (String key in _handles.keys.toList()) {
       var lastToSend = _handles[key];
@@ -135,9 +136,11 @@ class SublistQueryProcessor extends QueryProcessor {
           SublistHolder holder = holders.remove(path);
           var toDrop = holder.destroy();
           for (String toDropPath in toDrop) {
-            controller.add(new QueryUpdate({
-              "path": path
-            }, remove: true));
+            if (!controller.isClosed) {
+              controller.add(new QueryUpdate({
+                "path": path
+              }, remove: true));
+            }
           }
         }
       } else {
@@ -147,14 +150,15 @@ class SublistQueryProcessor extends QueryProcessor {
           holder = new SublistHolder(path);
 
           holder.listSub = holder.create(this).listen((QueryUpdate update) {
-            controller.add(update);
+            if (!controller.isClosed) {
+              controller.add(update);
+            }
           });
 
           holder.controller = controller;
           holders[path] = holder;
         }
-        holder.oldUpdate = update;
-        holder.onOldUpdate();
+        holder.onOldUpdate(update);
       }
     };
 
