@@ -1,7 +1,7 @@
 name: dql
 description: DQL DSLink
 dependencies:
-  async: "^1.9.0"
+  async: "1.11.3"
   dslink:
     git: https://github.com/IOT-DSA/sdk-dslink-dart.git
   quiver: "^0.22.0"
