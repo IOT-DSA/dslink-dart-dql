@@ -19,7 +19,7 @@
       "type": "string"
     },
     "log": {
-      "type": "enum[info,off,warning,severe,fine,finer,finest,all]]",
+      "type": "enum[info,off,warning,severe,fine,finer,finest,all]",
       "default": "info"
     }
   }
