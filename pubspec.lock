@@ -18,7 +18,7 @@ packages:
       name: async
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.13.3"
+    version: "1.11.3"
   barback:
     description:
       name: barback
@@ -61,7 +61,7 @@ packages:
       name: collection
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.14.2"
+    version: "1.12.0"
   convert:
     description:
       name: convert
@@ -135,12 +135,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.0"
-  js:
-    description:
-      name: js
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.6.1"
   json_diff:
     description:
       name: json_diff
@@ -158,7 +152,7 @@ packages:
       name: matcher
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.12.1+1"
+    version: "0.12.0+2"
   math_expressions:
     description:
       name: math_expressions
@@ -184,12 +178,6 @@ packages:
       url: "https://github.com/IOT-DSA/msgpack.dart.git"
     source: git
     version: "0.8.0"
-  node_preamble:
-    description:
-      name: node_preamble
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "1.4.0"
   package_config:
     description:
       name: package_config
@@ -298,18 +286,12 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.2"
-  term_glyph:
-    description:
-      name: term_glyph
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "1.0.0"
   test:
     description:
       name: test
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.12.24"
+    version: "0.12.18+2"
   typed_data:
     description:
       name: typed_data
@@ -359,4 +341,4 @@ packages:
     source: hosted
     version: "2.1.12"
 sdks:
-  dart: ">=1.23.0 <2.0.0"
+  dart: ">=1.23.0-dev.0.0 <2.0.0"

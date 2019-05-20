@@ -34,6 +34,7 @@ class ListNodeQueryProcessor extends QueryProcessor {
     StreamController<QueryUpdate> controller;
 
     var traverseBrokers = false;
+    var enableCache = true;
     var enableActions = allowActions;
 
     if (stream.getAttribute("option:traverseBrokers") == true) {
@@ -42,6 +43,10 @@ class ListNodeQueryProcessor extends QueryProcessor {
 
     if (stream.getAttribute("option:listActions") == true) {
       enableActions = true;
+    }
+
+    if (stream.getAttribute("option:enableCache") == false) {
+      enableCache = false;
     }
 
     void handle(String path, [int depth = 1]) {
@@ -53,7 +58,7 @@ class ListNodeQueryProcessor extends QueryProcessor {
         var ourRealPath = resolveRealPath(path);
 
         var onDone = (String reason, [bool isUidSame = false, bool skipChildren = false]) {
-          logger.finest("List Done ${path} (${reason})");
+          logger.finer("List Done ${path} (${reason})");
 
           if (!isUidSame && uid != null) {
             uids.remove(uid);
@@ -104,7 +109,7 @@ class ListNodeQueryProcessor extends QueryProcessor {
           (context as QueryStatisticManager).reportStart("vlist");
         }
 
-        logger.finest("List ${path}");
+        logger.finer("List ${path}");
 
         var handleListUpdate = (RequesterListUpdate update) {
           if (update.node.configs.containsKey(r"$invokable") &&
@@ -226,7 +231,7 @@ class ListNodeQueryProcessor extends QueryProcessor {
             isSubBroker = false;
           }
 
-          if (isSubBroker && traverseBrokers == false) {
+          if (isSubBroker && traverseBrokers == false && !(expression.topmost == path)) {
             handleChildren = false;
           }
 
@@ -259,13 +264,21 @@ class ListNodeQueryProcessor extends QueryProcessor {
                 continue;
               }
 
-              handle("${ourFakePath}/${key}", depth + 1);
+              var childPath = "${ourFakePath}/${key}";
+
+              if (!expression.checkEntrancePath(childPath)) {
+                continue;
+              }
+
+              handle(childPath, depth + 1);
             }
           }
         };
 
         ListNodeHolder holder;
-        holder = new ListNodeHolder(context.list(ourRealPath).listen(handleListUpdate, onDone: () {
+        holder = new ListNodeHolder(context
+          .list(ourRealPath, enableCache: enableCache)
+          .listen(handleListUpdate, onDone: () {
           if (holder != null && holder.onDone is Function) {
             holder.onDone("List stream closed.");
           }

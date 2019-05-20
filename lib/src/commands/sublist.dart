@@ -3,11 +3,15 @@ part of dslink.dql.query;
 class SublistHolder {
   final String path;
 
+  QueryUpdate oldUpdate;
+
   SublistHolder(this.path);
 
   SublistListQueryProcessor listProcessor;
+  StreamController<QueryUpdate> controller;
+
   StreamSubscription<QueryUpdate> listSub;
-  List<String> _handles = <String>[];
+  Map<String, QueryUpdate> _handles = <String, QueryUpdate>{};
 
   Iterable<String> destroy() {
     if (listSub != null) {
@@ -15,7 +19,27 @@ class SublistHolder {
       listSub = null;
     }
 
-    return _handles;
+    if (controller != null) {
+      controller.close();
+      controller = null;
+    }
+
+    return _handles.keys;
+  }
+
+  void onOldUpdate(QueryUpdate update) {
+    if (update == null) {
+      return;
+    }
+    oldUpdate = update;
+
+    for (String key in _handles.keys.toList()) {
+      var lastToSend = _handles[key];
+      var newUpdateToSend = lastToSend.cloneAndMerge(oldUpdate.values);
+      newUpdateToSend.values["path"] = lastToSend.values["path"];
+      controller.add(newUpdateToSend);
+      _handles[key] = newUpdateToSend;
+    }
   }
 
   QueryStream create(SublistQueryProcessor sublist) {
@@ -30,17 +54,23 @@ class SublistHolder {
       }
       rp += np;
 
-      if (update.remove) {
-        _handles.remove(rp);
-      } else if (!_handles.contains(rp)) {
-        _handles.add(rp);
+      var out = update;
+
+      if (oldUpdate != null) {
+        out = out.cloneAndMerge(oldUpdate.values);
       }
 
-      var out = update.cloneAndMerge({
+      out = out.cloneAndMerge({
         "path": rp
       });
 
       out.setAttribute("nodePath", rp);
+
+      if (update.remove) {
+        _handles.remove(rp);
+      } else if (!_handles.containsKey(rp)) {
+        _handles[rp] = out;
+      }
 
       return out;
     });
@@ -106,23 +136,29 @@ class SublistQueryProcessor extends QueryProcessor {
           SublistHolder holder = holders.remove(path);
           var toDrop = holder.destroy();
           for (String toDropPath in toDrop) {
-            controller.add(new QueryUpdate({
-              "path": path
-            }, remove: true));
+            if (!controller.isClosed) {
+              controller.add(new QueryUpdate({
+                "path": path
+              }, remove: true));
+            }
           }
         }
       } else {
-        // We don't care about updates. Paths don't really change.
-        if (holders.containsKey(path)) {
-          return;
+        SublistHolder holder = holders[path];
+
+        if (holder == null) {
+          holder = new SublistHolder(path);
+
+          holder.listSub = holder.create(this).listen((QueryUpdate update) {
+            if (!controller.isClosed) {
+              controller.add(update);
+            }
+          });
+
+          holder.controller = controller;
+          holders[path] = holder;
         }
-
-        var holder = new SublistHolder(path);
-        holder.listSub = holder.create(this).listen((QueryUpdate update) {
-          controller.add(update);
-        });
-
-        holders[path] = holder;
+        holder.onOldUpdate(update);
       }
     };
 

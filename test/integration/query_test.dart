@@ -77,6 +77,57 @@ MockQueryContext createDeepQueryContext() {
           "?value": 0
         }
       }
+    },
+    "sub-broker": {
+      r"$is": "dsa/broker",
+      "downstream": {
+        "LinkA": {
+          "metric": {
+            r"$type": "string"
+          }
+        }
+      }
+    }
+  });
+
+  return ctx;
+}
+
+MockQueryContext createPCSCQueryContext() {
+  var ctx = createQueryContext({
+    "downstream": {
+      "PCSC Security": {
+        "PCSC_ATL110": {
+          "Cards": {
+            "000000010137": {
+              r"$type": "string",
+              "?value": "234238"
+            },
+            "000000010136": {
+              r"$type": "string",
+              "?value": "234238"
+            }
+          }
+        },
+        "PCSC_ATL112": {
+          "Cards": {
+            "000000010137": {
+              r"$type": "string",
+              "?value": "234238"
+            },
+            "000000010136": {
+              r"$type": "string",
+              "?value": "234238"
+            }
+          }
+        }
+      },
+      "OtherLink": {
+        "metric": {
+          r"$type": "string",
+          "?value": "Hello World"
+        }
+      }
     }
   });
 
@@ -182,5 +233,84 @@ mockTests() {
     }
 
     await Future.wait([doWork(1), doWork(2), doWork(3)]);
+  });
+
+  test("? queries don't overstep bounds", () async {
+    var ctx = createPCSCQueryContext();
+    var result = await ctx.capture(
+      r"list /downstream/PCSC?/?/Cards"
+    );
+
+    result.verify([
+      {
+        "path": "/downstream/PCSC Security/PCSC_ATL110/Cards"
+      },
+      {
+        "path": "/downstream/PCSC Security/PCSC_ATL112/Cards"
+      }
+    ]);
+
+    ctx.checkListedNodes([
+      "/downstream",
+      "/downstream/PCSC Security",
+      "/downstream/PCSC Security/PCSC_ATL110",
+      "/downstream/PCSC Security/PCSC_ATL112",
+      "/downstream/PCSC Security/PCSC_ATL110/Cards",
+      "/downstream/PCSC Security/PCSC_ATL112/Cards"
+    ]);
+  });
+
+  test("sublist works as expected", () async {
+    var ctx = createPCSCQueryContext();
+    var result = await ctx.capture(
+      r"list /downstream/PCSC Security/? | subscribe :name as Node | sublist /Cards/? | subscribe :name as Card"
+    );
+
+    result.verify([
+      {
+        "path": "/downstream/PCSC Security/PCSC_ATL110/Cards/000000010137",
+        "Node": "PCSC_ATL110",
+        "Card": "000000010137"
+      },
+      {
+        "path": "/downstream/PCSC Security/PCSC_ATL110/Cards/000000010136",
+        "Node": "PCSC_ATL110",
+        "Card": "000000010136"
+      },
+      {
+        "path": "/downstream/PCSC Security/PCSC_ATL112/Cards/000000010137",
+        "Node": "PCSC_ATL112",
+        "Card": "000000010137"
+      },
+      {
+        "path": "/downstream/PCSC Security/PCSC_ATL112/Cards/000000010136",
+        "Node": "PCSC_ATL112",
+        "Card": "000000010136"
+      }
+    ]);
+  });
+
+  test("query traverses broker when a broker is the topmost path", () async {
+    var ctx = createDeepQueryContext();
+    var result = await ctx.capture("list /sub-broker/*");
+
+    result.verify([
+      {
+        "path": "/sub-broker/downstream"
+      },
+      {
+        "path": "/sub-broker/downstream/LinkA"
+      },
+      {
+        "path": "/sub-broker/downstream/LinkA/metric"
+      }
+    ]);
+
+    ctx.checkListedNodes([
+      "/sub-broker",
+      "/sub-broker/downstream",
+      "/sub-broker/downstream/LinkA",
+      "/sub-broker/downstream/LinkA/metric"
+    ]);
   });
 }

@@ -1,10 +1,14 @@
 part of dslink.dql.query;
 
+const bool enableNewNodeTracker = false;
+
 typedef void OnStatisticUpdated(String id, int count);
 
 class BasicQueryContext extends QueryContext implements QueryStatisticManager {
   final Map<String, QueryProcessorFactory> processors;
   final Requester requester;
+
+  Set<String> nodePathsSeen = enableNewNodeTracker ? new Set<String>() : null;
 
   BasicQueryContext(this.requester, this.processors);
 
@@ -37,28 +41,44 @@ class BasicQueryContext extends QueryContext implements QueryStatisticManager {
     return proc;
   }
 
-  @override
-  Stream<RequesterListUpdate> list(String path) async* {
-    var node = requester.nodeCache.getRemoteNode(path);
-    if (node != null && node.isSelfUpdated()) {
-      var allDataChanges = <String>[];
-      allDataChanges.addAll(node.configs.keys);
-      allDataChanges.addAll(node.children.keys);
-      allDataChanges.addAll(node.attributes.keys);
-      yield new RequesterListUpdate(node, allDataChanges, "open");
-    }
+  Stream<RequesterListUpdate> _listCacheHit(RemoteNode node, String path) async* {
+    var allDataChanges = <String>[];
+    allDataChanges.addAll(node.configs.keys);
+    allDataChanges.addAll(node.children.keys);
+    allDataChanges.addAll(node.attributes.keys);
+    yield new RequesterListUpdate(node, allDataChanges, "open");
     yield* requester.list(path);
+  }
+
+  @override
+  Stream<RequesterListUpdate> list(String path, {
+    bool enableCache: false
+  }) {
+    _reportNodeSeen(path);
+
+    if (enableCache) {
+      var node = requester.nodeCache.getRemoteNode(path);
+      if (node != null && node.isSelfUpdated()) {
+        return _listCacheHit(node, path);
+      }
+    }
+
+    return requester.list(path);
   }
 
   @override
   StreamSubscription subscribe(String path, callback(ValueUpdate update), [
     int qos = 0
   ]) {
+    _reportNodeSeen(path);
+
     return requester.subscribe(path, callback, qos);
   }
 
   @override
   Future<RemoteNode> getRemoteNode(String path) {
+    _reportNodeSeen(path);
+
     return requester.getRemoteNode(path);
   }
 
@@ -79,9 +99,7 @@ class BasicQueryContext extends QueryContext implements QueryStatisticManager {
 
     _stats[id] = count;
 
-    for (OnStatisticUpdated handler in _statWatchers) {
-      handler(id, count);
-    }
+    reportStatistic(id, count);
   }
 
   @override
@@ -95,8 +113,12 @@ class BasicQueryContext extends QueryContext implements QueryStatisticManager {
 
     _stats[id] = count;
 
+    reportStatistic(id, count);
+  }
+
+  void reportStatistic(String id, int value) {
     for (OnStatisticUpdated handler in _statWatchers) {
-      handler(id, count);
+      handler(id, value);
     }
   }
 
@@ -120,5 +142,23 @@ class BasicQueryContext extends QueryContext implements QueryStatisticManager {
 
   void unregisterStatisticHandler(OnStatisticUpdated handler) {
     _statWatchers.remove(handler);
+  }
+
+  void updateGenericStatistics({bool reportCachedNodes: false}) {
+    reportStatistic("requests", requester.openRequestCount);
+    reportStatistic("subscriptions", requester.subscriptionCount);
+
+    if (reportCachedNodes) {
+      reportStatistic("cached-nodes", requester.nodeCache.cachedNodePaths.length);
+    }
+  }
+
+  void _reportNodeSeen(String path) {
+    if (enableNewNodeTracker) {
+      if (!nodePathsSeen.contains(path)) {
+        nodePathsSeen.add(path);
+        print("[DQL] ${nodePathsSeen.length} paths seen (${path})");
+      }
+    }
   }
 }

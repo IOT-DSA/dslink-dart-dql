@@ -218,13 +218,13 @@ class FilterCompareTest extends FilterTest {
     }
 
     if (operator == "like") {
-      _regex = new RegExp(value.toString().splitMapJoin(_patternFilterLike, onMatch: (Match match) {
+      _regex = new RegExp("^" + value.toString().splitMapJoin(_patternFilterLike, onMatch: (Match match) {
         if (match.group(0) == "%") {
           return "(.+)";
         }
       }, onNonMatch: (String string) {
         return escapeRegex(string);
-      }));
+      }) + r"$");
     }
   }
 
