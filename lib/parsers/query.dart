@@ -44,8 +44,9 @@ class PathExpression {
       return isBroker;
     }
 
+    // Exact match should be a match?
     if (!hasAnyMods && topmost == input) {
-      return false;
+      return true;
     }
 
     Path p = new Path(input);
@@ -182,12 +183,14 @@ PathExpression parseExpressionInput(String input) {
     return escapeRegex(str);
   });
 
-  String topmost = input.split("/")
-    .takeWhile(
-    (String part) => _patternModifier.allMatches(part).isEmpty
-  ).join("/");
+  String topmost;
   if (count == 0) {
     topmost = input;
+  } else {
+    topmost = input
+        .split("/")
+        .takeWhile((String part) => _patternModifier.allMatches(part).isEmpty)
+        .join("/");
   }
 
   if (topmost.endsWith("/")) {
