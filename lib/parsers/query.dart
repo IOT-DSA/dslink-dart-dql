@@ -44,9 +44,10 @@ class PathExpression {
       return isBroker;
     }
 
-    // Exact match should be a match?
+    // Should an exact match be considered a match?
+    // Current usage/implementation depends on no.
     if (!hasAnyMods && topmost == input) {
-      return true;
+      return false;
     }
 
     Path p = new Path(input);
