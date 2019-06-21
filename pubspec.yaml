@@ -1,5 +1,6 @@
 name: dql
 description: DQL DSLink
+version: 0.6.2
 dependencies:
   async: "^1.9.0"
   dslink:

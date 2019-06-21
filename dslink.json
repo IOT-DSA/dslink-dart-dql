@@ -1,6 +1,6 @@
 {
   "name": "dslink-dart-dql",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "DQL DSLink",
   "main": "bin/run.dart",
   "engines": {
